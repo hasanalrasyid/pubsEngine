@@ -1,0 +1,31 @@
+---
+colorlinks: true
+lang: en-UK
+babel-lang: english
+polyglossia-lang:
+  name: english
+  options: variant=uk
+natbib: true
+natbiboptions: square, numbers, comma
+biblio-style: unsrtnat
+bibliography: draft.bib
+biblio-title: Reference
+papersize: a4
+header-includes: |
+  \usepackage{appendix}
+  \usepackage{chemfig}
+  \usepackage[version=4]{mhchem}
+  \mhchemoptions{layout=stacked}
+  \usepackage{longtable}
+  \usepackage{siunitx}
+  \usepackage{hasanCustom}
+  \usepackage{booktabs}
+  \usepackage{localStyle}
+  \usepackage{float}
+  \usepackage{setspace}
+  \floatplacement{figure}{H}
+include-before: |
+  \doublespacing
+  \input{hasanHyp}
+  \sisetup{table-format=-3.4}
+---

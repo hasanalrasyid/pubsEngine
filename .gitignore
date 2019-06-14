@@ -1,0 +1,14 @@
+draft.tex
+Figures/temp
+Figures/plots
+Figures/tempor
+Figures/temp.glt
+*.aux
+*.log
+*.pdf
+*.bbl
+*.bcf
+*.blg
+*.out
+*.run.xml
+build
