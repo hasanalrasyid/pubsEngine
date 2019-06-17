@@ -86,7 +86,7 @@ defaultMeta =
   <> ccsLabelSep (space <> str "—" <> space)
   <> ccsTemplate (var "i" <> var "ccsLabelSep" <> var "t")
   <> tableEqns False
-  <> autoEqnLabels True
+  <> autoEqnLabels False
   <> subfigGrid False
   <> linkReferences False
   <> nameInLink False
