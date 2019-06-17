@@ -27,32 +27,12 @@ import Control.Exception (handle,IOException)
 
 import Text.Pandoc.CrossRef.Util.Settings.Gen
 import Text.Pandoc.CrossRef.Util.Meta
-import System.Directory
-import System.FilePath
 import System.IO
 import qualified Data.Text as T
 
 getSettings :: Maybe Format -> Meta -> IO Meta
 getSettings fmt meta = do
-  dirConfig <- readConfig (getMetaString "crossrefYaml" (meta <> defaultMeta))
-  home <- getHomeDirectory
-  globalConfig <- readConfig (home </> ".pandoc-crossref" </> "config.yaml")
-  formatConfig <- maybe (return nullMeta) (readFmtConfig home) fmt
-  return $ meta <> dirConfig <> formatConfig <> globalConfig <> defaultMeta
-  where
-    readConfig path =
-      handle handler $ do
-        h <- openFile path ReadMode
-        hSetEncoding h utf8
-        yaml <- hGetContents h
-        Pandoc meta' _ <- readMd $ T.pack $ unlines ["---", yaml, "---"]
-        return meta'
-    readMd = handleError . runPure . readMarkdown def{readerExtensions=pandocExtensions}
-    readFmtConfig home fmt' = readConfig (home </> ".pandoc-crossref" </> "config-" ++ fmtStr fmt' ++ ".yaml")
-    handler :: IOException -> IO Meta
-    handler _ = return nullMeta
-    fmtStr (Format fmtstr) = fmtstr
-
+  return $ meta
 
 defaultMeta :: Meta
 defaultMeta =

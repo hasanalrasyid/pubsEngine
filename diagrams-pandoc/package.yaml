@@ -28,11 +28,9 @@ dependencies:
 - pandoc
 - process
 - diagrams-pgf        # library
-- linear
 - diagrams
 - diagrams-lib
 - diagrams-builder
-- diagrams-cairo
 - bytestring
 - containers # pandoc-crossref
 - utility-ht
@@ -44,11 +42,6 @@ dependencies:
 - syb
 - roman-numerals
 - template-haskell
-- gitrev
-- temporary
-- open-browser
-- optparse-applicative
-- deepseq
 
 library:
   source-dirs: src

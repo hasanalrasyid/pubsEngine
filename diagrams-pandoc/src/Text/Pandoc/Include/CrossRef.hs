@@ -27,24 +27,19 @@ import Text.Pandoc
 import Text.Pandoc.JSON
 
 import Text.Pandoc.CrossRef
-import Options.Applicative
-import qualified Options.Applicative as O
 import Control.Monad
-import Web.Browser
-import System.IO.Temp
 import System.IO hiding (putStrLn)
 import Control.Concurrent
-import Development.GitRev
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import ManData
+--import ManData
 
 import Prelude hiding (putStrLn)
 import Data.Semigroup ((<>))
 
 man, manHtml :: T.Text
-man = T.pack $(embedManualText)
-manHtml = T.pack $(embedManualHtml)
+man = "Man Text"
+manHtml = "Man HTML"
 
 data Flag = NumericVersion | Version | Man | HtmlMan
 
@@ -52,6 +47,7 @@ doCrossRef :: Pandoc -> IO Pandoc
 doCrossRef p@(Pandoc meta _) =
       runCrossRefIO meta (Just $ Format "latex") defaultCrossRefAction p
 
+  {-
 run :: Parser (IO ())
 run = do
   man' <- flag Nothing (Just Man) (long "man" <> help "Show manpage")
@@ -61,19 +57,13 @@ run = do
   return $ go ( man' <|> hman) fmt
   where
     go :: Maybe Flag -> Maybe String -> IO ()
-    go (Just Man    ) _ = T.putStrLn man
-    go (Just HtmlMan) _ = withSystemTempFile "pandoc-crossref-manual.html" $ \fp h -> do
-      hSetEncoding h utf8
-      T.hPutStrLn h manHtml
-      hClose h
-      void $ openBrowser $ "file:///" <> fp
-      threadDelay 5000000
-      return ()
+    go (Just Man    ) _ = T.putStrLn "no man"
+    go (Just HtmlMan) _ = T.putStrLn "no htmlman"
     go Nothing _ = toJSONFilter f
     f fmt p@(Pandoc meta _) =
       runCrossRefIO meta fmt defaultCrossRefAction p
 
-
+-}
 {-
 main :: IO ()
 main = join $ execParser opts
