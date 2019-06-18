@@ -12,16 +12,14 @@ import System.FilePath.Posix (takeFileName)
 import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import Text.Pandoc.Include.Common
 
 md2LaTeX :: String -> IO ()
 md2LaTeX f = do
   let fn = takeFileName f
   T.readFile (f ++ ".md") >>= go >>= T.writeFile ("_build/" ++ fn ++ ".tex")
     where
-      go t = let param = def { readerExtensions = foldr enableExtension pandocExtensions [ Ext_tex_math_dollars
-                                                                                         , Ext_raw_tex
-                                                                                         , Ext_table_captions
-                                                                                         ]
+      go t = let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting 
                              }
               in runIOorExplode $  readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
                                                                             , writerTopLevelDivision = TopLevelChapter

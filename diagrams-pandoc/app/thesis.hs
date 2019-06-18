@@ -65,7 +65,6 @@ doThemAll (Pandoc mt blks) = do
 doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
 
 doCrossRef p@(Pandoc meta blocks) = do
---  runCrossRefIO meta (Just $ Format "latex") defaultCrossRefAction p
   b <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks blocks
   return $ Pandoc meta b
     where

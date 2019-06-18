@@ -66,8 +66,10 @@ import           Text.Pandoc
 import           Text.Pandoc.Error
 import           Text.Pandoc.JSON
 
-import Text.Pandoc.CrossRef.References.Blocks (divBlocks)
 import           Text.Pandoc.Walk
+import Text.Pandoc.Include.Common
+import Text.Pandoc.CrossRef.References.Blocks (divBlocks)
+import Text.Pandoc.CrossRef
 
 takeBlocks (Pandoc _ blocks) = blocks
 
@@ -76,10 +78,12 @@ getContent file = do
   c <- T.readFile file
   (Pandoc _ b) <- runIOorExplode $ readMarkdown param c
   let b1 = walk divBlocks b
+--  b1 <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks b
   return b1
     where
+      meta' = autoEqnLabels True
       param = def { readerExtensions = foldr enableExtension pandocExtensions
-                   [Ext_implicit_figures]
+                    pandocExtSetting
                   }
 
 getProcessableFileList :: String -> IO [String]

@@ -16,6 +16,7 @@ import Text.Pandoc.JSON
 --import Text.Pandoc.Definition (fromString)
 import Data.Version (showVersion)
 import Text.Pandoc.Walk (walk)
+import Text.Pandoc.Include.Common
 
 doInclude :: Block -> IO Block
 doInclude cb@(CodeBlock cx@(id, classes, namevals) captionContent)
@@ -35,10 +36,7 @@ processMdTable cx caption text = do
   return $ Div nullAttr x
     where
       param = def{ readerExtensions = foldr enableExtension pandocExtensions
-                    [ Ext_tex_math_dollars
-                    , Ext_raw_tex
-                    , Ext_table_captions
-                    ]
+                     pandocExtSetting
                  }
       renewCap (Pandoc _ ((Para nc):_)) (Table _ a b c d) = Table nc a b c d
       renewCap _ tx = tx
