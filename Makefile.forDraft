@@ -1,6 +1,6 @@
 define compile_it
 	mkdir -p _build
-	$(4) pandoc -t latex -F thesis --template pubsEngine/$(2) --metadata date="draft of September 2018 (last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="draft of September 2018 (last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
 	cd _build && \
 	ln -s -f ../Figures && \
 	ln -s -f ../localStyle.sty && \
@@ -28,12 +28,19 @@ RUNNER := $(shell readlink -f pubsEngine)/diagrams-pandoc
 GET_STACK_GHC = $(shell cd $(RUNNER);stack exec env|grep GHC_PACKAGE_PATH)
 draft:
 	$(eval TEMPLATE_LATEX = draft.template.tex)
-	$(call compile_it,$(target),${TEMPLATE_LATEX},hasan.yaml,$(GET_STACK_GHC))
+	$(eval TARGET_PDF = latex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},hasan.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 report:
 	$(eval TEMPLATE_LATEX = ori.template.tex)
+	$(eval TARGET_PDF = latex)
 	$(call compile_it,$(target),${TEMPLATE_LATEX},report.yaml)
 clean:
 	rm -rf _build
 thesis:
 	$(eval TEMPLATE_LATEX = thesisClass/hasanThesis.tex)
-	$(call compile_it,$(target),${TEMPLATE_LATEX},thesisClass/hasanThesis.yaml,$(GET_STACK_GHC))
+	$(eval TARGET_PDF = latex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},thesisClass/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+zemi:
+	$(eval TEMPLATE_LATEX = ori.template.beamer.tex)
+	$(eval TARGET_PDF = beamer --slide-level 2)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},zemi.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
