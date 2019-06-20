@@ -1,6 +1,6 @@
 define compile_it
 	mkdir -p _build
-	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="draft of September 2018 (last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
 	cd _build && \
 	ln -s -f ../Figures && \
 	ln -s -f ../localStyle.sty && \
