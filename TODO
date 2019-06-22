@@ -1,0 +1,5 @@
+- note container for beamer
+  constructor:
+    ~~~note
+    content of notes in md
+    ~~~
