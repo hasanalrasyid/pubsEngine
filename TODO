@@ -1,11 +1,13 @@
-- note container for beamer
-  constructor:
-    ~~~note
-    content of notes in md
-    ~~~
+- : not yet, r: running, v: DONE
 
-- textblock container for beamer
+r textblock container for beamer
   constructor:
   ~~~textblock
   content of textblock in md
   ~~~
+
+v note container for beamer
+  constructor:
+    ~~~note
+    content of notes in md
+    ~~~
