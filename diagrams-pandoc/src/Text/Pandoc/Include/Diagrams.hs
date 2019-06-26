@@ -51,7 +51,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
           let imgBlock = RawBlock (Format "latex") $
                            case d of
                              ParseErr err -> "ParseErr : " ++ err
-                             InterpErr err -> "InterpErr : " ++ ppInterpError err
+                             InterpErr err -> "InterpErr : " ++ ppInterpError err ++ contents
                              Skipped hash -> "Skipped : " ++ hashToHexStr hash
                              OK _ texnya -> LB.unpack $ toLazyByteString texnya
                                             {- unlines  [ "\\begin{figure}"
@@ -70,23 +70,8 @@ compileDiagram xDia dWidth = do
   let bopts = mkBuildOpts PGF (zero :: V2 Double)
                 (PGFOptions def (mkWidth dWidth) False standaloneTex)
                   & snippets .~ []
-                  & imports .~ [ "Diagrams.Backend.PGF" ]
+                  & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow" ]
                   & diaExpr .~ xDia
                   & decideRegen .~ alwaysRegenerate
   buildDiagram bopts
 
-  {-
-  texnya <- readProcess "diagram-pandoc.sh" ["-w", sWidth ] xDia
-  --texnya <- texDiaString def example
-  return $ Right texnya
--}
-
-{-
-texDiaString :: (TypeableFloat n, Monoid' m)
-              => Options PGF V2 n -> QDiagram PGF V2 n m -> IO String
-texDiaString opts d =
-  return $ LB.unpack $ toLazyByteString $ renderDia PGF opts d
-
-example :: Diagram PGF
-example = square 30 # lwG 0.05
--}

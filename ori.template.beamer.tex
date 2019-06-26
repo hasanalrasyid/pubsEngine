@@ -162,7 +162,7 @@ $if(subtitle)$
 \subtitle{$subtitle$}
 $endif$
 $if(author)$
-\author{$for(author)$$author$$sep$ \and $endfor$}
+\author{\small $for(author)$$author$$sep$ \and $endfor$}
 $endif$
 $if(date)$
 \date{$date$}
@@ -173,6 +173,10 @@ $endif$
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+$if(grid)$
+\usepackage[texcoord,grid,gridcolor=red!10,subgridcolor=green!10,gridunit=pt]{eso-pic}
+$endif$
 
 \begin{document}
 $if(title)$

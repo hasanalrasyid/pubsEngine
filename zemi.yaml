@@ -1,4 +1,7 @@
 ---
+classoption: fragile
+grid: true
+fontsize: 10pt
 colorlinks: true
 polyglossia-lang:
   name: english
@@ -21,6 +24,19 @@ header-includes: |
   \usepackage{hasanCustom}
   \usepackage{localStyle}
   \usepackage{booktabs}
+  \def\begincols{\begin{columns}}
+  \def\begincol{\begin{column}}
+  \def\endcol{\end{column}}
+  \def\endcols{\end{columns}}
+  \def\bnote{\note{}
+  \def\enote{}}
+  \def\bsmall{\tiny{}
+  \def\esmall{}}
+  \def\bsmallA{\small{}
+  \def\esmallA{}}
+  \def\rad{^\bullet}
+  \usepackage[absolute,overlay]{textpos}
+
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}

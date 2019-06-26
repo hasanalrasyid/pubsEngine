@@ -3,3 +3,9 @@
     ~~~note
     content of notes in md
     ~~~
+
+- textblock container for beamer
+  constructor:
+  ~~~textblock
+  content of textblock in md
+  ~~~
