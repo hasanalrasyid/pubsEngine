@@ -74,6 +74,7 @@ doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, _) _)
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
+  | "note" `elem` classes = IM.doInclude cb
 doBlock x = return x
 
 main :: IO ()

@@ -76,6 +76,9 @@ takeBlocks (Pandoc _ blocks) = blocks
 getContent :: String -> IO [Block]
 getContent file = do
   c <- T.readFile file
+  genPandoc c
+
+genPandoc c = do
   (Pandoc _ b) <- runIOorExplode $ readMarkdown param c
   let b1 = walk divBlocks b
 --  b1 <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks b
@@ -102,5 +105,12 @@ doInclude (CodeBlock (_, classes, _) list)
   | "include" `elem` classes = do
     let toProcess = getProcessableFileList list
     processFiles =<< toProcess
-doInclude x = return x
+  | "note" `elem` classes = do
+    c <- genPandoc $ T.pack list
+    lt <- runIOorExplode $ writeLaTeX param $ Pandoc nullMeta c
+    return $ Div nullAttr [RawBlock (Format "latex") $ unlines $ ("\\note{": T.unpack lt :"}":[]) ]
+      where param = (def {writerReferenceLinks = True
+                         , writerTopLevelDivision = TopLevelChapter
+                         })
 
+doInclude x = return x

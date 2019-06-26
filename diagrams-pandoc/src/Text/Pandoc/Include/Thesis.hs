@@ -14,13 +14,15 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Text.Pandoc.Include.Common
 
-md2LaTeX :: String -> IO ()
-md2LaTeX f = do
+
+
+mdFile2LaTeX :: FilePath -> IO ()
+mdFile2LaTeX f = do
   let fn = takeFileName f
-  T.readFile (f ++ ".md") >>= go >>= T.writeFile ("_build/" ++ fn ++ ".tex")
-    where
-      go t = let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting 
-                             }
+  T.readFile (f ++ ".md") >>= md2LaTeX >>= T.writeFile ("_build/" ++ fn ++ ".tex")
+
+md2LaTeX :: T.Text -> IO T.Text
+md2LaTeX t = let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting }
               in runIOorExplode $  readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
                                                                             , writerTopLevelDivision = TopLevelChapter
                                                                             })
@@ -29,7 +31,7 @@ linkTex :: Pandoc -> IO Pandoc
 linkTex p@(Pandoc mt blks) = do
   let md@(bib:mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["bibliography","mdappendix","mdquote","mdacknowledgements"]
   let mdall = concat $ map fromMetaInlines_Str $ catMaybes md
-  mapM_ md2LaTeX mdall
+  mapM_ mdFile2LaTeX mdall
   let mt' = genMeta mt [ ("auto-appendix",[mdappendix])
                        , ("auto-acknowledgements",[mdacknowledgements])
                        , ("auto-quote",[mdquote])
