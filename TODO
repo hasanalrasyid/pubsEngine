@@ -1,5 +1,9 @@
 - : not yet, r: running, v: DONE
 
+- make diagram save on something special identifed by hash,
+  so if hash file exist, then just put \input{hash.file}.
+  hash calculated from string of input, not output.
+
 v textblock container for beamer
   constructor:
   ~~~textblock
