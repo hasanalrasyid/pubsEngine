@@ -51,8 +51,8 @@ Note: the metadata from the included source files are discarded.
 
 -}
 
-module Text.Pandoc.Include.Markdown (
-  doInclude)
+module Text.Pandoc.Include.Markdown
+
   where
 
 import           Control.Monad
@@ -76,10 +76,11 @@ takeBlocks (Pandoc _ blocks) = blocks
 getContent :: String -> IO [Block]
 getContent file = do
   c <- T.readFile file
-  genPandoc c
+  genPandoc $ T.unpack c
 
+genPandoc :: String -> IO [Block]
 genPandoc c = do
-  (Pandoc _ b) <- runIOorExplode $ readMarkdown param c
+  (Pandoc _ b) <- runIOorExplode $ readMarkdown param $ T.pack c
   let b1 = walk divBlocks b
 --  b1 <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks b
   return b1
@@ -105,12 +106,5 @@ doInclude (CodeBlock (_, classes, _) list)
   | "include" `elem` classes = do
     let toProcess = getProcessableFileList list
     processFiles =<< toProcess
-  | "note" `elem` classes = do
-    c <- genPandoc $ T.pack list
-    lt <- runIOorExplode $ writeLaTeX param $ Pandoc nullMeta c
-    return $ Div nullAttr [RawBlock (Format "latex") $ unlines $ ("\\note{": T.unpack lt :"}":[]) ]
-      where param = (def {writerReferenceLinks = True
-                         , writerTopLevelDivision = TopLevelChapter
-                         })
 
 doInclude x = return x

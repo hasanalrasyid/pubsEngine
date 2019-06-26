@@ -12,6 +12,7 @@ import Text.Pandoc.Walk
 import Text.Pandoc.CrossRef
 import Data.Monoid ((<>))
 
+import Data.Maybe
 {-
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -71,10 +72,22 @@ doCrossRef p@(Pandoc meta blocks) = do
       meta' = autoEqnLabels True <> meta
 
 doBlock :: Block -> IO Block
-doBlock cb@(CodeBlock (_, classes, _) _)
+doBlock cb@(CodeBlock (_, classes, namevals) t)
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
-  | "note" `elem` classes = IM.doInclude cb
+  | "note" `elem` classes = genEnv "\\note{" "}" t
+  | "textblock" `elem` classes = do
+    let oWidth = fromMaybe "100pt"     $ lookup "w" namevals
+    let oLoc   = fromMaybe "10pt,10pt" $ lookup "pos" namevals
+    genEnv (concat["\\begin{textblock*}{", oWidth,"}(",oLoc,")"]) "\\end{textblock*}" t
+  where
+    genEnv st en tx = do
+      tx' <- IM.genPandoc tx
+      return $ Div nullAttr $ concat [ [ RawBlock (Format "latex") st ]
+                                     , tx'
+                                     , [ RawBlock (Format "latex") en ]
+                                     ]
+
 doBlock x = return x
 
 main :: IO ()

@@ -1,6 +1,6 @@
 - : not yet, r: running, v: DONE
 
-r textblock container for beamer
+v textblock container for beamer
   constructor:
   ~~~textblock
   content of textblock in md
