@@ -62,7 +62,7 @@ zemihandout1:
 	$(eval TEMPLATE_LATEX = ori.template.beamer.tex)
 	$(eval TARGET_PDF = beamer --slide-level 2 -V handout)
 	$(call compile_zemi,$(target),${TEMPLATE_LATEX},zemi.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
-zemihandout: zemihandout1
+handout: zemihandout1
 	cd _build && pdfnup draft.pdf --nup 1x2 --no-landscape --keepinfo \
 		--paper a4paper --frame true --scale 0.9 \
 		--suffix "nup"

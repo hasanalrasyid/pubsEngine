@@ -79,7 +79,7 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
   | "textblock" `elem` classes = do
     let oWidth = fromMaybe "100pt"     $ lookup "w" namevals
     let oLoc   = fromMaybe "10pt,10pt" $ lookup "pos" namevals
-    genEnv (concat["\\begin{textblock*}{", oWidth,"}(",oLoc,")"]) "\\end{textblock*}" t
+    genEnv (concat["\\begin{textblock*}{", oWidth,"}",oLoc,""]) "\\end{textblock*}" t
   where
     genEnv st en tx = do
       tx' <- IM.genPandoc tx
