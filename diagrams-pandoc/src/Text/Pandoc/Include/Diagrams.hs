@@ -24,6 +24,11 @@ import System.Process (readProcess)
 
 import Diagrams.Builder
 
+import Diagrams.Builder.Modules
+import Language.Haskell.Exts.Simple -- Module
+import Data.Hashable -- hashWithSalt
+import System.Directory -- doesFileExist
+
 --addPackagePGF pd = addPackagePGF' processDiagram pd
 
 --addPackagePGF :: Pandoc -> IO Pandoc
@@ -52,7 +57,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                            case d of
                              ParseErr err -> "ParseErr : " ++ err
                              InterpErr err -> "InterpErr : " ++ ppInterpError err ++ contents
-                             Skipped hash -> "Skipped : " ++ hashToHexStr hash
+                             Skipped hash -> "\\input{" ++ getPGFfilename "Figures/" hash ++ "}"
                              OK _ texnya -> LB.unpack $ toLazyByteString texnya
                                             {- unlines  [ "\\begin{figure}"
                                                      , "\\centering"
@@ -65,6 +70,8 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
 
 processDiagram block = return block
 
+getPGFfilename d h = d ++ hashToHexStr h ++ ".pgf"
+
 compileDiagram xDia dWidth = do
   let standaloneTex = False
   let bopts = mkBuildOpts PGF (zero :: V2 Double)
@@ -73,5 +80,25 @@ compileDiagram xDia dWidth = do
                   & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow" ]
                   & diaExpr .~ xDia
                   & decideRegen .~ alwaysRegenerate
-  buildDiagram bopts
+  buildDiagram' bopts
 
+buildDiagram' bopts = do
+  case createModule Nothing bopts of
+    Left err -> return $ ParseErr $ "buildDiagram' err: " ++ err
+    Right m@(Module _ _ srcImps _) -> do
+      let diaHash
+            = 0 `hashWithSalt` prettyPrint m
+                `hashWithSalt` (bopts ^. diaExpr)
+                `hashWithSalt` (bopts ^. backendOpts)
+                `hashWithSalt` "_build"
+      let f = getPGFfilename "Figures/" diaHash
+      isCompiled <- doesFileExist f
+      case isCompiled of
+        True -> return $ Skipped diaHash
+        False -> do
+          d <- buildDiagram bopts
+          case d of
+            OK _ texnya -> do
+                            LB.writeFile f $ toLazyByteString texnya
+                            return $ Skipped diaHash
+            _           -> return d

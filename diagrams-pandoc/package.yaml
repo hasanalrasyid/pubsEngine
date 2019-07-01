@@ -42,6 +42,8 @@ dependencies:
 - syb
 - roman-numerals
 - template-haskell
+- hashable
+- haskell-src-exts-simple
 
 library:
   source-dirs: src
