@@ -59,9 +59,6 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -O2
-    - -static
-    cc-options: -static
-    ld-options: -static -pthread
 
 tests:
   diagrams-pandoc-test:
