@@ -1,5 +1,6 @@
+extern/*
+!extern/*.tbz
 .commit.status
-app
 \#*
 .#*
 dist
@@ -22,3 +23,5 @@ test/*.html
 /test/.cabal-sandbox
 .stack-work/
 diagrams-pandoc.cabal
+extern/nodejs
+.mermaid

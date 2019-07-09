@@ -6,6 +6,7 @@ import qualified Text.Pandoc.Include.Thesis as IH
 import qualified Text.Pandoc.Include.CrossRef as IC
 import qualified Text.Pandoc.Include.Markdown as IM
 import qualified Text.Pandoc.Include.Diagrams as ID
+import qualified Text.Pandoc.Mermaid.Filter as M
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 
@@ -73,6 +74,7 @@ doCrossRef p@(Pandoc meta blocks) = do
 
 doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, namevals) t)
+  | "mermaid" `elem` classes = M.doMermaid (Just $ Format "latex") cb
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
   | "note" `elem` classes = genEnv "\\note{" "}" t
