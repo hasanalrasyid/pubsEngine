@@ -1,0 +1,3 @@
+[submodule "diagrams-pandoc/extern/pandoc-mermaid"]
+	path = diagrams-pandoc/extern/pandoc-mermaid
+	url = https://github.com/hasanalrasyid/pandoc-mermaid
