@@ -64,7 +64,7 @@ doThemAll (Pandoc mt blks) = do
   p <- doPandoc (Pandoc mt blks')
   return p
 
-doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
+doPandoc p = doCrossRef =<< ID.addPackagePGF =<< M.processMermaid =<< IH.linkTex p
 
 doCrossRef p@(Pandoc meta blocks) = do
   b <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks blocks
@@ -74,7 +74,6 @@ doCrossRef p@(Pandoc meta blocks) = do
 
 doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, namevals) t)
-  | "mermaid" `elem` classes = M.doMermaid (Just $ Format "latex") cb
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
   | "note" `elem` classes = genEnv "\\note{" "}" t
