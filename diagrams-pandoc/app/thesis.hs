@@ -14,50 +14,7 @@ import Text.Pandoc.CrossRef
 import Data.Monoid ((<>))
 
 import Data.Maybe
-{-
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
-
-import           Control.Monad
-import           Data.List
-import           System.Directory
-
-import           Text.Pandoc
-import           Text.Pandoc.Error
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-
-import Text.Pandoc.JSON
---import Text.Pandoc.Definition (fromString)
-import Data.Version (showVersion)
-
-doInclude :: Block -> IO [Block]
-doInclude cb@(CodeBlock cx@(id, classes, namevals) captionContent)
-  | "inputTable" `elem` classes = do
-    readTableFile
-  where
-    readTableFile = case lookup "file" namevals of
-       Nothing    -> return [cb]
-       Just f     -> processMdTable cx captionContent =<< T.readFile f
-doInclude x = return [x]
-
-processMdTable :: Attr -> String -> T.Text -> IO [Block]
-processMdTable cx caption text = do
-  c <- runIOorExplode $ readMarkdown param $ T.pack caption
-  t <- runIOorExplode $ readMarkdown param text
-  let x = takeBlocks $ walk (renewCap c) t
-  return x
-    where
-      param = def{ readerExtensions = foldr enableExtension pandocExtensions
-                    [ Ext_tex_math_dollars
-                    , Ext_raw_tex
-                    , Ext_table_captions
-                    ]
-                 }
-      renewCap (Pandoc _ ((Para nc):_)) (Table _ a b c d) = Table nc a b c d
-      renewCap _ tx = tx
-      takeBlocks (Pandoc _ b) = b
--}
+import System.Environment (getArgs)
 
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
@@ -92,4 +49,9 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
 doBlock x = return x
 
 main :: IO ()
-main = toJSONFilter doThemAll
+main = do
+  args <- getArgs
+  case args of
+    [] -> toJSONFilter doThemAll
+    _  -> putStrLn $ unlines $ "Oda's Lab Thesis filter, run it using:":
+                               "GHC$(stack exec env|grep GHC_PACKAGE_PATH) pandoc -F thesis input.md":[]
