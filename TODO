@@ -3,6 +3,8 @@
 - Save GAPS in eps as
   %Gaps:spinId:head1,last1,delta1,sum1:h2,l2,d2,s2#spinId2:h21,l21,d21,s2:...
 
+- ubah judul jadi floating box saja, jadi tidak menggeser posisi gambar logo dsb.
+
 v make diagram save on something special identifed by hash,
   so if hash file exist, then just put \input{hash.file}.
   hash calculated from string of input, not output.
