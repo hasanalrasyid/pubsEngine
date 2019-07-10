@@ -19,6 +19,8 @@ as user:
   curl -o- -L https://yarnpkg.com/install.sh | bash
 
 install mermaid:
+  cd extern/nodejs
   yarn add mermaid
   yarn add mermaid.cli
-
+  ln -s /home/cns/Documents/marleni/pubsEngine/diagrams-pandoc/extern/nodejs/node_modules/.bin/mmdc /home/cns/.local/bin/mmdc
+  ln -s /home/cns/.local/bin/mmdc /home/cns/.local/bin/mermaid
