@@ -16,6 +16,8 @@ import Data.Monoid ((<>))
 import Data.Maybe
 import System.Environment (getArgs)
 
+import System.Exit
+
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
   p <- doPandoc (Pandoc mt blks')
@@ -50,8 +52,13 @@ doBlock x = return x
 
 main :: IO ()
 main = do
+  toJSONFilter doThemAll
+    {-
   args <- getArgs
-  case args of
-    [] -> toJSONFilter doThemAll
-    _  -> putStrLn $ unlines $ "Oda's Lab Thesis filter, run it using:":
-                               "GHC$(stack exec env|grep GHC_PACKAGE_PATH) pandoc -F thesis input.md":[]
+  if null args then return ()
+               else do
+                    putStrLn $ unlines $ "Oda's Lab Thesis filter, run it using:":
+                                         "$(stack exec env|grep GHC_PACKAGE_PATH) pandoc -F thesis input.md":[]
+                    exitSuccess
+    -}
+
