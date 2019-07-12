@@ -36,7 +36,7 @@ addPackagePGF (Pandoc mt@(Meta mtn) blks) = do
   blks' <- blks''
   return $ Pandoc mt' blks'
   where
-    mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") "\\usepackage{tikz}"]) mt
+    mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") $ unlines ["\\usepackage{tikz}","\\usepackage{tabulary}"]]) mt
     blks'' = walkM processDiagram blks
 
 processDiagram :: Block -> IO Block
