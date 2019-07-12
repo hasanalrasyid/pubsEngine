@@ -1,3 +1,6 @@
 [submodule "diagrams-pandoc/extern/pandoc-mermaid"]
 	path = diagrams-pandoc/extern/pandoc-mermaid
 	url = https://github.com/hasanalrasyid/pandoc-mermaid
+[submodule "diagrams-pandoc/extern/MultiMarkdown-6"]
+	path = diagrams-pandoc/extern/MultiMarkdown-6
+	url = https://github.com/fletcher/MultiMarkdown-6
