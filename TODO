@@ -5,6 +5,15 @@
 
 - ubah judul jadi floating box saja, jadi tidak menggeser posisi gambar logo dsb.
 
+- for every markdown flavor, make a:
+~~~{.flavor #multimarkdown opt="-t latex"}
+sumthing...
+~~~
+
+  then sumthing... will be run as stdin of #multimarkdown and outputted as RawLatex.
+
+v masukkan multimarkdown type table.
+
 v make diagram save on something special identifed by hash,
   so if hash file exist, then just put \input{hash.file}.
   hash calculated from string of input, not output.
