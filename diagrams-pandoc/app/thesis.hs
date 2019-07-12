@@ -22,7 +22,7 @@ import System.Exit
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
   blks'' <- walkM doBlock blks'
-  p <- doPandoc (Pandoc mt blks')
+  p <- doPandoc (Pandoc mt blks'')
   return p
 
 doPandoc p = doCrossRef =<< ID.addPackagePGF =<< M.processMermaid =<< IH.linkTex p
