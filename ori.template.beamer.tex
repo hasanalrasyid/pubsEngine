@@ -179,6 +179,9 @@ $if(grid)$
 $endif$
 
 \begin{document}
+$for(include-before)$
+$include-before$
+
 $if(title)$
 {
 \setbeamertemplate{footline}{} % no page number here
@@ -192,9 +195,6 @@ $if(title)$
 }
 }
 $endif$
-
-$for(include-before)$
-$include-before$
 
 $endfor$
 $if(toc)$
