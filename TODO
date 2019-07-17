@@ -12,6 +12,10 @@ sumthing...
 
   then sumthing... will be run as stdin of #multimarkdown and outputted as RawLatex.
 
+- make filter for feynmp, due to disability feynmp to run smoothly.
+  masa xelatex kudu dirun 2x? masa kudu ngerun mpost secara manual di luar?
+  not good....
+
 v masukkan multimarkdown type table.
 
 v make diagram save on something special identifed by hash,
