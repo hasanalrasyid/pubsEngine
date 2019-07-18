@@ -191,7 +191,7 @@ $endif$
 \newcommand{\placetextbox}[3]{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
   \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
     \put(\LenToUnit{#1\paperwidth},\LenToUnit{#2\paperheight}){\vtop{{\null}
-      \parbox{.847\textwidth}{\centering #3}}}%
+      \parbox{\textwidth}{\centering #3}}}%
   }%
 }%
 
@@ -227,9 +227,9 @@ $if(title)$
 \begin{titlepage}
 \begin{center}
 
-\textsc{\Large $thesistype$}\\[6cm]
+\textsc{\Large $thesistype$}\\[6.2cm]
 
-  \placetextbox{0.355}{0.775}{
+  \placetextbox{0.3}{0.775}{
     {\LARGE \bfseries $title$}\\[0.4cm]
     {\LARGE \bfseries $titlejap$}\\[0.4cm]
     {\large \textit{A thesis submitted in fulfilment of the requirements}\\
@@ -249,9 +249,9 @@ $if(title)$
 \href{mailto:$supervisormail$}{\supname}\\
  \ \
 \end{flushright}
-\end{minipage}\\[4.5cm]
+\end{minipage}\\[5cm]
 
-  \includegraphics[width=.45\textwidth]{logo}\\[2cm]
+  \includegraphics[width=.45\textwidth]{logo}\\[1cm]
 
 \facname\\\deptname\\\univname\\[1cm]
 
