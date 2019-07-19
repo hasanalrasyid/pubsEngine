@@ -1,9 +1,11 @@
-- : not yet, r: running, v: DONE
+v : DONE, -: not yet, r: running
 
 - Save GAPS in eps as
   %Gaps:spinId:head1,last1,delta1,sum1:h2,l2,d2,s2#spinId2:h21,l21,d21,s2:...
 
-- make filter for feynmp, due to disability feynmp to run smoothly.
+- tampaknya feynmp perlu diberi fitur ukuran. soalnya tampak kegedean.
+
+v make filter for feynmp, due to disability feynmp to run smoothly.
   masa xelatex kudu dirun 2x? masa kudu ngerun mpost secara manual di luar?
   not good....
 
