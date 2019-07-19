@@ -42,28 +42,36 @@ doInclude (CodeBlock (_, classes, opts) mp)
                      `hashWithSalt` "_build"
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
-      let out = "Figures" </> mpHash <.> "eps"
+      let out = "Figures" </> mpHash
       let tex = unlines [ "\\documentclass{article}"
                         , "\\usepackage{amsmath}"
                         , "\\usepackage{feynmp-auto}"
                         , "\\begin{document}"
+                        , "\\pagestyle{empty}"
                         , "\\unitlength = 1mm"
                         , "\\begin{fmffile}{"++ mpHash ++ "}"
                         , mp
                         , "\\end{fmffile}"
                         , "\\end{document}"
                         ]
-      isCompiled <- doesFileExist out
+      isCompiled <- doesFileExist $ out <.> "pdf"
       if isCompiled then return ()
                     else inDir ("_build" </> mpHash) $
                             \f -> do
                                     _ <- readProcess "xelatex" [] tex
                                     _ <- readProcess "mpost" [f] []
-                                    _ <- readProcess "mv" [ f <.> "1"
-                                                          , ".." </> out
+                                    _ <- readProcess "xelatex" [] tex
+                                    _ <- readProcess "pdfcrop" ["texput.pdf"] []
+                                    _ <- readProcess "mv" [ "texput-crop.pdf"
+                                                          , ".." </> out <.> "pdf"
                                                           ] []
                                     return ()
-      return $ Div nullAttr $ [Para [Image nullAttr [Str $ fromMaybe "FenymanDiagram" caption] (out, "fig:")]]
+      return $ Div nullAttr
+                $ [Para
+                    [Image nullAttr
+                      [Str $ fromMaybe "FenymanDiagram" caption] (out, "fig:")
+                    ]
+                  ]
 
 doInclude x = return x
 
