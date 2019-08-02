@@ -44,6 +44,7 @@ dependencies:
 - template-haskell
 - hashable
 - haskell-src-exts-simple
+- random
 
 library:
   source-dirs: src
