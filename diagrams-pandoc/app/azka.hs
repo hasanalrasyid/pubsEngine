@@ -12,13 +12,10 @@ import System.Random
 import Data.List.Split
 import Data.List
 
-  {-
-     For optimization, we should expect several cell parameters needs to be optimized.
-     in this case, we may have 1 to 6 parameter of a,b,c,alpha,beta,gamma
-     with minimum variation on alpha,beta,gamma.
-     however, in generalized term, then we may construct optimization function:
-     (x1 - a)(x1 - b)(x2 - c)(x2 - d)(x3 - e)(x3 - f) ... - konst = 0
-     -}
+import System.Directory
+import System.FilePath
+import System.Process
+import Text.Pandoc.Include.Common.IO
 
 main :: IO ()
 main = do
@@ -44,3 +41,7 @@ main = do
                     , "\\end{document}"
                     ]
   putStrLn tex
+  inDir ("_build" </> "texput" ) $ \f -> do
+    _ <- readProcess "xelatex" [] tex
+    system_ $ unwords ["mv",f <.> "pdf", "azka.pdf"]
+

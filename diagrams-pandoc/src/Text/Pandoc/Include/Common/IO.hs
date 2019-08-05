@@ -2,19 +2,12 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Text.Pandoc.Include.Common where
+module Text.Pandoc.Include.Common.IO where
 
-import Text.Pandoc.Options
 import System.Process
 import System.Directory
 import System.FilePath
 import Control.Monad
-
-pandocExtSetting = [ Ext_tex_math_dollars
-                   , Ext_raw_tex
-                   , Ext_implicit_figures
-                   , Ext_table_captions
-                   ]
 
 withDir :: FilePath -> IO a -> IO a
 withDir path f = do
