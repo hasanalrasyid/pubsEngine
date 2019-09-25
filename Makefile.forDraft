@@ -5,6 +5,8 @@ define compile_it
 	ln -s -f ../Figures && \
 	ln -s -f ../localStyle.sty && \
 	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
+	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
 	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
 	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
 	ln -s -f ../pubsEngine/figs/logo.png && \
@@ -59,7 +61,7 @@ default:
 	$(eval TARGET_PDF = latex)
 	$(call gen_default,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),docx)
 abstract:
-	$(eval TEMPLATE_LATEX = pubsEngine/classAbstract/abstract.tex)
+	$(eval TEMPLATE_LATEX = classAbstract/abstract.tex)
 	$(eval TARGET_PDF = latex)
 	$(call compile_docx,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),docx)
 	$(call compile_it,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
