@@ -13,6 +13,16 @@ define compile_it
 	cd _build && bibtex draft && xelatex draft && xelatex draft
 endef
 
+define compile_docx
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.docx -s pubsEngine/$(3)
+endef
+
+define gen_default
+	mkdir -p _build
+	$(4) pandoc -o custom-reference.docx --print-default-data-file reference.docx
+endef
+
 define compile_zemi
 	mkdir -p _build
 	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
@@ -44,10 +54,19 @@ draft:
 	$(eval TEMPLATE_LATEX = draft.template.tex)
 	$(eval TARGET_PDF = latex)
 	$(call compile_it,$(target),${TEMPLATE_LATEX},hasan.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+default:
+	$(eval TEMPLATE_LATEX = ori.template.tex)
+	$(eval TARGET_PDF = latex)
+	$(call gen_default,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),docx)
+abstract:
+	$(eval TEMPLATE_LATEX = pubsEngine/classAbstract/abstract.tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_docx,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),docx)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 report:
 	$(eval TEMPLATE_LATEX = ori.template.tex)
 	$(eval TARGET_PDF = latex)
-	$(call compile_it,$(target),${TEMPLATE_LATEX},report.yaml)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 clean:
 	rm -rf _build
 thesis:
