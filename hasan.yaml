@@ -24,6 +24,7 @@ header-includes: |
   \usepackage{float}
   \usepackage{setspace}
   \floatplacement{figure}{H}
+  \usepackage[margin=1in]{geometry}
 include-before: |
   \doublespacing
   \input{hasanHyp}

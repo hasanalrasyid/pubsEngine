@@ -37,6 +37,4 @@ header-includes: |
   \floatplacement{figure}{H}
 include-before: |
   \input{hasanHyp}
-  \sisetup{table-format=-3.4}
-  \DeclareFieldFormat[article]{title}{\space}
 ---
