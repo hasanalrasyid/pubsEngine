@@ -4,3 +4,7 @@
 [submodule "diagrams-pandoc/extern/MultiMarkdown-6"]
 	path = diagrams-pandoc/extern/MultiMarkdown-6
 	url = https://github.com/fletcher/MultiMarkdown-6
+[submodule "pandoc"]
+	path = pandoc
+	url = https://github.com/jgm/pandoc
+	branch = master
