@@ -4,11 +4,27 @@ $if(colorlinks)$
 \PassOptionsToPackage{dvipsnames,svgnames*,x11names*}{xcolor}
 $endif$
 %
-\documentclass{aip-cp}
+\documentclass{article}
 
 \usepackage[numbers]{natbib}
 \usepackage{rotating}
 \usepackage{graphicx}
+
+\usepackage[margin=$margin$]{geometry}
+%\addtolength{\oddsidemargin}{-.875in}
+%\addtolength{\evensidemargin}{-.875in}
+%\addtolength{\textwidth}{1.75in}
+%\addtolength{\topmargin}{-.875in}
+%\addtolength{\textheight}{1.75in}
+
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{cslreferences}%
+  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
+  {\par}
+$endif$
 
 $for(header-includes)$
 $header-includes$
@@ -16,202 +32,43 @@ $endfor$
 
 % Document starts
 \begin{document}
+$for(include-before)$
+$include-before$
+$endfor$
+
 
 % Title portion
 $if(title)$
-\title{$title$}
+$title$
 $endif$
 
-$if(author)$
-$for(author)$\author[$for(author.aff)$aff$author.aff$$sep$,$endfor$]{$author.name$}$sep$
-$endfor$ %\author[aff1]{Author's Name\corref{cor1}}
-$endif$
-%\eaddress[url]{http://www.aip.org}
-%\author[aff2,aff3]{Author's Name}
-$if(email)$
-\corresp[cor1]{$email$}
-$endif$
-
-$if(affiliation)$
-$for(affiliation)$\affil[aff$affiliation.idx$]{$affiliation.aff$}$sep$
-$endfor$
-$endif$
 %\affil[aff1]{Replace this text with an author's affiliation (use complete addresses). Note the use of superscript ``a)'' to indicate the author's e-mail address below. Use b), c), etc. to indicate e-mail addresses for more than 1 author.}
 %\affil[aff2]{Additional affiliations should be indicated by superscript numbers 2, 3, etc. as shown above.}
 %\affil[aff3]{You would list an author's second affiliation here.}
 %\corresp[cor1]{Corresponding author: your@emailaddress.xxx}
 
-\maketitle
+$if(author)$
+$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$ $endfor$
+$endif$
 
-%\begin{abstract}
-%The AIP Proceedings article template has many predefined paragraph styles for you to use/apply as you write your paper. To format your abstract, use the \LaTeX template style: {\itshape Abstract.} Each paper must include an abstract. Begin the abstract with the word ``Abstract'' followed by a period in bold font, and then continue with a normal 9 point font.
-%\end{abstract}
-
-$for(include-before)$
-$include-before$
+$if(affiliation)$
+$for(affiliation)$
+$$^$affiliation.idx$$${\em $affiliation.aff$} \\
 $endfor$
+$endif$
+
+
+$if(email)$
+* E-mail: $email$
+$endif$
 
 $body$
 
-%-hasan-%% Head 1
-%-hasan-%\section{INTRODUCTION}
-%-hasan-%Do not abbreviate Figure, Equation, etc.; display items are always singular, i.e., Figure 1 and 2. Equations are always singular, i.e., Equation 1 and 2, and should be inserted using the Equation Editor, not as graphics, in the main text.  Display items and captions should be inserted after the reference section. Please do not use footnotes in the text, additional information can be added to the reference list.
-%-hasan-%
-%-hasan-%This is the paragraph spacing that occurs when you use the [ENTER] key.
-%-hasan-%
-%-hasan-%
-%-hasan-%\section{FIRST-ORDER HEADING}
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%
-%-hasan-%This is the paragraph spacing that occurs when you use the [ENTER] key.
-%-hasan-%
-%-hasan-%% Head 2
-%-hasan-%\subsection{Second-Order Heading}
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%This is an example of dummy text. This is an example of dummy text. This is an example of dummy text.
-%-hasan-%
-%-hasan-%
-%-hasan-%% Head 3
-%-hasan-%\subsubsection{Third-Order Heading}
-%-hasan-%Physical data should be quoted with decimal points and negative exponents
-%-hasan-%
-%-hasan-%% enumerate
-%-hasan-%\noindent Numbered lists may also be included and should look like this:
-%-hasan-%
-%-hasan-%\begin{enumerate}
-%-hasan-%\item This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing. This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing. This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing. This is an example of numbered listing.
-%-hasan-%\item This is an example of numbered listing.
-%-hasan-%\end{enumerate}
-%-hasan-%
-%-hasan-%\noindent Bulleted lists may be included and should look like this:
-%-hasan-%% itemize
-%-hasan-%
-%-hasan-%\begin{itemize}
-%-hasan-%\item This is an example of bulleted listing.
-%-hasan-%\item This is an example of bulleted listing. This is an example of bulleted listing.
-%-hasan-%\item This is an example of bulleted listing.
-%-hasan-%\item This is an example of bulleted listing. This is an example of bulleted listing.
-%-hasan-%\item This is an example of bulleted listing.
-%-hasan-%\end{itemize}
-%-hasan-%
-%-hasan-%\noindent This is an example of single line numbered equation.
-%-hasan-%\begin{equation}
-%-hasan-%\frac{d[F_1]}{d\omega_2} = SAm_2\cos\omega,\frac{d[F_1]}{d\omega_3}= SAm_2\cos\omega.
-%-hasan-%\end{equation}
-%-hasan-%
-%-hasan-%This is an example of a multiline numbered equation.
-%-hasan-%% Numbered multiple equation
-%-hasan-%\begin{eqnarray}
-%-hasan-%p_{t_{10,1}}&=&\left(\frac{N_{cu}^2}{ N_c ^2}\right)\left(\frac{N_{ar}^2}{N_a^2}\right)\left(\frac{N_{ar}-1}{N_{ar}}\right),\\
-%-hasan-%p_{t_{10,2}}&=&\left(\frac{N_{cu}^2}{ N_c ^2}\right)\left(\frac{N_{ar}}{N_a^2}\right).
-%-hasan-%\end{eqnarray}
-%-hasan-%% Unnumbered equation
-%-hasan-%%% \begin{eqnarray*}
-%-hasan-%%% {\rm ((Multi\ Equation\ Unnumbered))}\\
-%-hasan-%%% {\rm ((Multi\ Equation\ Unnumbered))}\\
-%-hasan-%%% {\rm ((Multi\ Equation\ Unnumbered))}
-%-hasan-%%% \end{eqnarray*}
-%-hasan-%%% this is an example of dummy text.
-%-hasan-%% Unnumbered equation
-%-hasan-%%% \[
-%-hasan-%%% {\rm ((Single\ Equation\ Unnumbered))}
-%-hasan-%%% \]
-%-hasan-%%% this is an example of dummy text.
-%-hasan-%For more on equations, please refer to the guide.
-%-hasan-%
-%-hasan-%\section{OTHER SPECIFICATIONS (FIRST LEVEL HEADING)}
-%-hasan-%Figures, tables, and equations must be inserted in the text and may not be grouped at the end of the paper. Important: A miscount of figures, tables, or equations may result from revisions. Please double check the numbering of these elements before you submit your paper to your proceedings editor.
-%-hasan-%
-%-hasan-%\subsection{Figures (Second Level Heading)}
-%-hasan-%If you need to arrange a number of figures, a good tip is to place them in a table, which gives you additional control of the layout. Leave a line space between your figure and any text above it, like this one:
-%-hasan-%
-%-hasan-%% Figure
-%-hasan-%\begin{figure}[h]
-%-hasan-%  \centerline{\includegraphics[width=150pt]{fig_1.eps}}
-%-hasan-%  \caption{To format a figure caption use the \LaTeX template style: Figure Caption. The text ``FIGURE 1,'' which labels the caption, should be bold and in upper case. If figures have more than one part, each part should be labeled (a), (b), etc. Using a table, as in the above example, helps you control the layout.}
-%-hasan-%\end{figure}
-%-hasan-%
-%-hasan-%\begin{sidewaysfigure}
-%-hasan-%  \centerline{\includegraphics[width=500pt]{fig_2.eps}}
-%-hasan-%  \caption{To format a figure caption use the \LaTeX template style: Figure Caption. The text ``FIGURE 2,'' which labels the caption, should be bold and in upper case. If figures have more than one part, each part should be labeled (a), (b), etc. Using a table, as in the above example, helps you control the layout.}
-%-hasan-%\end{sidewaysfigure}
-%-hasan-%
-%-hasan-%Cite all figures in the text consecutively. The word ``Figure'' should be spelled out if it is the first word of the sentence and abbreviated as ``Fig.'' elsewhere in the text. Place the figures as close as possible to their first mention in the text at the top or bottom of the page with the figure caption positioned below the figure, all centered. Figures must be inserted in the text and may not follow the Reference section. Set figure captions in 9 point size, Times Roman font. Type the word ``FIGURE 1.'' in bold uppercase, followed by a period.\footnote{This is an example of a footnote.}
-%-hasan-%
-%-hasan-%
-%-hasan-%Authors are welcome to use color figures within their article. For online publication, there are no costs added for color figures. However, for printed proceedings (if requested by your conference organizer), there is an additional cost. Please consult directly with your conference organizer. If your conference organizer has asked AIP Publishing to produce printed copies (many ask AIP Publishing for online-only publication), then all figures will be printed in black-and-white unless you make specific arrangements with your organizer(s) to include color figures in your article and pay to them the associated fee(s) they request. We advise that many color figures can be printed in black-and-white with no loss of information; however, some figures do lose information when reproduced in black-and-white. Check your figure legends carefully and, if your figures are to be printed in black-and-white, remove from your text/descriptions any references to color.
-%-hasan-%
-%-hasan-%
-%-hasan-%\subsection{Tables (Second Level Heading)}
-%-hasan-%Due to the wide range and complexity of tables, we simply offer an example for guidance. Please follow the style for Table \ref{tab:a} (and figure) captions.
-%-hasan-%
-%-hasan-%% Table
-%-hasan-%\begin{table}[h]
-%-hasan-%\caption{To format a table caption, use the \LaTeX template style: Table Caption. The text ``{\bf TABLE 1,}'' which labels the caption, should be bold and all letters capitalized. Center this text above the table. Tables should have top and bottom rules, and a rule separating the column heads from the rest of the table only.}
-%-hasan-%\label{tab:a}
-%-hasan-%\tabcolsep7pt\begin{tabular}{lcccc}
-%-hasan-%\hline
-%-hasan-%  & \tch{1}{c}{b}{Single\\ outlet}  & \tch{1}{c}{b}{Small\\ multiple\tabnoteref{t1n1}}  & \tch{1}{c}{b}{Large\\ multiple}  & \tch{1}{c}{b}{Total}   \\
-%-hasan-%\hline
-%-hasan-%1982 & 98 & 129 & 620    & 847\\
-%-hasan-%1987 & 138 & 176 & 1000  & 1314\\
-%-hasan-%1991 & 173 & 248 & 1230  & 1651\\
-%-hasan-%1998 & 200 & 300 & 1500\tabnoteref{t1n2}  & 2000\\
-%-hasan-%\hline
-%-hasan-%\end{tabular}
-%-hasan-%\tablenote[t1n1]{This is an example of first tablenote entry. This is an example of first tablenote entry.}
-%-hasan-%\tablenote[t1n2]{This is an example of second tablenote entry.}
-%-hasan-%\end{table}
-%-hasan-%
-%-hasan-%\subsection{Font Embedding (Second Level Heading)}
-%-hasan-%As the author and creator of your article PDF, you have the most intimate knowledge of exactly what the PDF should display. We ask all authors to carefully check their article PDF prior to submission. Perform visual inspections to detect subtle font errors and ensure that all fonts are embedded. With the wide range of tools and software that authors use to create PDFs, and the number of devices and platforms that readers use to view/print them, font embedding by authors is not only ``nice-to-have'', it is essential.
-%-hasan-%
-%-hasan-%\subsubsection{Why Should I Care About Font Embedding? (Third Level Heading)}
-%-hasan-%Embedding fonts into your PDF file is critically important for two reasons:
-%-hasan-%\begin{itemize}
-%-hasan-%\item Commercial printing companies are unable to print PDFs without the correct fonts embedded.
-%-hasan-%\item To ensure that your online article PDF file displays and prints correctly for everyone who wants to read your work.
-%-hasan-%\end{itemize}
-%-hasan-%
-%-hasan-%Readers of scientific articles use an ever-increasing range of devices and applications to access, view, and print PDFs  from smart phones and tablets to desktop computers running any one of a number of operating systems. To ensure that readers of  your article can display and print it correctly, it is important for your article's PDF file to be truly portable. Your PDF file needs to be fully ``self-contained.''%\vfill\pagebreak
-%-hasan-%
-%-hasan-%\section{FINAL KEY POINTS TO CONSIDER (FIRST LEVEL HEADING)}
-%-hasan-%Here are the main points you need to follow (the AIP Publishing author template packages contain comprehensive guidance):
-%-hasan-%
-%-hasan-%\begin{itemize}
-%-hasan-%\item Write and prepare your article using the AIP Publishing template.
-%-hasan-%\item Create a PDF file of your paper (making sure to embed all fonts).
-%-hasan-%\item Send the following items to your conference organizer:
-%-hasan-%\begin{itemize}
-%-hasan-%\item PDF file of your paper
-%-hasan-%\item Signed Copyright Transfer Agreement
-%-hasan-%\item (If it applies) Copies of any permissions to re-use copyrighted materials in your article (e.g., figures from books/journals)
-%-hasan-%\end{itemize}
-%-hasan-%\end{itemize}
-%-hasan-%
-%-hasan-%
-%-hasan-%
-%-hasan-%% Sections that will go in second font
-%-hasan-%
-%-hasan-%% Acknowledgement
-%-hasan-%\section{ACKNOWLEDGMENTS}
-%-hasan-%The reference section will follow the ``Acknowledgment'' section.  References should be numbered using Arabic numerals followed by a period (.) as shown below, and should follow the format in the below examples.
-%-hasan-%
-% References
-
-$if(bibliography)$
-\nocite{*}
-\bibliographystyle{aipnum-cp}%
-\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
-$endif$
+%$if(bibliography)$
+%\nocite{*}
+%\bibliographystyle{aipnum-cp}%
+%\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
+%$endif$
 
 
 \end{document}

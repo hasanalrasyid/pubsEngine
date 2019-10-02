@@ -9,6 +9,7 @@ babel-lang: english
 polyglossia-lang:
   name: english
   options: variant=uk
+margin: 1in
 biblatex: true
 biblio-style: |
             numeric,
@@ -21,9 +22,11 @@ biblio-style: |
             maxbibnames=2,
             block=none
 bibliography: draft.bib
+csl: pubsEngine/classAbstract/physical-review-a.csl
 biblio-title: Reference
 papersize: a4
 header-includes: |
+  \usepackage{hyperref}
   \usepackage{chemfig}
   \usepackage[version=4]{mhchem}
   \mhchemoptions{layout=stacked}

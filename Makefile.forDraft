@@ -15,9 +15,26 @@ define compile_it
 	cd _build && bibtex draft && xelatex draft && xelatex draft
 endef
 
+define compile_abs
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis -F pandoc-citeproc --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+endef
+#	cd _build && \
+#	ln -s -f ../Figures && \
+#	ln -s -f ../localStyle.sty && \
+#	ln -s -f ../pubsEngine/hasanCustom.sty && \
+#	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
+#	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
+#	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
+#	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+#	ln -s -f ../pubsEngine/figs/logo.png && \
+#	ln -s -f ../pubsEngine/hasanHyp.tex && \
+#	xelatex draft.tex
+#	cd _build && bibtex draft && xelatex draft && xelatex draft
+
 define compile_docx
 	mkdir -p _build
-	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.docx -s pubsEngine/$(3)
+	cd _build && pandoc -o draft.docx draft.tex
 endef
 
 define gen_default
@@ -63,8 +80,8 @@ default:
 abstract:
 	$(eval TEMPLATE_LATEX = classAbstract/abstract.tex)
 	$(eval TARGET_PDF = latex)
+	$(call compile_abs,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 	$(call compile_docx,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),docx)
-	$(call compile_it,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 report:
 	$(eval TEMPLATE_LATEX = ori.template.tex)
 	$(eval TARGET_PDF = latex)
