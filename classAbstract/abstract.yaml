@@ -9,7 +9,7 @@ babel-lang: english
 polyglossia-lang:
   name: english
   options: variant=uk
-margin: 1in
+margin: top=1in,bottom=1.25in,left=1.25in,right=1.25in
 biblatex: true
 biblio-style: |
             numeric,
@@ -39,5 +39,6 @@ header-includes: |
   \usepackage{setspace}
   \floatplacement{figure}{H}
 include-before: |
+  \pagestyle{empty}
   \input{hasanHyp}
 ---
