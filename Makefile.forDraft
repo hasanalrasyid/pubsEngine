@@ -15,6 +15,19 @@ define compile_it
 	cd _build && bibtex draft && xelatex draft && xelatex draft
 endef
 
+define compile_poster
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis -F pandoc-citeproc --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	cd _build && \
+	ln -s -f ../Figures && \
+	ln -s -f ../localStyle.sty && \
+	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/figs/logo.png && \
+	ln -s -f ../pubsEngine/hasanHyp.tex && \
+	ln -s -f ../pubsEngine/class/poster/* . && \
+	xelatex draft.tex
+endef
+
 define compile_abs
 	mkdir -p _build
 	$(4) pandoc -t $(5) -F thesis -F pandoc-citeproc --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
@@ -76,6 +89,11 @@ default:
 	$(eval TEMPLATE_LATEX = ori.template.tex)
 	$(eval TARGET_PDF = latex)
 	$(call gen_default,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),docx)
+poster:
+	$(eval TARGET = poster)
+	$(eval TEMPLATE_LATEX = class/$(TARGET)/$(TARGET).tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_poster,$(target),${TEMPLATE_LATEX},class/$(TARGET)/$(TARGET).yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 abstract:
 	$(eval TEMPLATE_LATEX = classAbstract/abstract.tex)
 	$(eval TARGET_PDF = latex)

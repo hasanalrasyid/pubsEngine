@@ -1,0 +1,161 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-PDF-mode: t
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode$for(hyperrefoptions)$,$hyperrefoptions$$endfor$}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+$if(colorlinks)$
+\PassOptionsToPackage{dvipsnames,svgnames*,x11names*}{xcolor}
+$endif$
+$if(dir)$
+$if(latex-dir-rtl)$
+\PassOptionsToPackage{RTLdocument}{bidi}
+$endif$
+$endif$
+%
+\documentclass[final]{beamer}
+
+\usepackage[numbers]{natbib}
+\usepackage{rotating}
+\usepackage{graphicx}
+
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{cslreferences}%
+  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
+  {\par}
+$endif$
+% you can chose your theme here:
+\usetheme{I6dv}
+\usefonttheme{professionalfonts} % using non standard fonts for beamer
+\usefonttheme{serif} % default family is serif
+%\usepackage{fontspec}
+%\setmainfont{"Liberation Serif"}
+% further beamerposter themes are available at
+% http://www-i6.informatik.rwth-aachen.de/~dreuw/latexbeamerposter.php
+ \usepackage{type1cm}
+ \usepackage{calc}
+ \usepackage{times}
+ \usepackage{amsmath,amsthm, amssymb, latexsym}
+\usepackage{tikz}
+\usepackage{tikz-bpmn}
+\usetikzlibrary{positioning}
+\usepackage[utf8]{inputenc} %or: \usepackage[latin1]{inputenc}
+ \boldmath
+ \usepackage[english]{babel}
+ \usepackage[orientation=portrait,size=a0,scale=1.5]{beamerposter}
+\usepackage{gensymb}
+\setbeamersize{text margin left=18mm}
+\setbeamersize{text margin right=18mm}
+\usepackage{hasanCustom}
+
+% Title portion
+$if(title)$
+\title{$title$}
+$endif$
+%--%\title{First-Principles Study on \\Electronic and Magnetic Structures \\of Nickel Cobaltite spinel: \Large{DFT and QSGW methods}}
+
+
+$if(author)$
+\author{ $for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$ $endfor$}
+$endif$
+
+\institute{
+$if(affiliation)$
+$for(affiliation)$
+$$^$affiliation.idx$$$$affiliation.aff$ \\
+$endfor$
+$endif$
+$if(email)$
+\textit{ E-mail address: $email$}
+$endif$
+
+}
+
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+
+\setbeamertemplate{footline}{
+	\begin{beamercolorbox}[wd=\paperwidth]{upper separation line foot}
+		\rule{0pt}{2pt}
+	\end{beamercolorbox}
+
+ \begin{beamercolorbox}{footline}%
+	 \vskip 0.7em
+	 \begin{columns}[t]
+		 \begin{column}{0.025\linewidth}
+		 \end{column}
+		 \begin{column}{0.19\linewidth}
+			 \center		 \includegraphics[height=8em]{$logo$}
+		 \end{column}
+		 \begin{column}{0.025\linewidth}
+		 \end{column}
+
+	 \end{columns}
+	 \vskip 1.2em
+ \end{beamercolorbox}
+}
+
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+% Document starts
+\begin{document}
+$for(include-before)$
+$include-before$
+$endfor$
+
+$body$
+
+\begin{frame}{}
+  \vskip -0.5em
+   \begin{columns}[t,onlytextwidth]
+     \begin{column}{0.485\textwidth}
+
+       \begin{block}{Introduction}
+         \input{"isi/intro"}
+       \end{block} \vskip 0.5em
+       \vskip 0.5em
+       \begin{block}{Theoretical Background}
+         \input{isi/theory}
+       \end{block}
+
+       \begin{block}{Computational System}
+         \input{isi/system}
+       \end{block}
+       \begin{block}{Reference}
+         \input{isi/refs}
+       \end{block}
+     \end{column} \hskip 0.015\textwidth
+     % \begin{column}{0.04\textwidth}
+     % \end{column}
+     \begin{column}{0.485\textwidth} %sebelah======================================
+       \begin{block}{Magnetic Moments}
+         \input{isi/mmom}
+       \end{block}
+       \begin{block}{DOS}
+         \input{isi/dos}
+       \end{block}
+       \begin{block}{Charge Density of \nicobaltite\ inverse type B}
+         \input{isi/chargedensnico}
+       \end{block}
+       \begin{block}{Spin Density of \nicobaltite\ inverse type B}
+         \input{isi/spindensnico}
+       \end{block}
+       \begin{block}{Conclusions}
+         \input{isi/conclusion}
+       \end{block}
+       \begin{block}{Future Research}
+         \input{isi/next}
+       \end{block}
+     \end{column}
+   \end{columns}
+
+\end{frame}
+\end{document}
+
