@@ -45,6 +45,8 @@ dependencies:
 - hashable
 - haskell-src-exts-simple
 - random
+- aeson
+- cryptonite
 
 library:
   source-dirs: src

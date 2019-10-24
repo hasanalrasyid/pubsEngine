@@ -9,7 +9,6 @@ import qualified Text.Pandoc.Include.MultiMarkdown as IMM
 import qualified Text.Pandoc.Include.Diagrams as ID
 import qualified Text.Pandoc.Include.Delegate as IDel
 import qualified Text.Pandoc.Include.FeynMP as IF
-import qualified Text.Pandoc.Mermaid.Filter as M
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 
@@ -27,7 +26,7 @@ doThemAll (Pandoc mt blks) = do
   p <- doPandoc (Pandoc mt blks'')
   return p
 
-doPandoc p = doCrossRef =<< ID.addPackagePGF =<< M.processMermaid =<< IH.linkTex p
+doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
 
 doCrossRef p@(Pandoc meta blocks) = do
   b <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks blocks
