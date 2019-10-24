@@ -41,13 +41,27 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
   | "delegate" `elem` classes = IDel.doInclude cb
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
-  | "note" `elem` classes = genEnv "\\note{" "}" t
+  | "note" `elem` classes = genEnv t  "}" "\\note{"
+  | "postbegin" `elem` classes =
+    genEnv t "" $
+      "\\begin{columns}[t,onlytextwidth] \\begin{column}{0.485\\textwidth}"
+  | "postend" `elem` classes =
+    genEnv t "" $
+      "\\end{column} \\end{columns}"
+  | "postseparate" `elem` classes =
+    genEnv t "\\begin{column}{0.485\\textwidth}"
+             "\\end{column}\\hskip 0.015\\textwidth"
+  | "postblock" `elem` classes =
+    genEnv t "\\end{block}" $
+      ("\\begin{block}{" ++
+        (fromMaybe "" $ lookup "caption" namevals) ++
+        "}")
   | "textblock" `elem` classes = do
     let oWidth = fromMaybe "100pt"     $ lookup "w" namevals
     let oLoc   = fromMaybe "10pt,10pt" $ lookup "pos" namevals
-    genEnv (concat["\\begin{textblock*}{", oWidth,"}",oLoc,""]) "\\end{textblock*}" t
+    genEnv t "\\end{textblock*}" $ concat["\\begin{textblock*}{", oWidth,"}",oLoc,""]
   where
-    genEnv st en tx = do
+    genEnv tx en st = do
       tx' <- IM.genPandoc tx
       return $ Div nullAttr $ concat [ [ RawBlock (Format "latex") st ]
                                      , tx'
@@ -55,6 +69,8 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
                                      ]
 
 doBlock x = return x
+
+data NLine = SingleLine | MultiLine
 
 main :: IO ()
 main = do

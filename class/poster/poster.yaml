@@ -26,20 +26,9 @@ csl: pubsEngine/class/common/physical-review-a.csl
 biblio-title: Reference
 papersize: a4
 header-includes: |
-  \usepackage{hyperref}
-  \usepackage{chemfig}
-  \usepackage[version=4]{mhchem}
-  \mhchemoptions{layout=stacked}
-  \usepackage{longtable}
-  \usepackage{siunitx}
   \usepackage{hasanCustom}
-  \usepackage{booktabs}
   \usepackage{localStyle}
-  \usepackage{float}
-  \usepackage{setspace}
-  \floatplacement{figure}{H}
 include-before: |
-  \pagestyle{empty}
   \input{hasanHyp}
 logo: logoKU
 ---
