@@ -26,6 +26,7 @@ csl: pubsEngine/class/common/physical-review-a.csl
 biblio-title: Reference
 papersize: a4
 header-includes: |
+  \usepackage{longtable,booktabs}
   \usepackage{hasanCustom}
   \usepackage{localStyle}
 include-before: |
