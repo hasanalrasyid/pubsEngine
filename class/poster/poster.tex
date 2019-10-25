@@ -46,7 +46,7 @@
 \usepackage[utf8]{inputenc} %or: \usepackage[latin1]{inputenc}
  \boldmath
  \usepackage[english]{babel}
- \usepackage[orientation=portrait,size=a0,scale=1.5]{beamerposter}
+ \usepackage[orientation=portrait,size=a0,scale=0.9]{beamerposter}
 \usepackage{gensymb}
 \setbeamersize{text margin left=18mm}
 \setbeamersize{text margin right=18mm}
@@ -83,7 +83,12 @@ $endif$$if(email)$\textit{ E-mail address: $email$}$endif$}
      \begin{column}{0.025\linewidth}
      \end{column}
      \begin{column}{0.19\linewidth}
-       \center  \includegraphics[height=8em]{$logo$}
+       \center
+       $if(logo)$
+        $for(logo)$
+       \includegraphics[height=8em]{$logo$}
+       $endfor$
+       $endif$
      \end{column}
      \begin{column}{0.025\linewidth}
      \end{column}
