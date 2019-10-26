@@ -55,9 +55,9 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
     genEnv t "" "\\end{block}"
   | "postblockbegin" `elem` classes =
     genEnv t "" $
-      "\\begin{block}{" ++
+      "\\begin{block}{\\protect\\textbf{" ++
       (fromMaybe "" $ lookup "caption" namevals) ++
-      "}"
+      "}}\n\\justify"
   | "textblock" `elem` classes = do
     let oWidth = fromMaybe "100pt"     $ lookup "w" namevals
     let oLoc   = fromMaybe "10pt,10pt" $ lookup "pos" namevals

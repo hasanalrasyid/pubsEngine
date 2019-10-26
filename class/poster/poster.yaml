@@ -27,6 +27,7 @@ biblio-title: Reference
 papersize: a4
 header-includes: |
   \usepackage{longtable,booktabs}
+  \usepackage[export]{adjustbox}
   \usepackage{hasanCustom}
   \usepackage{localStyle}
 include-before: |

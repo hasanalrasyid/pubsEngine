@@ -17,9 +17,10 @@
 \documentclass[final]{beamer}
 \usetheme{I6dv}
 \usefonttheme{professionalfonts} % using non standard fonts for beamer
-\usefonttheme{serif} % default family is serif
+%\usefonttheme{serif}
+%\usefonttheme[serif]{structurebold}% default family is serif
 %\usepackage{fontspec}
-%\setmainfont{"Liberation Serif"}
+%\setmainfont{"Apercu Bold"}
 % further beamerposter themes are available at
 % http://www-i6.informatik.rwth-aachen.de/~dreuw/latexbeamerposter.php
  \usepackage{type1cm}
@@ -90,7 +91,7 @@ $endif$$if(email)$\textit{ E-mail address: $email$}$endif$}
        \center
        $if(logo)$
         $for(logo)$
-       \includegraphics[height=8em]{$logo$}
+       \includegraphics[height=6em]{$logo$}
        $endfor$
        $endif$
      \end{column}
@@ -102,6 +103,7 @@ $endif$$if(email)$\textit{ E-mail address: $email$}$endif$}
  \end{beamercolorbox}
 }
 
+\usepackage{ragged2e}
 
 % Document starts
 \begin{document}
@@ -110,8 +112,9 @@ $for(include-before)$
 $include-before$
 $endfor$
 
+\justify
 
-\begin{frame}{}
+\begin{frame}[t]{}
   \vskip -0.5em
 
   $body$
