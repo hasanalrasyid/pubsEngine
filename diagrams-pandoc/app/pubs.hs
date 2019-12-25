@@ -24,19 +24,27 @@ import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
+import qualified Template.Poster as P
+import qualified Template.Abstract as A
+import qualified Template.Thesis as Thesis
+import qualified Template.Report as R
+
 main :: IO ()
 main = do
-  (mdF:_) <- getArgs
+  (mdF:format:_) <- getArgs
   mdFile <- TIO.readFile mdF
   doc <- runIO $ readMarkdown def mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
              Right p -> doThemAll p
-  result <- runIO $ writeLaTeX settingLatex newDoc
+  result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
   rst <- handleError result
   TIO.putStrLn rst
   where
-   settingLatex = def{writerTemplate = Just "This is a template $body$ end template"}
+   setTemplate "poster" = P.templateLatex
+   setTemplate "abstract" = A.templateLatex
+   setTemplate "Thesis" = Thesis.templateLatex
+   setTemplate _ = R.templateLatex
 
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
