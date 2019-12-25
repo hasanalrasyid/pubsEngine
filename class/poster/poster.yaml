@@ -32,5 +32,4 @@ header-includes: |
   \usepackage{localStyle}
 include-before: |
   \input{hasanHyp}
-logo: logoKU
 ---
