@@ -1,6 +1,8 @@
 #!/usr/bin/env stack
 --stack --resolver lts-11.9  --install-ghc runghc --package diagrams-pandoc --stack-yaml /home/aku/kanazawa/report/pubsEngine/diagrams-pandoc/stack.yaml
 
+{-# LANGUAGE OverloadedStrings #-}
+
 import qualified Text.Pandoc.Include.Table as IT
 import qualified Text.Pandoc.Include.Thesis as IH
 import qualified Text.Pandoc.Include.CrossRef as IC
@@ -29,14 +31,21 @@ import qualified Template.Abstract as A
 import qualified Template.Thesis as Thesis
 import qualified Template.Report as R
 
+import Text.Pandoc.Include.Common
+import qualified Data.Map as M
+
 main :: IO ()
 main = do
   (mdF:format:_) <- getArgs
   mdFile <- TIO.readFile mdF
-  doc <- runIO $ readMarkdown def mdFile
+  d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Thesis.templateYaml
+  let defaultMeta = case d of
+                      Left err -> error "error on meta"
+                      Right (Pandoc m _) -> m
+  doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
-             Right p -> doThemAll p
+             Right p -> doThemAll $ updateMeta defaultMeta p
   result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
   rst <- handleError result
   TIO.putStrLn rst
@@ -45,6 +54,16 @@ main = do
    setTemplate "abstract" = A.templateLatex
    setTemplate "Thesis" = Thesis.templateLatex
    setTemplate _ = R.templateLatex
+
+updateMeta (Meta mt0) (Pandoc (Meta mt) blks) =
+  let mt' = M.mapWithKey (updateMeta' mt) mt0
+   in Pandoc (Meta mt') blks
+
+updateMeta' mt key x = case M.lookup key mt of
+                         Nothing -> x
+                         Just (MetaBlocks a) -> let (MetaBlocks xx) = x
+                                                 in MetaBlocks $ xx ++ a
+                         Just a -> a
 
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
