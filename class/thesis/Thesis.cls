@@ -1,448 +1,544 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Thesis LaTeX Template - THESIS CLASS FILE
+% Masters/Doctoral Thesis 
+% Class File
+% Version 1.6 (27/8/17)
 %
-% This template has been downloaded from:
-% http://www.latextemplates.com
+% This class was downloaded from:
+% http://www.LaTeXTemplates.com
 %
-% This class file defines the structure and design of the template. 
+% Authors:
+% Vel (vel@latextemplates.com)
+% Johannes Böttcher
 %
-% There is one part of this file that needs to be filled out - the variables
-% dictating the document particulars such as the author name, university
-% name, etc. You will find these in the commented "DOCUMENT VARIABLES"
-% section below.
+% Notes:
+% 1) This class file defines the structure and layout of the template file (main.tex).
+% 2) It has been written in such a way that under most circumstances you should not need
+% to edit it; updating it to a newer version will be harder. If you do make changes, please change the name of
+% the file and add comments to make your changes more visible.
 %
-% The other two easily-editable sections are the margin sizes and abstract.
-% These have both been commented for easy editing. Advanced LaTeX
-% users will have no trouble editing the rest of the document to their liking.
-%
-% Original header:
-%% This is file `Thesis.cls', based on 'ECSthesis.cls', by Steve R. Gunn
-%% generated with the docstrip utility.
-%%
-%% Created by Steve R. Gunn, modified by Sunil Patel: www.sunilpatel.co.uk
-%% Further modified by www.latextemplates.com
+% Class license:
+% LPPL v1.3c (http://www.latex-project.org/lppl)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%----------------------------------------------------------------------------------------
+%	CLASS DEFINITION AND PARAMETERS
+%----------------------------------------------------------------------------------------
+
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-\ProvidesClass{Thesis}
-              [2007/22/02 v1.0
-   LaTeX document class]
-\def\baseclass{book}
+\newcommand{\classname}{MastersDoctoralThesis}
+\ProvidesClass{\classname}[2017/08/27 v1.6 LaTeXTemplates.com]
+\providecommand{\baseclass}{book}
+\RequirePackage{etoolbox}
+\RequirePackage{xparse}
+\newbool{nolistspace}
+\newbool{chapteroneline}
+\newbool{listtoc}
+\newbool{toctoc}
+\newbool{parskip}
+\newbool{hyperrefsupport}
+\booltrue{hyperrefsupport}
+\newbool{headsepline}
+\newbool{consistentlayout}
+
+\DeclareOption{nohyperref}{\boolfalse{hyperrefsupport}}
+\DeclareOption{nolistspacing}{\booltrue{nolistspace}}
+\DeclareOption{liststotoc}{\booltrue{listtoc}}
+\DeclareOption{chapterinoneline}{\booltrue{chapteroneline}}
+\DeclareOption{toctotoc}{\booltrue{toctoc}}
+\DeclareOption{parskip}{\booltrue{parskip}}
+\DeclareOption{headsepline}{\booltrue{headsepline}}
+\DeclareOption{consistentlayout}{\booltrue{consistentlayout}}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{\baseclass}}
-\def\@checkoptions#1#2{
-  \edef\@curroptions{\@ptionlist{\@currname.\@currext}}
-  \@tempswafalse
-  \@tfor\@this:=#2\do{
-    \@expandtwoargs\in@{,\@this,}{,\@curroptions,}
-    \ifin@ \@tempswatrue \@break@tfor \fi}
-  \let\@this\@empty
-  \if@tempswa \else \PassOptionsToClass{#1}{\baseclass}\fi
-}
-\@checkoptions{11pt}{{10pt}{11pt}{12pt}}
-\PassOptionsToClass{a4paper}{\baseclass}
+
 \ProcessOptions\relax
-\LoadClass{\baseclass}
-\newcommand\bhrule{\typeout{------------------------------------------------------------------------------}}
 
-\newcommand\Declaration[1]{
-\btypeout{Declaration of Authorship}
-\addtotoc{Declaration of Authorship}
-\thispagestyle{plain}
-\null\vfil
-%\vskip 60\p@
-\begin{center}{\huge\bf Declaration of Authorship\par}\end{center}
-%\vskip 60\p@
-{\normalsize #1}
-\vfil\vfil\null
-%\cleardoublepage
+\LoadClass{\baseclass}
+
+%  Simple interface for the user  to customize the chapter titles 
+\ProvideDocumentCommand{\abovechapterskip}{}{\vspace*{20pt}}
+\ProvideDocumentCommand{\chapterbelowskip}{}{\vspace*{40pt}}
+\ProvideDocumentCommand{\chapterinbetweenskip}{}{\vspace*{20pt}}
+\ProvideDocumentCommand{\autodot}{}{}
+\ProvideDocumentCommand{\mdtChapapp}{}{}
+\ProvideDocumentCommand{\chapteralign}{}{\raggedright}
+\ProvideDocumentCommand{\chapterfont}{}{\Huge\bfseries}
+\ProvideDocumentCommand{\chapterprefixfont}{}{\LARGE\bfseries}
+\DeclareDocumentCommand{\@makechapterhead}{ m }{%
+	\abovechapterskip
+	{\parindent \z@ \chapteralign \normalfont
+		\ifnum \c@secnumdepth >\m@ne
+		\if@mainmatter
+		\ifbool{chapteroneline}{%
+			\chapterfont \mdtChapapp\thechapter\autodot\enspace
+		}{%
+			\chapterprefixfont \@chapapp\space \thechapter
+			\par\nobreak
+			\chapterinbetweenskip
+		}%
+		\fi
+		\fi
+		\interlinepenalty\@M%
+		\chapterfont #1\par\nobreak
+		\chapterbelowskip
+	}
+	\thispagestyle{\chapter@p@gestyle}
+}
+\def\@makeschapterhead#1{%
+	\abovechapterskip
+	{\parindent \z@ \chapteralign
+		\normalfont
+		\interlinepenalty\@M
+		\chapterfont  #1\par\nobreak
+		\chapterbelowskip
+	}
+	\thispagestyle{\chapter@p@gestyle}
 }
 
-\newcommand\btypeout[1]{\bhrule\typeout{\space #1}\bhrule}
-\def\today{\ifcase\month\or
-  January\or February\or March\or April\or May\or June\or
-  July\or August\or September\or October\or November\or December\fi
-  \space \number\year}
-\usepackage{setspace}
-\onehalfspacing
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{2.0ex plus0.5ex minus0.2ex}
-\usepackage{vmargin}
 
-\RequirePackage[utf8]{inputenc} % Allows the use of international characters (e.g. Umlauts)
+% Addchap provides unnumbered chapters with an entry in the table of contents as well as an updated header
+\ProvideDocumentCommand{\addchap}{ s o m }{%
+	\chapter*{#3}%
+	\markboth{}{}%
+	\IfBooleanTF{#1}{%
+	}{%
+		\IfNoValueTF{#2}{%
+			\addchaptertocentry{#3}%
+			\markboth{\MakeMarkcase{#3}}{\MakeMarkcase{#3}}%
+		}{%
+			\addchaptertocentry{#2}%
+			\markboth{\MakeMarkcase{#2}}{\MakeMarkcase{#2}}%
+		}%
+	}%
+}%
+
+\ProvideDocumentCommand{\addsec}{ s o m }{%
+	\section*{#3}%
+	\markright{}%
+	\IfBooleanTF{#1}{%
+	}{%
+		\IfNoValueTF{#2}{%
+			\addcontentsline{toc}{section}{#3}%
+			\markright{\MakeMarkcase{#3}}%%
+		}{%
+			\addcontentsline{toc}{section}{#2}%
+			\markright{\MakeMarkcase{#2}}%
+		}%
+	}%
+}%
+
+%----------------------------------------------------------------------------------------
+%	CLASS OPTIONS
+%----------------------------------------------------------------------------------------
+
+\ifbool{parskip}{\RequirePackage{parskip}} % If the parskip option is passed to the class, require the parskip package 
+
+
+\ifbool{listtoc}{% If the liststotoc option has been passed to the class, add the lists to the table of contents
+	\patchcmd{\listoftables}{\@starttoc{lot}}{%
+		\addchaptertocentry{\listtablename}\@starttoc{lot}%
+	}{}{}%
+	\patchcmd{\listoffigures}{\@starttoc{lof}}{%
+		\addchaptertocentry{\listfigurename}\@starttoc{lof}%
+	}{}{}%
+}
+
+\ifbool{toctoc}{% If the toctotoc options has been passed to the class, add the table of contents to the table of contents
+	\patchcmd{\tableofcontents}{\@starttoc{toc}%
+}{%
+	\addchaptertocentry{\contentsname}\@starttoc{toc}}{}{}%
+}
+
+\patchcmd{\tableofcontents}{\MakeUppercase}{\MakeMarkcase}{}{}
+\patchcmd{\tableofcontents}{\MakeUppercase}{\MakeMarkcase}{}{}
+\patchcmd{\listoffigures}{\MakeUppercase}{\MakeMarkcase}{}{}
+\patchcmd{\listoffigures}{\MakeUppercase}{\MakeMarkcase}{}{}
+\patchcmd{\listoftables}{\MakeUppercase}{\MakeMarkcase}{}{}
+\patchcmd{\listoftables}{\MakeUppercase}{\MakeMarkcase}{}{}
+
+% If the option `nolistspacing' is given, the spacing in the different lists is reduced to single spacing. This option is only useful, if the spacing of the document has been changed to onehalfspacing or doublespacing.
+\ifbool{nolistspace}{
+	\patchcmd{\listoffigures}{%
+		\@starttoc{lof}
+	}{%
+		\begingroup%
+		\singlespace\@starttoc{lof}\endgroup%
+	}{}{}%
+	\patchcmd{\listoftables}{%
+		\@starttoc{lot}
+	}{%
+		\begingroup%
+		\singlespace\@starttoc{lot}\endgroup%
+	}{}{}%
+	\patchcmd{\tableofcontents}{%
+		\@starttoc{toc}
+	}{%
+		\begingroup%
+		\singlespace\@starttoc{toc}\endgroup%
+	}{}{}%
+}{}
+
+
+%----------------------------------------------------------------------------------------
+%	REQUIRED PACKAGES
+%----------------------------------------------------------------------------------------
+
+\RequirePackage{babel} % Required for automatically changing names of document elements to languages besides english
+
+\RequirePackage{scrbase} % Required for handling language-dependent names of sections/document elements
+
+\RequirePackage{scrhack} % Loads fixes for various packages
+
+\RequirePackage{setspace} % Required for changing line spacing
+
+\RequirePackage{longtable} % Required for tables that span multiple pages (used in the symbols, abbreviations and physical constants pages)
+
+\RequirePackage{siunitx} % Required for \SI commands
+
+\RequirePackage{graphicx} % Required to include images
+\graphicspath{{Figures/}{./}} % Specifies where to look for included images
+
+\RequirePackage{booktabs} % Required for better table rules
+
+\RequirePackage{caption} % Required for customising the captions
+\captionsetup{justification=centerlast,font=small,labelfont=sc,margin=50pt}
+
+%----------------------------------------------------------------------------------------
+%	DEFINE CUSTOM THESIS INFORMATION COMMANDS
+%----------------------------------------------------------------------------------------
+
+\NewDocumentCommand{\thesistitle} { o m }{%
+ \IfValueTF{#1}{\def\shorttitle{#1}}{\def\shorttitle{#2}}%
+ \def\@title{#2}%
+ \def\ttitle{#2}%
+}
+\DeclareDocumentCommand{\author}{m}{\newcommand{\authorname}{#1}\renewcommand{\@author}{#1}}
+\NewDocumentCommand{\supervisor}{m}{\newcommand{\supname}{#1}}
+\NewDocumentCommand{\examiner}{m}{\newcommand{\examname}{#1}}
+\NewDocumentCommand{\degree}{m}{\newcommand{\degreename}{#1}}
+\NewDocumentCommand{\addresses}{m}{\newcommand{\addressname}{#1}}
+\NewDocumentCommand{\university}{m}{\newcommand{\univname}{#1}}
+\NewDocumentCommand{\department}{m}{\newcommand{\deptname}{#1}}
+\NewDocumentCommand{\group}{m}{\newcommand{\groupname}{#1}}
+\NewDocumentCommand{\faculty}{m}{\newcommand{\facname}{#1}}
+\NewDocumentCommand{\subject}{m}{\newcommand{\subjectname}{#1}}
+\NewDocumentCommand{\keywords}{m}{\newcommand{\keywordnames}{#1}}
+
+\newcommand{\checktoopen}{% New command to move content to the next page which prints to the next odd page if twosided mode is active  
+	\if@openright\cleardoublepage\else\clearpage\fi
+	\ifdef{\phantomsection}{\phantomsection}{}% The \phantomsection command is necessary for hyperref to jump to the correct page
+}
+
+\NewDocumentCommand{\bhrule}{}{\typeout{--------------------}}
+\NewDocumentCommand{\tttypeout}{m}{\bhrule\typeout{\space #1}\bhrule}
+
+\newcommand{\HRule}{\rule{.9\linewidth}{.6pt}} % New command to make the lines in the title page
+\newcommand{\decoRule}{\rule{.8\textwidth}{.4pt}} % New command for a rule to be used under figures
+
+\setcounter{tocdepth}{3} % The depth to which the document sections are printed to the table of contents
+\ProvideDocumentCommand{\addchaptertocentry}{ m }{%
+	\addcontentsline{toc}{chapter}{#1}%
+}
+
+%----------------------------------------------------------------------------------------
+%	COLOURS
+%----------------------------------------------------------------------------------------
+
+\usepackage{xcolor} % Required for specifying custom colours
+
+\colorlet{mdtRed}{red!50!black}
 
 %----------------------------------------------------------------------------------------
 %	MARGINS
 %----------------------------------------------------------------------------------------
-\setmarginsrb  { 1.5in}  % left margin
-                        { 0.6in}  % top margin
-                        { 1.0in}  % right margin
-                        { 0.8in}  % bottom margin
-                        {  20pt}  % head height
-                        {0.25in}  % head sep
-                        {   9pt}  % foot height
-                        { 0.3in}  % foot sep
-%----------------------------------------------------------------------------------------
+
+\RequirePackage{geometry}
+\geometry{
+	headheight=4ex,
+	includehead,
+	includefoot
+}
+
 \raggedbottom
-\setlength{\topskip}{1\topskip \@plus 5\p@}
-\doublehyphendemerits=10000       % No consecutive line hyphens.
-\brokenpenalty=10000              % No broken words across columns/pages.
-\widowpenalty=9999                % Almost no widows at bottom of page.
-\clubpenalty=9999                 % Almost no orphans at top of page.
-\interfootnotelinepenalty=9999    % Almost never break footnotes.
-\usepackage{fancyhdr}
-\lhead[\rm\thepage]{\fancyplain{}{\sl{\rightmark}}}
-\rhead[\fancyplain{}{\sl{\leftmark}}]{\rm\thepage}
-\chead{}\lfoot{}\rfoot{}\cfoot{}
-\pagestyle{fancy}
-\renewcommand{\chaptermark}[1]{\btypeout{\thechapter\space #1}\markboth{\@chapapp\ \thechapter\ #1}{\@chapapp\ \thechapter\ #1}}
-\renewcommand{\sectionmark}[1]{}
-\renewcommand{\subsectionmark}[1]{}
-\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
-\hbox{}
-\thispagestyle{empty}
-\newpage
-\if@twocolumn\hbox{}\newpage\fi\fi\fi}
-\usepackage{amsmath,amsfonts,amssymb,amscd,amsthm,xspace}
-\theoremstyle{plain}
-\newtheorem{example}{Example}[chapter]
-\newtheorem{theorem}{Theorem}[chapter]
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{axiom}[theorem]{Axiom}
-\theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-\usepackage[centerlast,small,sc]{caption}
-\setlength{\captionmargin}{20pt}
-\newcommand{\fref}[1]{Figure~\ref{#1}}
-\newcommand{\tref}[1]{Table~\ref{#1}}
-\newcommand{\eref}[1]{Equation~\ref{#1}}
-\newcommand{\cref}[1]{Chapter~\ref{#1}}
-\newcommand{\sref}[1]{Section~\ref{#1}}
-\newcommand{\aref}[1]{Appendix~\ref{#1}}
-\renewcommand{\topfraction}{0.85}
-\renewcommand{\bottomfraction}{.85}
-\renewcommand{\textfraction}{0.1}
-\renewcommand{\dbltopfraction}{.85}
-\renewcommand{\floatpagefraction}{0.75}
-\renewcommand{\dblfloatpagefraction}{.75}
-\setcounter{topnumber}{9}
-\setcounter{bottomnumber}{9}
-\setcounter{totalnumber}{20}
-\setcounter{dbltopnumber}{9}
-\usepackage{graphicx}
-\usepackage{epstopdf}
-\usepackage{booktabs}
-\usepackage{rotating}
-\usepackage{listings}
-\usepackage{lstpatch}
-\usepackage{xeCJK}
-\setCJKmainfont{MS Mincho}
-\setCJKsansfont{IPAexMincho}
-\setCJKmonofont{IPAGothic}
-\lstset{captionpos=b,
-        frame=tb,
-        basicstyle=\scriptsize\ttfamily,
-        showstringspaces=false,
-        keepspaces=true}
-\lstdefinestyle{matlab} {
-        language=Matlab,
-        keywordstyle=\color{blue},
-        commentstyle=\color[rgb]{0.13,0.55,0.13}\em,
-        stringstyle=\color[rgb]{0.7,0,0} }
-\usepackage[pdfpagemode={UseOutlines},bookmarks=true,bookmarksopen=true,
-   bookmarksopenlevel=0,bookmarksnumbered=true,hypertexnames=false,
-   colorlinks,linkcolor={blue},citecolor={blue},urlcolor={red},
-   pdfstartview={FitV},unicode,breaklinks=true]{hyperref}
-\pdfstringdefDisableCommands{
-   \let\\\space
-}
-\newcommand*{\supervisor}[1]{\def\supname{#1}}
-\newcommand*{\thesistitle}[1]{\def\ttitle{#1}}
-\newcommand*{\thesistitlejapanese}[1]{\def\ttitlejap{#1}}
-\newcommand*{\examiner}[1]{\def\examname{#1}}
-\newcommand*{\degree}[1]{\def\degreename{#1}}
-\newcommand*{\authors}[1]{\def\authornames{#1}}
-\newcommand*{\authorsid}[1]{\def\authoridnums{#1}}
-\newcommand*{\addresses}[1]{\def\addressnames{#1}}
-\newcommand*{\university}[1]{\def\univname{#1}}
-\newcommand*{\UNIVERSITY}[1]{\def\UNIVNAME{#1}}
-\newcommand*{\department}[1]{\def\deptname{#1}}
-\newcommand*{\DEPARTMENT}[1]{\def\DEPTNAME{#1}}
-\newcommand*{\group}[1]{\def\groupname{#1}}
-\newcommand*{\GROUP}[1]{\def\GROUPNAME{#1}}
-\newcommand*{\faculty}[1]{\def\facname{#1}}
-\newcommand*{\FACULTY}[1]{\def\FACNAME{#1}}
-\newcommand*{\subject}[1]{\def\subjectname{#1}}
-\newcommand*{\keywords}[1]{\def\keywordnames{#1}}
 
 %----------------------------------------------------------------------------------------
-%	DOCUMENT VARIABLES
-%	Fill in the lines below to update the thesis template
-%	If you wish to cite each of the variables defined below, look at the
-%	section above for the citation command e.g. \examiner{} below is
-%	defined as \examname above so you cite it as \examname
+%	PENALTIES
 %----------------------------------------------------------------------------------------
 
-\thesistitle{Development of classical molecular dynamics for magnetic oxygen systems} % Your thesis title - this is used in the title and abstract
-\thesistitlejapanese{\textsf{磁性酸素系に対する古典分子動力学の開発}} % Your thesis title in Japanese - this is used in the title and abstract
-%\thesistitlejapanese{\begin{CJK}{UTF8}{}磁性酸素系に対する古典分子動力学の開発\end{CJK}} % Your thesis title in Japanese - this is used in the title and abstract
-%\thesistitlejapanese{Thesis title in Japanese} % Your thesis title in Japanese - this is used in the title and abstract
-%-------------------------------------------------  
-\supervisor{Prof. Tatsuki Oda} % You supervisor's name - this is used in the title page
-%-------------------------------------------------   
-\examiner{} % Your examiner's name - this is not currently used anywhere in the template, cite it with \examname if you want it
-%-------------------------------------------------   
-\degree{Master of Science} % Your degree name - this is currently used in the title page and abstract
-%-------------------------------------------------   
-\authors{Dimas Praja Purwa Aji} % Your name - this is used in the title page and abstract
-\authorsid{1515011066}
-%-------------------------------------------------   
-\addresses{} % Your address - this is not currently used anywhere in the template, cite it with \addressnames if you want it
-%-------------------------------------------------   
-\subject{} % Your subject area - this is not currently used anywhere in the template, cite it with \subjectname if you want it
-%-------------------------------------------------   
-\keywords{} % Keywords for your thesis - this is not currently used anywhere in the template, cite it with \keywordnames if you want it
-%-------------------------------------------------   
-\university{\texorpdfstring{\href{http://www.kanazawa-u.ac.jp/e/} % Your university's URL
-                {Kanazawa University}} % Your university's name - this is currently used in the title page
-                {Kanazawa University}}
-%-------------------------------------------------   
-\UNIVERSITY{\texorpdfstring{\href{http://www.kanazawa-u.ac.jp/e/} % Your university's URL
-                {KANAZAWA UNIVERSITY}} % Your university's name in capitals - this is currently used in the abstract page
-                {KANAZAWA UNIVERSITY}}
-%-------------------------------------------------                
-\department{\texorpdfstring{\href{http://www.nst.kanazawa-u.ac.jp/eng/} % Your department's URL
-                {Graduate School of Natural Science and Technology}} % Your department's name - used in the title page and abstract
-                {Graduate School of Natural Science and Technology}}
-%-------------------------------------------------                
-\DEPARTMENT{\texorpdfstring{\href{http://www.nst.kanazawa-u.ac.jp/eng/} % Your department's URL
-                {GRADUATE SCHOOL OF NATURAL SCIENCE AND TECHNOLOGY}} % Your department's name in capitals - this is not currently used anywhere in the template, cite it with \DEPTNAME if you want it
-                {GRADUATE SCHOOL OF NATURAL SCIENCE AND TECHNOLOGY}}
-%-------------------------------------------------                
-\group{\texorpdfstring{\href{http://cphys.s.kanazawa-u.ac.jp/english/index.html} % Your research group's URL
-                {Theoretical and Computational Nanoscience}} % Your research group's name - this is currently used in the title page 
-                {Theoretical and Computational Nanoscience}}
-%-------------------------------------------------                
-\GROUP{\texorpdfstring{\href{http://cphys.s.kanazawa-u.ac.jp/english/index.html} % Your research group's URL
-                {THEORETICAL AND COMPUTATIONAL NANOSCIENCE}} % Your research group's name in capitals - this is not currently used anywhere in the template, cite it with \GROUPNAME if you want it
-                {THEORETICAL AND COMPUTATIONAL NANOSCIENCE}}
-%-------------------------------------------------                
-\faculty{\texorpdfstring{\href{http://www.nst.kanazawa-u.ac.jp/eng/master/01.html} % Your faculty's URL
-                {Division of Mathematical and Physical Science}} % Your faculty's name - this is currently used in the abstract page
-                {Division of Mathematical and Physical Science}}
-%-------------------------------------------------                
-\FACULTY{\texorpdfstring{\href{http://www.nst.kanazawa-u.ac.jp/eng/master/01.html} % Your faculty's URL
-                {DIVISION OF MATHEMATICAL AND PHYSICAL SCIENCE}} % Your faculty's name in capitals - this is not currently used anywhere in the template, cite it with \FACNAME if you want it
-                {DIVISION OF MATHEMATICAL AND PHYSICAL SCIENCE}}
-%----------------------------------------------------------------------------------------    
+\doublehyphendemerits=10000 % No consecutive line hyphens
+\brokenpenalty=10000 % No broken words across columns/pages
+\widowpenalty=9999 % Almost no widows at bottom of page
+\clubpenalty=9999 % Almost no orphans at top of page
+\interfootnotelinepenalty=9999 % Almost never break footnotes
 
-% The default title page, this is not used in this www.latextemplates.com version            
-\renewcommand\maketitle{
-  \btypeout{Title Page}
-  \hypersetup{pdftitle={\@title}}
-  \hypersetup{pdfsubject=\subjectname}
-  \hypersetup{pdfauthor=\authornames}
-  \hypersetup{pdfkeywords=\keywordnames}
-  \thispagestyle{empty}
-  \begin{titlepage}
-    \let\footnotesize\small
-    \let\footnoterule\relax
-    \let \footnote \thanks
-    \setcounter{footnote}{0}
-    \null\vfil
-    \vskip 60\p@
-    \begin{center}
-      \setlength{\parskip}{0pt}
-      {\large\textbf{\UNIVNAME}\par}
-      \vfill
-      {\huge \bf \@title \par}
-      \vfill
-      {\LARGE by \par}
-      \smallskip
-      {\LARGE \authornames \par}
-      \vfill
-      {\large A thesis submitted in partial fulfillment for the \par}
-      {\large degree of \degreename \par}
-      \bigskip
-      \bigskip
-      {\large in the \par}
-      {\large \facname \par}
-      {\large \deptname \par} 
-      \bigskip
-      \bigskip
-      \bigskip
-      {\Large \@date \par}
-      \bigskip
-    \end{center}
-    \par
-    \@thanks
-    \vfil\null
-  \end{titlepage}
-  \setcounter{footnote}{0}%
-  \global\let\thanks\relax
-  \global\let\maketitle\relax
-  \global\let\@thanks\@empty
-  \global\let\@author\@empty
-  \global\let\@date\@empty
-  \global\let\@title\@empty
-  \global\let\title\relax
-  \global\let\author\relax
-  \global\let\date\relax
-  \global\let\and\relax
-  \cleardoublepage
+%----------------------------------------------------------------------------------------
+%	HEADERS AND FOOTERS
+%----------------------------------------------------------------------------------------
+
+\RequirePackage[markcase=used]{scrlayer-scrpage}
+\providepairofpagestyles{thesisSimple}{%
+	\clearpairofpagestyles%
+	\automark[chapter]{chapter}
+	\ihead{\headmark}% Inner header
+	\ohead[\pagemark]{\pagemark}% Outer header
 }
+\ifoot{}% Inner footer
+\ofoot{}% Outer footer
+\pagestyle{thesisSimple}
+\providepairofpagestyles[thesisSimple]{thesis}{%
+	\automark*[section]{}%
+}
+\providepairofpagestyles[thesisSimple]{review}{%
+	\ofoot[\shorttitle/\authorname]{\shorttitle/\authorname}
+	\ifoot[\today]{\today}
+}
+\pagestyle{thesis}
+\ifbool{headsepline}{\KOMAoption{headsepline}{true}}{}
+\PreventPackageFromLoading[\ClassError{\classname}{Package `fancyhdr' is
+incompatible\MessageBreak with this class}{The pagesyles are defined 
+	using package `scrlayer-scrpage', please consult the\MessageBreak 
+KOMA-script documentation for details.}]{fancyhdr}
+
+
+\newcommand{\blank@p@gestyle}{empty}
+\newcommand{\chapter@p@gestyle}{plain}
+\NewDocumentCommand{\blankpagestyle}{ m }{%
+	\ClassWarning{\classname}{\string\blankpagestyle\space is
+	obsolete,\MessageBreak use \string\setblankpagestyle \space  instead}\renewcommand{\blank@p@gestyle}{}{#1}
+}
+\NewDocumentCommand{\setblankpagestyle}{ m }{\renewcommand{\blank@p@gestyle}{#1}}
+\NewDocumentCommand{\setchapterpagestyle}{ m }{\renewcommand{\chapter@p@gestyle}{#1}}
+
+\DeclareDocumentCommand\cleardoublepage{}{\clearpage\if@twoside \ifodd\c@page\else
+	\hbox{}
+	\thispagestyle{\blank@p@gestyle}
+	\newpage
+	\if@twocolumn\hbox{}\newpage\fi\fi\fi%
+}
+
+%----------------------------------------------------------------------------------------
+%	ABBREVIATIONS PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\newcommand{\abbrevname}{List of Abbreviations}
+\providecaptionname{english,british,american}{\abbrevname}{List of Abbreviations}
+\providecaptionname{ngerman,german,austrian,naustrian}{\abbrevname}{Abk\"urzungsverzeichnis}
+\NewDocumentEnvironment{abbreviations}{ m }{%
+	\ifbool{nolistspace}{\begingroup\singlespacing}{}
+	\ifbool{listtoc}{\addchap{\abbrevname}}{\addchap*{\abbrevname}}
+	\begin{longtable}{#1}
+	}{%
+	\end{longtable}
+	\addtocounter{table}{-1}% Don't count this table as one of the document tables
+	\ifbool{nolistspace}{\endgroup}{}
+}
+
 %----------------------------------------------------------------------------------------
 %	ABSTRACT PAGE DESIGN
 %----------------------------------------------------------------------------------------
-\newenvironment{abstract}
-{
-  \btypeout{Abstract Page}
-  \thispagestyle{empty}
-  \null\vfil
-  \begin{center}
-    \setlength{\parskip}{0pt}
-    {\normalsize \UNIVNAME \par} % University name in capitals
-    \bigskip
-    {\huge{\textit{Abstract}} \par}
-    \bigskip
-    {\normalsize \facname \par} % Faculty name
-    {\normalsize \deptname \par} % Department name
-    \bigskip
-    {\normalsize \degreename\par} % Degree name
-    \bigskip
-    {\normalsize\bf \@title \par} % Thesis title
-    \medskip
-    {\normalsize by \authornames \par} % Author name
-    \bigskip
-  \end{center}
-}
-%----------------------------------------------------------------------------------------
-{
-  \vfil\vfil\vfil\null
-  \cleardoublepage
-}
-\addtocounter{secnumdepth}{1}
-\setcounter{tocdepth}{6}
-\newcounter{dummy}
-\newcommand\addtotoc[1]{
-\refstepcounter{dummy}
-\addcontentsline{toc}{chapter}{#1}}
-\renewcommand\tableofcontents{
-\btypeout{Table of Contents}
-\addtotoc{Contents}
-\begin{spacing}{1}{
-    \setlength{\parskip}{1pt}
-    \if@twocolumn
-      \@restonecoltrue\onecolumn
-    \else
-      \@restonecolfalse
-    \fi
-    \chapter*{\contentsname
-        \@mkboth{
-           \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}
-    \@starttoc{toc}
-    \if@restonecol\twocolumn\fi
-   \cleardoublepage
-}\end{spacing}
-}
-\renewcommand\listoffigures{
-\btypeout{List of Figures}
-\addtotoc{List of Figures}
-\begin{spacing}{1}{
-    \setlength{\parskip}{1pt}
-    \if@twocolumn
-      \@restonecoltrue\onecolumn
-    \else
-      \@restonecolfalse
-    \fi
-    \chapter*{\listfigurename
-      \@mkboth{\MakeUppercase\listfigurename}
-              {\MakeUppercase\listfigurename}}
-    \@starttoc{lof}
-    \if@restonecol\twocolumn\fi
-    \cleardoublepage
-}\end{spacing}
-}
-\renewcommand\listoftables{
-\btypeout{List of Tables}
-\addtotoc{List of Tables}
-\begin{spacing}{1}{
-    \setlength{\parskip}{1pt}
-    \if@twocolumn
-      \@restonecoltrue\onecolumn
-    \else
-      \@restonecolfalse
-    \fi
-    \chapter*{\listtablename
-      \@mkboth{
-          \MakeUppercase\listtablename}{\MakeUppercase\listtablename}}
-    \@starttoc{lot}
-    \if@restonecol\twocolumn\fi
-    \cleardoublepage
-}\end{spacing}
-}
-\newcommand\listsymbolname{Abbreviations}
-\usepackage{longtable}
-\newcommand\listofsymbols[2]{
-\btypeout{\listsymbolname}
-\addtotoc{\listsymbolname}
-    \chapter*{\listsymbolname
-      \@mkboth{
-          \MakeUppercase\listsymbolname}{\MakeUppercase\listsymbolname}}
-\begin{longtable}[c]{#1}#2\end{longtable}\par
-    \cleardoublepage
-}
-\newcommand\listconstants{Physical Constants}
-\usepackage{longtable}
-\newcommand\listofconstants[2]{
-\btypeout{\listconstants}
-\addtotoc{\listconstants}
-    \chapter*{\listconstants
-      \@mkboth{
-          \MakeUppercase\listconstants}{\MakeUppercase\listconstants}}
-\begin{longtable}[c]{#1}#2\end{longtable}\par
-    \cleardoublepage
-}
-\newcommand\listnomenclature{Symbols}
-\usepackage{longtable}
-\newcommand\listofnomenclature[2]{
-\btypeout{\listnomenclature}
-\addtotoc{\listnomenclature}
-    \chapter*{\listnomenclature
-      \@mkboth{
-          \MakeUppercase\listnomenclature}{\MakeUppercase\listnomenclature}}
-\begin{longtable}[c]{#1}#2\end{longtable}\par
-    \cleardoublepage
-}
-\newcommand\acknowledgements[1]{
-\btypeout{Acknowledgements}
-\addtotoc{Acknowledgements}
-\thispagestyle{plain}
-\begin{center}{\huge{\textit{Acknowledgements}} \par}\end{center}
-{\normalsize #1}
-\vfil\vfil\null
 
+\DeclareDocumentCommand{\abstractauthorfont}{}{}
+\DeclareDocumentCommand{\abstracttitlefont}{}{}
+\newcommand{\byname}{by}
+\newcommand{\abstractname}{Abstract}
+\providecaptionname{german,ngerman,austrian,naustrian}{\byname}{von}
+\providecaptionname{american,australian,british,canadian,english,newzealand,UKenglish,USenglish}{\byname}{by}
+\ifbool{consistentlayout}{
+	\DeclareDocumentEnvironment{abstract}{ O{} }{%
+		\addchap*{\abstractname}%
+		{\chapteralign\normalsize\abstractauthorfont \authorname \par}% Author name
+		\vspace{\baselineskip}
+		{\chapteralign\parbox{.7\linewidth}{\chapteralign\normalsize\itshape\abstracttitlefont\@title}\par}% Thesis title
+		\bigskip\noindent\ignorespaces
+	}%
+	{}%end alt-abstract
+}{%
+	\DeclareDocumentEnvironment{abstract}{ O{\null\vfill} }{
+		\checktoopen
+		\tttypeout{\abstractname}
+		#1%added to be able to have abstract more than one page long
+		\thispagestyle{plain}
+		\begin{center}
+			{\normalsize \MakeUppercase{\univname} \par}% University name in capitals
+			\bigskip
+			{\huge\textit{\abstractname} \par}
+			\bigskip
+			{\normalsize \facname \par}% Faculty name
+			{\normalsize \deptname \par}% Department name
+			\bigskip
+			{\normalsize \degreename\par}% Degree name
+			\bigskip
+			{\normalsize\bfseries \@title \par}% Thesis title
+			\medskip
+			{\normalsize \byname{} \authorname \par}% Author name
+			\bigskip
+		\end{center}
+	}
+	{
+		\vfill\null
+	}
 }
-\newcommand\dedicatory[1]{
-\btypeout{Dedicatory}
-\thispagestyle{plain}
-\null\vfil
-\vskip 60\p@
-\begin{center}{\Large \sl #1}\end{center}
-\vfil\null
-\cleardoublepage
+
+\DeclareDocumentEnvironment{extraAbstract}{ O{\null\vfill} }{
+	\checktoopen
+	\tttypeout{\abstractname}
+	#1%added to be able to have abstract more than one page long
+	\thispagestyle{empty}
+	\begin{center}
+		{\normalsize \MakeUppercase{\univname} \par}% University name in capitals
+		\bigskip
+		{\huge\textit{\abstractname} \par}
+		\bigskip
+		{\normalsize \facname \par}% Faculty name
+		{\normalsize \deptname \par}% Department name
+		\bigskip
+		{\normalsize \degreename\par}% Degree name
+		\bigskip
+		{\normalsize\bfseries \@title \par}% Thesis title
+		\medskip
+		{\normalsize \byname{} \authorname \par}% Author name
+		\bigskip
+	\end{center}
 }
-\renewcommand\backmatter{
-  \if@openright
-    \cleardoublepage
-  \else
-    \clearpage
-  \fi
-  \addtotoc{\bibname}
-  \btypeout{\bibname}
-  \@mainmatterfalse}
+{
+	\vfill\null
+}
+
+%----------------------------------------------------------------------------------------
+%	ACKNOWLEDGEMENTS PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\usepackage{xcolor}
+\colorlet{mdtRed}{red!50!black}
+\newcommand{\acknowledgementname}{Acknowledgements}
+\providecaptionname{american,australian,british,canadian,english,newzealand,UKenglish,USenglish} {\acknowledgementname}{Acknowledgements} % Acknowledgement text for English countries
+\providecaptionname{german,ngerman,austrian,naustrian}{\acknowledgementname}{Danksagung} % Acknowledgement text for Germanic countries
+
+\ifbool{consistentlayout}{
+	\DeclareDocumentEnvironment{acknowledgements}{}{%
+		\tttypeout{\acknowledgementname}
+		\addchap*{\acknowledgementname}
+	}
+}
+{
+	\DeclareDocumentEnvironment{acknowledgements}{}{%
+		\checktoopen
+		\tttypeout{\acknowledgementname}
+		\thispagestyle{plain}
+		\begin{center}{\huge\textit{\acknowledgementname}\par}\end{center}
+	}
+	{
+		\vfil\vfil\null
+	}
+}
+
+%----------------------------------------------------------------------------------------
+%	DECLARATION PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\newcommand{\authorshipname}{Declaration of Authorship}
+\providecaptionname{american,australian,british,canadian,english,newzealand,UKenglish,USenglish}{\authorshipname}{Declaration of Authorship} % Declaration of Authorship text for English countries
+\providecaptionname{german,ngerman,austrian,naustrian}{\authorshipname}{Eidesstattliche Erkl\"arung} % Declaration of Authorship text for Germanic countries
+
+\ifbool{consistentlayout}{
+	\DeclareDocumentEnvironment{declaration}{}{
+		\addchap*{\authorshipname}
+		}{}%
+}{
+	\DeclareDocumentEnvironment{declaration}{}{
+		\checktoopen
+		\tttypeout{\authorshipname}
+		\thispagestyle{plain}
+		\null\vfil
+		{\noindent\huge\bfseries\authorshipname\par\vspace{10pt}}
+	}{}
+}
+
+%----------------------------------------------------------------------------------------
+%	DEDICATION PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\ifbool{consistentlayout}{
+	\DeclareDocumentCommand{\dedicatory}{
+		m O{\vspace*{.7\textheight} }  }{
+			\checktoopen\tttypeout{Dedicatory}
+			\markboth{}{}
+			#2
+			{\hfill\parbox{.4\textwidth}{\flushright#1\par}}
+		}
+}{
+	\newcommand\dedicatory[1]{
+		\checktoopen
+		\tttypeout{Dedicatory}
+		\null\vfil
+		\thispagestyle{plain}
+		\begin{center}{\Large\slshape #1}\end{center}
+		\vfil\null
+	}
+}
+
+
+%----------------------------------------------------------------------------------------
+%	PHYSICAL CONSTANTS PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\newcommand{\constantsname}{Physical Constants}
+\providecaptionname{english,british,american}{\constantsname}{Physical Constants}
+\providecaptionname{ngerman,german,austrian,naustrian}{\constantsname}{Physikalische Konstanten}
+
+\NewDocumentEnvironment{constants}{ m }{%
+	\ifbool{nolistspace}{\begingroup\singlespacing}{}
+	\ifbool{listtoc}{\addchap{\constantsname}}{\addchap*{\constantsname}}
+	\begin{longtable}{#1}
+	}{%
+	\end{longtable}
+	\addtocounter{table}{-1}% Don't count this table as one of the document tables
+	\ifbool{nolistspace}{\endgroup}{}
+}
+
+%----------------------------------------------------------------------------------------
+%	SYMBOLS PAGE DESIGN
+%----------------------------------------------------------------------------------------
+
+\newcommand{\symbolsname}{List of Symbols}
+\providecaptionname{english,british,american}{\symbolsname}{List of Symbols}
+\providecaptionname{ngerman,german,austrian,naustrian}{\symbolsname}{Symbolverzeichnis}
+
+\NewDocumentEnvironment{symbols}{ m }{%
+	\ifbool{nolistspace}{\begingroup\singlespacing}{}
+	\ifbool{listtoc}{\addchap{\symbolsname}}{\addchap*{\symbolsname}}
+	\begin{longtable}{#1}
+	}{%
+	\end{longtable}
+	\addtocounter{table}{-1}% Don't count this table as one of the document tables
+	\ifbool{nolistspace}{\endgroup}{}
+}
+
+%----------------------------------------------------------------------------------------
+
+\ifbool{hyperrefsupport}{% If the nohyperref class option has not been specified
+\AtEndPreamble{\RequirePackage{hyperref}
+\hypersetup{pdfpagemode={UseOutlines},
+bookmarksopen=true,
+bookmarksopenlevel=0,
+hypertexnames=false,
+colorlinks=true,% Set to false to disable coloring links
+citecolor=magenta,% The color of citations
+linkcolor=red,% The color of references to document elements (sections, figures, etc)
+urlcolor=mdtRed,% The color of hyperlinks (URLs)
+pdfstartview={FitV},
+unicode,
+breaklinks=true,
+}
+
+\pdfstringdefDisableCommands{% If there is an explicit linebreak in a section heading (or anything printed to the pdf-bookmarks), it is replaced by a space
+	\let\\\space%
+}
+	}
+}{%nothing
+}
+
+%----------------------------------------------------------------------------------------
+
 \endinput
+% lazyLizardTracer
