@@ -1,0 +1,125 @@
+define compile_it
+	mkdir -p _build
+#	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+$(4) pubsEngine $(1).md $(5) > _build/draft.tex
+	cd _build && \
+	ln -s -f ../Figures && \
+	ln -s -f ../localStyle.sty && \
+	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
+	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
+	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
+	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/figs/logo.png && \
+	ln -s -f ../pubsEngine/hasanHyp.tex && \
+	xelatex draft.tex
+	cd _build && bibtex draft && xelatex draft && xelatex draft
+endef
+
+define compile_poster
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis -F pandoc-citeproc --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	cd _build && \
+	ln -s -f ../Figures && \
+	ln -s -f ../localStyle.sty && \
+	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/figs/logo.png && \
+	ln -s -f ../pubsEngine/hasanHyp.tex && \
+	ln -s -f ../pubsEngine/class/poster/* . && \
+	xelatex draft.tex
+endef
+
+define compile_abs
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis -F pandoc-citeproc --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	cd _build && \
+	ln -s -f ../Figures && \
+	ln -s -f ../localStyle.sty && \
+	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
+	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
+	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
+	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/figs/logo.png && \
+	ln -s -f ../pubsEngine/hasanHyp.tex && \
+	xelatex draft.tex
+endef
+
+define compile_docx
+	mkdir -p _build
+	cd _build && pandoc -o draft.docx draft.tex
+endef
+
+define gen_default
+	mkdir -p _build
+	$(4) pandoc -o custom-reference.docx --print-default-data-file reference.docx
+endef
+
+define compile_zemi
+	mkdir -p _build
+	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
+	cd _build && \
+	ln -s -f ../Figures && \
+	ln -s -f ../localStyle.sty && \
+	ln -s -f ../pubsEngine/hasanCustom.sty && \
+	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
+	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/figs/logo.png && \
+	ln -s -f ../pubsEngine/hasanHyp.tex && \
+	xelatex draft.tex
+endef
+
+EXECUTABLES = stack pandoc thesis
+K := $(foreach exec,$(EXECUTABLES),\
+        $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH, please install it first.)))
+
+TARGET_EXIST := $(shell [ -f "$(target).md" ] && echo 1 || echo 0 )
+ifeq ($(TARGET_EXIST), 0)
+  $(error "target file $(target) does not exist, please run using 'make target=manuscript'")
+else
+  $(info "start processing $(target)")
+endif
+
+RUNNER := $(shell readlink -f pubsEngine)/diagrams-pandoc
+GET_STACK_GHC = $(shell cd $(RUNNER);stack exec env|grep GHC_PACKAGE_PATH)
+draft:
+	$(eval TEMPLATE_LATEX = draft.template.tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},hasan.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+default:
+	$(eval TEMPLATE_LATEX = ori.template.tex)
+	$(eval TARGET_PDF = latex)
+	$(call gen_default,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),docx)
+poster:
+	$(eval TARGET = poster)
+	$(eval TEMPLATE_LATEX = class/$(TARGET)/$(TARGET).tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_poster,$(target),${TEMPLATE_LATEX},class/$(TARGET)/$(TARGET).yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+abstract:
+	$(eval TEMPLATE_LATEX = classAbstract/abstract.tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_abs,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+	$(call compile_docx,$(target),${TEMPLATE_LATEX},classAbstract/abstract.yaml,$(GET_STACK_GHC),docx)
+report:
+	$(eval TEMPLATE_LATEX = ori.template.tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},report.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+clean:
+	rm -rf _build
+thesis:
+	$(eval TEMPLATE_LATEX = thesisClass/hasanThesis.tex)
+	$(eval TARGET_PDF = latex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},thesisClass/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+zemi:
+	$(eval TEMPLATE_LATEX = ori.template.beamer.tex)
+	$(eval TARGET_PDF = beamer --slide-level 2)
+	$(call compile_zemi,$(target),${TEMPLATE_LATEX},zemi.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+zemihandout1:
+	$(eval TEMPLATE_LATEX = ori.template.beamer.tex)
+	$(eval TARGET_PDF = beamer --slide-level 2 -V handout)
+	$(call compile_zemi,$(target),${TEMPLATE_LATEX},zemi.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+handout: zemihandout1
+	cd _build && pdfnup draft.pdf --nup 1x2 --no-landscape --keepinfo \
+		--paper a4paper --frame true --scale 0.9 \
+		--suffix "nup"
+	cd _build && mv draft-nup.pdf draft.pdf

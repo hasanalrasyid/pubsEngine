@@ -1,0 +1,89 @@
+name:                diagrams-pandoc
+version:             0.1.0.1
+github:              "githubuser/diagrams-pandoc"
+license:             BSD3
+author:              "Hasan al Rasyid"
+maintainer:          "hasan@cphys.s.kanazawa-u.ac.jp"
+copyright:           "2019 Hasan al Rasyid"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/diagrams-pandoc#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- pandoc-types
+- filepath
+- directory
+- pandoc
+- process
+- diagrams-pgf        # library
+- diagrams
+- diagrams-lib
+- diagrams-builder
+- bytestring
+- containers # pandoc-crossref
+- utility-ht
+- data-default
+- mtl
+- data-accessor
+- data-accessor-transformers
+- data-accessor-template
+- syb
+- roman-numerals
+- template-haskell
+- hashable
+- haskell-src-exts-simple
+- random
+- aeson
+- cryptonite
+- raw-strings-qq
+
+library:
+  source-dirs: src
+
+executables:
+  pubsEngine:
+    main:                pubs.hs
+    source-dirs:         
+      - app
+      - templates
+    dependencies:
+      - diagrams-pandoc
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+
+  thesis:
+    main:                thesis.hs
+    source-dirs:         app
+    dependencies:
+      - diagrams-pandoc
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+
+tests:
+  diagrams-pandoc-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - diagrams-pandoc
