@@ -1,19 +1,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Masters/Doctoral Thesis
-% LaTeX templateX
+% LaTeX template
 % Version 2.5 (27/8/17)
 %
-% This templateX was downloaded from:
-% http://www.LaTeXtemplateXs.com
+% This template was downloaded from:
+% http://www.LaTeXtemplates.com
 %
 % Version 2.x major modifications by:
-% Vel (vel@latextemplateXs.com)
+% Vel (vel@latextemplates.com)
 %
-% This templateX is based on a templateX by:
-% Steve Gunn (http://users.ecs.soton.ac.uk/srg/softwaretools/document/templateXs/)
-% Sunil Patel (http://www.sunilpatel.co.uk/thesis-templateX/)
+% This template is based on a template by:
+% Steve Gunn (http://users.ecs.soton.ac.uk/srg/softwaretools/document/templates/)
+% Sunil Patel (http://www.sunilpatel.co.uk/thesis-template/)
 %
-% templateX license:
+% template license:
 % CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,28 +66,30 @@ headsepline, % Uncomment to get a line under the header
 %	THESIS INFORMATION
 %----------------------------------------------------------------------------------------
 
-\thesistitle{Thesis Title} % Your thesis title, this is used in the title and abstract, print it elsewhere with \ttitle
-\supervisor{Dr. James \textsc{Smith}} % Your supervisor's name, this is used in the title page, print it elsewhere with \supname
-\examiner{} % Your examiner's name, this is not currently used anywhere in the templateX, print it elsewhere with \examname
-\degree{Doctor of Philosophy} % Your degree name, this is used in the title page and abstract, print it elsewhere with \degreename
-\author{John \textsc{Smith}} % Your name, this is used in the title page and abstract, print it elsewhere with \authorname
-\addresses{} % Your address, this is not currently used anywhere in the templateX, print it elsewhere with \addressname
+\thesistitle{$title$} % Your thesis title, this is used in the title and abstract, print it elsewhere with \ttitle
+\supervisor{$supervisor$} % Your supervisor's name, this is used in the title page, print it elsewhere with \supname
+\examiner{} % Your examiner's name, this is not currently used anywhere in the template, print it elsewhere with \examname
+\degree{Doctor of Science} % Your degree name, this is used in the title page and abstract, print it elsewhere with \degreename
+\author{$author$} % Your name, this is used in the title page and abstract, print it elsewhere with \authorname
+\addresses{} % Your address, this is not currently used anywhere in the template, print it elsewhere with \addressname
 
-\subject{Biological Sciences} % Your subject area, this is not currently used anywhere in the templateX, print it elsewhere with \subjectname
-\keywords{} % Keywords for your thesis, this is not currently used anywhere in the templateX, print it elsewhere with \keywordnames
-\university{\href{http://www.university.com}{University Name}} % Your university's name and URL, this is used in the title page and abstract, print it elsewhere with \univname
-\department{\href{http://department.university.com}{Department or School Name}} % Your department's name and URL, this is used in the title page and abstract, print it elsewhere with \deptname
+\subject{$subject$} % Your subject area, this is not currently used anywhere in the template, print it elsewhere with \subjectname
+\keywords{$keywords$} % Keywords for your thesis, this is not currently used anywhere in the template, print it elsewhere with \keywordnames
+\university{\href{$univurl$}{$univ$}} % Your university's name and URL, this is used in the title page and abstract, print it elsewhere with \univname
+\department{\href{$divisionurl$}{$division$}} % Your department's name and URL, this is used in the title page and abstract, print it elsewhere with \deptname
 \group{\href{http://researchgroup.university.com}{Research Group Name}} % Your research group's name and URL, this is used in the title page, print it elsewhere with \groupname
-\faculty{\href{http://faculty.university.com}{Faculty Name}} % Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
+\faculty{\href{$facultyurl$}{$faculty$}} % Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
 
 \AtBeginDocument{
 \hypersetup{pdftitle=\ttitle} % Set the PDF's title to your title
 \hypersetup{pdfauthor=\authorname} % Set the PDF's author to your name
 \hypersetup{pdfkeywords=\keywordnames} % Set the PDF's keywords to your keywords
 }
-
-\begin{document}
-
+%
+%
+%
+%
+\begin{document}%
 \frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
 
 \pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
@@ -101,10 +103,10 @@ headsepline, % Uncomment to get a line under the header
 
 \vspace*{.06\textheight}
 {\scshape\LARGE \univname\par}\vspace{1.5cm} % University name
-\textsc{\Large Doctoral Thesis}\\[0.5cm] % Thesis type
+\textsc{\Large $thesistype$ Thesis}\\[0.5cm] % Thesis type
 
 \HRule \\[0.4cm] % Horizontal line
-{\huge \bfseries \ttitle\par}\vspace{0.4cm} % Thesis title
+{\huge \bfseries \ttitle \\ $titlejap$ \par}\vspace{0.4cm} % Thesis title
 \HRule \\[1.5cm] % Horizontal line
 
 \begin{minipage}[t]{0.4\textwidth}
@@ -227,7 +229,7 @@ The acknowledgments and the people to thank go here, don't forget to include you
 % Include the chapters of the thesis as separate files from the Chapters folder
 % Uncomment the lines as you write the chapters
 
-\include{Chapters/Chapter1}
+%\include{Chapters/Chapter1}  hasan
 %\include{Chapters/Chapter2}
 %\include{Chapters/Chapter3}
 %\include{Chapters/Chapter4}
@@ -242,7 +244,7 @@ The acknowledgments and the people to thank go here, don't forget to include you
 % Include the appendices of the thesis as separate files from the Appendices folder
 % Uncomment the lines as you write the Appendices
 
-\include{Appendices/AppendixA}
+%\include{Appendices/AppendixA} -- hasan
 %\include{Appendices/AppendixB}
 %\include{Appendices/AppendixC}
 
