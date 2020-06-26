@@ -1,19 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Masters/Doctoral Thesis
-% LaTeX template
-% Version 2.5 (27/8/17)
+% Arsclassica Article
+% LaTeX Template
+% Version 1.1 (1/8/17)
 %
-% This template was downloaded from:
-% http://www.LaTeXtemplates.com
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
 %
-% Version 2.x major modifications by:
+% Original author:
+% Lorenzo Pantieri (http://www.lorenzopantieri.net) with extensive modifications by:
 % Vel (vel@latextemplates.com)
 %
-% This template is based on a template by:
-% Steve Gunn (http://users.ecs.soton.ac.uk/srg/softwaretools/document/templates/)
-% Sunil Patel (http://www.sunilpatel.co.uk/thesis-template/)
-%
-% template license:
+% License:
 % CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,261 +20,173 @@
 %----------------------------------------------------------------------------------------
 
 \documentclass[
-11pt, % The default document font size, options: 10pt, 11pt, 12pt
-%oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
-english, % ngerman for German
-singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing
-%draft, % Uncomment to enable draft mode (no pictures, no links, overfull hboxes indicated)
-%nolistspacing, % If the document is onehalfspacing or doublespacing, uncomment this to set spacing in lists to single
-%liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
-%toctotoc, % Uncomment to add the main table of contents to the table of contents
-%parskip, % Uncomment to add space between paragraphs
-%nohyperref, % Uncomment to not load the hyperref package
-headsepline, % Uncomment to get a line under the header
-%chapterinoneline, % Uncomment to place the chapter title next to the number on one line
-%consistentlayout, % Uncomment to change the layout of the declaration, abstract and acknowledgements pages to match the default layout
-]{article} % The class file specifying the document structure
+10pt, % Main document font size
+a4paper, % Paper type, use 'letterpaper' for US Letter paper
+oneside, % One page layout (no page indentation)
+%twoside, % Two page layout (page indentation for binding and different headers)
+headinclude,footinclude, % Extra spacing for the header and footer
+BCOR5mm, % Binding correction
+]{scrartcl}
 
-\usepackage[utf8]{inputenc} % Required for inputting international characters
-\usepackage[T1]{fontenc} % Output font encoding for international characters
+%\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
+% Arsclassica Article
+% Structure Specification File
+%
+% This file has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Lorenzo Pantieri (http://www.lorenzopantieri.net) with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\usepackage{mathpazo} % Use the Palatino font by default
+%----------------------------------------------------------------------------------------
+%	REQUIRED PACKAGES
+%----------------------------------------------------------------------------------------
 
-\usepackage[backend=bibtex,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
+\usepackage[
+nochapters, % Turn off chapters since this is an article
+beramono, % Use the Bera Mono font for monospaced text (\texttt)
+eulermath,% Use the Euler font for mathematics
+pdfspacing, % Makes use of pdftex’ letter spacing capabilities via the microtype package
+dottedtoc % Dotted lines leading to the page numbers in the table of contents
+]{classicthesis} % The layout is based on the Classic Thesis style
 
-\addbibresource{$bibliography$.bib} % The filename of the bibliography
-\usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
+\usepackage{arsclassica} % Modifies the Classic Thesis package
 
-\newcommand{\ttitlejapstraight}{
-  $for(titlejap)$ $titlejap$ $endfor$
-}
-\newcommand{\ttitlejap}{
-  $for(titlejap)$$titlejap$$sep$\linebreak $endfor$
-}
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+
+\usepackage{graphicx} % Required for including images
+\graphicspath{{Figures/}} % Set the default folder for images
+
+\usepackage{enumitem} % Required for manipulating the whitespace between and within lists
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
+
+\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
+
+\usepackage{varioref} % More descriptive referencing
 
 $for(header-includes)$
   $header-includes$
 $endfor$
 
-\usepackage{xspace}
-\usepackage{datetime}
-\usepackage{xeCJK}
-\setCJKmainfont{IPAMincho}
-\setCJKsansfont{IPAGothic}
-\setCJKmonofont{IPAGothic}
-%----------------------------------------------------------------------------------------
-%	MARGIN SETTINGS
-%----------------------------------------------------------------------------------------
-
-%\geometry{
-%	paper=a4paper, % Change to letterpaper for US letter
-%	inner=2.5cm, % Inner margin
-%	outer=3.8cm, % Outer margin
-%	bindingoffset=.5cm, % Binding offset
-%	top=1.5cm, % Top margin
-%	bottom=1.5cm, % Bottom margin
-%	%showframe, % Uncomment to show how the type block is set on the page
-%}
 
 %----------------------------------------------------------------------------------------
-%	THESIS INFORMATION
+%	THEOREM STYLES
+%---------------------------------------------------------------------------------------
+
+\theoremstyle{definition} % Define theorem styles here based on the definition style (used for definitions and examples)
+\newtheorem{definition}{Definition}
+
+\theoremstyle{plain} % Define theorem styles here based on the plain style (used for theorems, lemmas, propositions)
+\newtheorem{theorem}{Theorem}
+
+\theoremstyle{remark} % Define theorem styles here based on the remark style (used for remarks and notes)
+
 %----------------------------------------------------------------------------------------
+%	HYPERLINKS
+%---------------------------------------------------------------------------------------
 
-\thesistitle{$title$} % Your thesis title, this is used in the title and abstract, print it elsewhere with \ttitle
-\supervisor{$supervisor$} % Your supervisor's name, this is used in the title page, print it elsewhere with \supname
-\examiner{} % Your examiner's name, this is not currently used anywhere in the template, print it elsewhere with \examname
-\degree{Doctor of Science} % Your degree name, this is used in the title page and abstract, print it elsewhere with \degreename
-\author{$author$} % Your name, this is used in the title page and abstract, print it elsewhere with \authorname
-\addresses{} % Your address, this is not currently used anywhere in the template, print it elsewhere with \addressname
-
-\subject{$subject$} % Your subject area, this is not currently used anywhere in the template, print it elsewhere with \subjectname
-\keywords{$keywords$} % Keywords for your thesis, this is not currently used anywhere in the template, print it elsewhere with \keywordnames
-\university{\href{$univurl$}{$univ$}} % Your university's name and URL, this is used in the title page and abstract, print it elsewhere with \univname
-\department{\href{$divisionurl$}{$division$}} % Your department's name and URL, this is used in the title page and abstract, print it elsewhere with \deptname
-\group{\href{http://researchgroup.university.com}{Research Group Name}} % Your research group's name and URL, this is used in the title page, print it elsewhere with \groupname
-\faculty{\href{$facultyurl$}{$faculty$}} % Your faculty's name and URL, this is used in the title page and abstract, print it elsewhere with \facname
-
-\AtBeginDocument{
-\hypersetup{pdftitle=\ttitle} % Set the PDF's title to your title
-\hypersetup{pdfauthor=\authorname} % Set the PDF's author to your name
-\hypersetup{pdfkeywords=\keywordnames} % Set the PDF's keywords to your keywords
+\hypersetup{
+%draft, % Uncomment to remove all links (useful for printing in black and white)
+colorlinks=true, breaklinks=true, bookmarks=true,bookmarksnumbered,
+urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen, % Link colors
+pdftitle={}, % PDF title
+pdfauthor={\textcopyright}, % PDF Author
+pdfsubject={}, % PDF Subject
+pdfkeywords={}, % PDF Keywords
+pdfcreator={pdfLaTeX}, % PDF Creator
+pdfproducer={LaTeX with hyperref and ClassicThesis} % PDF producer
 }
-%
-%
-%
-%
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\hyphenation{Fortran hy-phen-ation} % Specify custom hyphenation points in words with dashes where you would like hyphenation to occur, or alternatively, don't put any dashes in a word to stop hyphenation altogether
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND AUTHOR(S)
+%----------------------------------------------------------------------------------------
+
+\title{\normalfont\spacedallcaps{Article Title}} % The article title
+
+%\subtitle{Subtitle} % Uncomment to display a subtitle
+
+\author{\spacedlowsmallcaps{John Smith* \& James Smith\textsuperscript{1}}} % The article author(s) - author affiliations need to be specified in the AUTHOR AFFILIATIONS block
+
+\date{} % An optional date to appear under the author(s)
+
+%----------------------------------------------------------------------------------------
 
 \begin{document}
 $for(include-before)$
   $include-before$
 $endfor$
 
-\frontmatter
-\pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
-
 %----------------------------------------------------------------------------------------
-%	TITLE PAGE
+%	HEADERS
 %----------------------------------------------------------------------------------------
 
-\begin{titlepage}
-\begin{center}
+\renewcommand{\sectionmark}[1]{\markright{\spacedlowsmallcaps{#1}}} % The header for all pages (oneside) or for even pages (twoside)
+%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
+\lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
 
-\vspace*{.03\textheight}
-{\scshape\LARGE \univname\par}\vspace{1.5cm} % University name
-\textsc{\large $thesistype$ Thesis}\\[0.5cm] % Thesis type
-
-\HRule \\[0.4cm] % Horizontal line
-  {\center\LARGE \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
-\HRule \\[1.5cm] % Horizontal line
-
-\begin{minipage}[t]{0.4\textwidth}
-\begin{flushleft} \large
-\emph{Author:}\\
-\href{$authormail$}{\authorname} % Author name - remove the \href bracket to remove the link
-\end{flushleft}
-\end{minipage}
-\begin{minipage}[t]{0.4\textwidth}
-\begin{flushright} \large
-\emph{Supervisor:} \\
-\href{$supervisormail$}{\supname} % Supervisor name - remove the \href bracket to remove the link
-\end{flushright}
-\end{minipage}\\[2cm]
-
-
-\large \textit{A thesis submitted in fulfillment of the requirements\\ for the degree of \degreename}\\[0.3cm] % University requirement text
-\textit{in the}\\[0.4cm]
-\deptname\\\facname\\[1cm] % Research group name and department name
-
-\includegraphics[width=0.3\textwidth]{$logo$} % University/department logo - uncomment to place it
-
-{\large \today\xspace\currenttime}\\[4cm] % Date
-
-\vfill
-\end{center}
-\end{titlepage}
+\pagestyle{scrheadings} % Enable the headers specified in this block
 
 %----------------------------------------------------------------------------------------
-%	DECLARATION PAGE
+%	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
 %----------------------------------------------------------------------------------------
 
-%\begin{declaration}
-%\addchaptertocentry{\authorshipname} % Add the declaration to the table of contents
-%  \noindent I, \authorname, declare that this thesis titled, \enquote{\ttitle} ({\ttitlejapstraight}) and the work presented in it are my own. I confirm that:
-%
-%\begin{itemize}
-%\item This work was done wholly or mainly while in candidature for a research degree at this University.
-%\item Where any part of this thesis has previously been submitted for a degree or any other qualification at this University or any other institution, this has been clearly stated.
-%\item Where I have consulted the published work of others, this is always clearly attributed.
-%\item Where I have quoted from the work of others, the source is always given. With the exception of such quotations, this thesis is entirely my own work.
-%\item I have acknowledged all main sources of help.
-%\item Where the thesis is based on work done by myself jointly with others, I have made clear exactly what was done by others and what I have contributed myself.\\
-%\end{itemize}
-%
-%\noindent Signed:\\
-%\rule[0.5em]{25em}{0.5pt} % This prints a line for the signature
-%
-%\noindent Date:\\
-%\rule[0.5em]{25em}{0.5pt} % This prints a line to write the date
-%\end{declaration}
-%
-%\cleardoublepage
-%
-%%----------------------------------------------------------------------------------------
-%%	QUOTATION PAGE
-%%----------------------------------------------------------------------------------------
-%
-%\vspace*{0.2\textheight}
-%
-%$quotation$
-%
-%%\noindent\enquote{\itshape Thanks to my solid academic training, today I can write hundreds of words on virtually any topic without possessing a shred of information, which is how I got a good job in journalism.}\bigbreak
-%%
-%%\hfill Dave Barry
-%
-%%----------------------------------------------------------------------------------------
-%%	ABSTRACT PAGE
-%%----------------------------------------------------------------------------------------
-%
-\begin{abstract}
-\addchaptertocentry{\abstractname} % Add the abstract to the table of contents
-$abstract$
-\end{abstract}
+\maketitle % Print the title/author/date block
+
+\setcounter{tocdepth}{2} % Set the depth of the table of contents to show sections and subsections only
+
+\tableofcontents % Print the table of contents
+
+\listoffigures % Print the list of figures
+
+\listoftables % Print the list of tables
 
 %----------------------------------------------------------------------------------------
-%	ACKNOWLEDGEMENTS
+%	ABSTRACT
 %----------------------------------------------------------------------------------------
-%
-%\begin{acknowledgements}
-%\addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
-%$acknowledgements$
-%%The acknowledgments and the people to thank go here, don't forget to include your project advisor\ldots
-%\end{acknowledgements}
-%
-%%----------------------------------------------------------------------------------------
-%%	LIST OF CONTENTS/FIGURES/TABLES PAGES
-%%----------------------------------------------------------------------------------------
-%
-%\tableofcontents % Prints the main table of contents
-%
-%\listoffigures % Prints the list of figures
-%
-%\listoftables % Prints the list of tables
-%
-%%----------------------------------------------------------------------------------------
-%%	ABBREVIATIONS
-%%----------------------------------------------------------------------------------------
-%
-%\begin{abbreviations}{ll} % Include a list of abbreviations (a table of two columns)
-%
-%\input{$abbreviationtex$}
-%\end{abbreviations}
-%
-%%----------------------------------------------------------------------------------------
-%%	DEDICATION
-%%----------------------------------------------------------------------------------------
-%
-%\dedicatory{$dedication$\ldots}
-%
-%%----------------------------------------------------------------------------------------
-%%	THESIS CONTENT - CHAPTERS
-%%----------------------------------------------------------------------------------------
 
-\mainmatter % Begin numeric (1,2,3...) page numbering
+\section*{Abstract} % This section will not appear in the table of contents due to the star (\section*)
 
-\pagestyle{thesis} % Return the page headers back to the "thesis" style
+\lipsum[1] % Dummy text
 
-% Include the chapters of the thesis as separate files from the Chapters folder
-% Uncomment the lines as you write the chapters
+%----------------------------------------------------------------------------------------
+%	AUTHOR AFFILIATIONS
+%----------------------------------------------------------------------------------------
+
+\let\thefootnote\relax\footnotetext{* \textit{Department of Biology, University of Examples, London, United Kingdom}}
+
+\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Chemistry, University of Examples, London, United Kingdom}}
+
+%----------------------------------------------------------------------------------------
+
+\newpage % Start the article content on the second page, remove this if you have a longer abstract that goes onto the second page
 
 $body$
-
-%\include{Chapters/Chapter1}  hasan
-%\include{Chapters/Chapter2}
-%\include{Chapters/Chapter3}
-%\include{Chapters/Chapter4}
-%\include{Chapters/Chapter5}
-
-%----------------------------------------------------------------------------------------
-%	THESIS CONTENT - APPENDICES
-%----------------------------------------------------------------------------------------
-
-%\appendix % Cue to tell LaTeX that the following "chapters" are Appendices
-
-% Include the appendices of the thesis as separate files from the Appendices folder
-% Uncomment the lines as you write the Appendices
-
-%\include{Appendices/AppendixA} -- hasan
-%\input{Appendices/AppendixB}
-%\include{Appendices/AppendixC}
-
+%
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
 %----------------------------------------------------------------------------------------
 
-\printbibliography[heading=bibintoc]
+\renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
+
+\bibliographystyle{unsrt}
+
+\bibliography{sample.bib} % The file containing the bibliography
 
 %----------------------------------------------------------------------------------------
 
 \end{document}
+%%%%%%%%%%%%%%%%%%%%%end document%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
