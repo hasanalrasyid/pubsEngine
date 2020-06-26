@@ -45,9 +45,26 @@ headsepline, % Uncomment to get a line under the header
 
 \usepackage[backend=bibtex,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
 
-\addbibresource{example.bib} % The filename of the bibliography
+\addbibresource{$bibliography$.bib} % The filename of the bibliography
 \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
 
+\newcommand{\ttitlejapstraight}{
+  $for(titlejap)$ $titlejap$ $endfor$
+}
+\newcommand{\ttitlejap}{
+  $for(titlejap)$$titlejap$$sep$\linebreak $endfor$
+}
+
+$for(header-includes)$
+  $header-includes$
+$endfor$
+
+\usepackage{xspace}
+\usepackage{datetime}
+\usepackage{xeCJK}
+\setCJKmainfont{IPAMincho}
+\setCJKsansfont{IPAGothic}
+\setCJKmonofont{IPAGothic}
 %----------------------------------------------------------------------------------------
 %	MARGIN SETTINGS
 %----------------------------------------------------------------------------------------
@@ -89,9 +106,15 @@ headsepline, % Uncomment to get a line under the header
 %
 %
 %
-\begin{document}%
-\frontmatter % Use roman page numbering style (i, ii, iii, iv...) for the pre-content pages
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
+\begin{document}
+$for(include-before)$
+  $include-before$
+$endfor$
+
+\frontmatter
 \pagestyle{plain} % Default to the plain heading style until the thesis style is called for the body content
 
 %----------------------------------------------------------------------------------------
@@ -101,37 +124,35 @@ headsepline, % Uncomment to get a line under the header
 \begin{titlepage}
 \begin{center}
 
-\vspace*{.06\textheight}
+\vspace*{.03\textheight}
 {\scshape\LARGE \univname\par}\vspace{1.5cm} % University name
-\textsc{\Large $thesistype$ Thesis}\\[0.5cm] % Thesis type
+\textsc{\large $thesistype$ Thesis}\\[0.5cm] % Thesis type
 
 \HRule \\[0.4cm] % Horizontal line
-{\huge \bfseries \ttitle \\ $titlejap$ \par}\vspace{0.4cm} % Thesis title
+  {\center\LARGE \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
 \HRule \\[1.5cm] % Horizontal line
 
 \begin{minipage}[t]{0.4\textwidth}
 \begin{flushleft} \large
 \emph{Author:}\\
-\href{http://www.johnsmith.com}{\authorname} % Author name - remove the \href bracket to remove the link
+\href{$authormail$}{\authorname} % Author name - remove the \href bracket to remove the link
 \end{flushleft}
 \end{minipage}
 \begin{minipage}[t]{0.4\textwidth}
 \begin{flushright} \large
 \emph{Supervisor:} \\
-\href{http://www.jamessmith.com}{\supname} % Supervisor name - remove the \href bracket to remove the link
+\href{$supervisormail$}{\supname} % Supervisor name - remove the \href bracket to remove the link
 \end{flushright}
-\end{minipage}\\[3cm]
+\end{minipage}\\[2cm]
 
-\vfill
 
 \large \textit{A thesis submitted in fulfillment of the requirements\\ for the degree of \degreename}\\[0.3cm] % University requirement text
 \textit{in the}\\[0.4cm]
-\groupname\\\deptname\\[2cm] % Research group name and department name
+\deptname\\\facname\\[1cm] % Research group name and department name
 
-\vfill
+\includegraphics[width=0.3\textwidth]{$logo$} % University/department logo - uncomment to place it
 
-{\large \today}\\[4cm] % Date
-%\includegraphics{Logo} % University/department logo - uncomment to place it
+{\large \today\xspace\currenttime}\\[4cm] % Date
 
 \vfill
 \end{center}
@@ -143,7 +164,7 @@ headsepline, % Uncomment to get a line under the header
 
 \begin{declaration}
 \addchaptertocentry{\authorshipname} % Add the declaration to the table of contents
-\noindent I, \authorname, declare that this thesis titled, \enquote{\ttitle} and the work presented in it are my own. I confirm that:
+  \noindent I, \authorname, declare that this thesis titled, \enquote{\ttitle} ({\ttitlejapstraight}) and the work presented in it are my own. I confirm that:
 
 \begin{itemize}
 \item This work was done wholly or mainly while in candidature for a research degree at this University.
@@ -169,9 +190,11 @@ headsepline, % Uncomment to get a line under the header
 
 \vspace*{0.2\textheight}
 
-\noindent\enquote{\itshape Thanks to my solid academic training, today I can write hundreds of words on virtually any topic without possessing a shred of information, which is how I got a good job in journalism.}\bigbreak
+$quotation$
 
-\hfill Dave Barry
+%\noindent\enquote{\itshape Thanks to my solid academic training, today I can write hundreds of words on virtually any topic without possessing a shred of information, which is how I got a good job in journalism.}\bigbreak
+%
+%\hfill Dave Barry
 
 %----------------------------------------------------------------------------------------
 %	ABSTRACT PAGE
@@ -179,7 +202,7 @@ headsepline, % Uncomment to get a line under the header
 
 \begin{abstract}
 \addchaptertocentry{\abstractname} % Add the abstract to the table of contents
-The Thesis Abstract is written here (and usually kept to just this page). The page is kept centered vertically so can expand into the blank space above the title too\ldots
+$abstract$
 \end{abstract}
 
 %----------------------------------------------------------------------------------------
@@ -188,7 +211,8 @@ The Thesis Abstract is written here (and usually kept to just this page). The pa
 
 \begin{acknowledgements}
 \addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
-The acknowledgments and the people to thank go here, don't forget to include your project advisor\ldots
+$acknowledgements$
+%The acknowledgments and the people to thank go here, don't forget to include your project advisor\ldots
 \end{acknowledgements}
 
 %----------------------------------------------------------------------------------------
@@ -207,16 +231,14 @@ The acknowledgments and the people to thank go here, don't forget to include you
 
 \begin{abbreviations}{ll} % Include a list of abbreviations (a table of two columns)
 
-\textbf{LAH} & \textbf{L}ist \textbf{A}bbreviations \textbf{H}ere\\
-\textbf{WSF} & \textbf{W}hat (it) \textbf{S}tands \textbf{F}or\\
-
+\input{$abbreviationtex$}
 \end{abbreviations}
 
 %----------------------------------------------------------------------------------------
 %	DEDICATION
 %----------------------------------------------------------------------------------------
 
-\dedicatory{For/Dedicated to/To my\ldots}
+\dedicatory{$dedication$\ldots}
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - CHAPTERS
@@ -228,6 +250,8 @@ The acknowledgments and the people to thank go here, don't forget to include you
 
 % Include the chapters of the thesis as separate files from the Chapters folder
 % Uncomment the lines as you write the chapters
+
+$body$
 
 %\include{Chapters/Chapter1}  hasan
 %\include{Chapters/Chapter2}
@@ -245,7 +269,7 @@ The acknowledgments and the people to thank go here, don't forget to include you
 % Uncomment the lines as you write the Appendices
 
 %\include{Appendices/AppendixA} -- hasan
-%\include{Appendices/AppendixB}
+\input{Appendices/AppendixB}
 %\include{Appendices/AppendixC}
 
 %----------------------------------------------------------------------------------------
