@@ -36,7 +36,7 @@ import qualified Data.Map as M
 
 main :: IO ()
 main = do
-  (mdF:format:_) <- getArgs
+  (mdF:format:templateFile:_) <- getArgs
   mdFile <- TIO.readFile mdF
   d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Thesis.templateYaml
   let defaultMeta = case d of
@@ -45,14 +45,17 @@ main = do
   doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
-             Right p -> doThemAll $ updateMeta defaultMeta p
-  result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
+             Right p -> doThemAll p
+             --Right p -> doThemAll $ updateMeta defaultMeta p
+  --result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
+  templateLatex <- TIO.readFile templateFile
+  result <- runIO $ writeLaTeX (def{writerTemplate = Just $ T.unpack templateLatex}) newDoc
   rst <- handleError result
   TIO.putStrLn rst
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
-   setTemplate "Thesis" = Thesis.templateLatex
+   setTemplate "thesis" = Thesis.templateLatex
    setTemplate _ = R.templateLatex
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) =

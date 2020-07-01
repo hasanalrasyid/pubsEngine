@@ -1,19 +1,21 @@
 define compile_it
 	mkdir -p _build
 #	$(4) pandoc -t $(5) -F thesis --template pubsEngine/$(2) --metadata date="(last updated: `date +%Y/%m/%d`)" $(1).md -o _build/draft.tex -s pubsEngine/$(3)
-$(4) pubsEngine $(1).md $(5) > _build/draft.tex
+$(4) pubsEngine $(1).md $(6) pubsEngine/$(2) > _build/draft.tex
 	cd _build && \
 	ln -s -f ../Figures && \
+	ln -s -f ../Addition && \
 	ln -s -f ../localStyle.sty && \
+	touch ../bibcustom.bib && \
+	ln -s -f ../bibcustom.bib && \
 	ln -s -f ../pubsEngine/hasanCustom.sty && \
 	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
 	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
-	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
-	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/class/thesis/Thesis.cls && \
+	ln -s -f ../pubsEngine/class/thesis/lstpatch.sty && \
 	ln -s -f ../pubsEngine/figs/logo.png && \
 	ln -s -f ../pubsEngine/hasanHyp.tex && \
-	xelatex draft.tex
-	cd _build && bibtex draft && xelatex draft && xelatex draft
+	$(7) draft && bibtex draft && $(7) draft
 endef
 
 define compile_poster
@@ -38,8 +40,8 @@ define compile_abs
 	ln -s -f ../pubsEngine/hasanCustom.sty && \
 	ln -s -f ../pubsEngine/classAbstract/aip-cp.cls && \
 	ln -s -f ../pubsEngine/classAbstract/aipnum-cp.bst && \
-	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
-	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/class/thesis/Thesis.cls && \
+	ln -s -f ../pubsEngine/class/thesis/lstpatch.sty && \
 	ln -s -f ../pubsEngine/figs/logo.png && \
 	ln -s -f ../pubsEngine/hasanHyp.tex && \
 	xelatex draft.tex
@@ -62,8 +64,8 @@ define compile_zemi
 	ln -s -f ../Figures && \
 	ln -s -f ../localStyle.sty && \
 	ln -s -f ../pubsEngine/hasanCustom.sty && \
-	ln -s -f ../pubsEngine/thesisClass/Thesis.cls && \
-	ln -s -f ../pubsEngine/thesisClass/lstpatch.sty && \
+	ln -s -f ../pubsEngine/class/thesis/Thesis.cls && \
+	ln -s -f ../pubsEngine/class/thesis/lstpatch.sty && \
 	ln -s -f ../pubsEngine/figs/logo.png && \
 	ln -s -f ../pubsEngine/hasanHyp.tex && \
 	xelatex draft.tex
@@ -74,14 +76,42 @@ K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH, please install it first.)))
 
 TARGET_EXIST := $(shell [ -f "$(target).md" ] && echo 1 || echo 0 )
-ifeq ($(TARGET_EXIST), 0)
-  $(error "target file $(target) does not exist, please run using 'make target=manuscript'")
-else
-  $(info "start processing $(target)")
-endif
+#ifeq ($(TARGET_EXIST), 0)
+#  $(error "target file $(target) does not exist, please run using 'make target=manuscript'")
+#else
+#  $(info "start processing $(target)")
+#endif
 
 RUNNER := $(shell readlink -f pubsEngine)/diagrams-pandoc
 GET_STACK_GHC = $(shell cd $(RUNNER);stack exec env|grep GHC_PACKAGE_PATH)
+
+
+main:
+	$(eval target = manuscript)
+	$(eval TEMPLATE_LATEX = class/thesis/hasanThesis.tex)
+	$(eval TARGET_PDF = latex)
+	$(eval TARGET_FORMAT = thesis)
+	$(eval PDF_COMPILER = xelatex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},class/thesis/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF),$(TARGET_FORMAT),$(PDF_COMPILER))
+summary:
+	$(eval target = summary)
+	$(eval TEMPLATE_LATEX = class/thesisSummary/template.tex)
+	$(eval TARGET_PDF = latex)
+	$(eval TARGET_FORMAT = thesis)
+	$(eval PDF_COMPILER = xelatex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},class/thesis/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF),$(TARGET_FORMAT),$(PDF_COMPILER))
+dissertationAbstract:
+	$(eval target = abstract)
+	$(eval TEMPLATE_LATEX = class/thesisAbstract/template.tex)
+	$(eval TARGET_PDF = latex)
+	$(eval TARGET_FORMAT = thesis)
+	$(eval PDF_COMPILER = xelatex)
+	$(call compile_it,$(target),${TEMPLATE_LATEX},class/thesis/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF),$(TARGET_FORMAT),$(PDF_COMPILER))
+
+summaryOld:
+	cp summary.tex _build/draft.tex
+	cd _build && pdflatex draft.tex
+
 draft:
 	$(eval TEMPLATE_LATEX = draft.template.tex)
 	$(eval TARGET_PDF = latex)
@@ -107,9 +137,9 @@ report:
 clean:
 	rm -rf _build
 thesis:
-	$(eval TEMPLATE_LATEX = thesisClass/hasanThesis.tex)
+	$(eval TEMPLATE_LATEX = class/thesis/hasanThesis.tex)
 	$(eval TARGET_PDF = latex)
-	$(call compile_it,$(target),${TEMPLATE_LATEX},thesisClass/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
+	$(call compile_it,$(target),${TEMPLATE_LATEX},class/thesis/hasanThesis.yaml,$(GET_STACK_GHC),$(TARGET_PDF))
 zemi:
 	$(eval TEMPLATE_LATEX = ori.template.beamer.tex)
 	$(eval TARGET_PDF = beamer --slide-level 2)

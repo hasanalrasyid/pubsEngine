@@ -20,13 +20,23 @@
 %----------------------------------------------------------------------------------------
 
 \documentclass[
-10pt, % Main document font size
+11pt, % Main document font size
 a4paper, % Paper type, use 'letterpaper' for US Letter paper
 oneside, % One page layout (no page indentation)
 %twoside, % Two page layout (page indentation for binding and different headers)
 headinclude,footinclude, % Extra spacing for the header and footer
 BCOR5mm, % Binding correction
 ]{scrartcl}
+\makeatletter
+\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+\makeatother
+
 
 %\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
 % Arsclassica Article
@@ -48,11 +58,12 @@ BCOR5mm, % Binding correction
 %	REQUIRED PACKAGES
 %----------------------------------------------------------------------------------------
 
+\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
 \usepackage[
 nochapters, % Turn off chapters since this is an article
 beramono, % Use the Bera Mono font for monospaced text (\texttt)
 eulermath,% Use the Euler font for mathematics
-pdfspacing, % Makes use of pdftex’ letter spacing capabilities via the microtype package
+%pdfspacing, % Makes use of pdftex’ letter spacing capabilities via the microtype package
 dottedtoc % Dotted lines leading to the page numbers in the table of contents
 ]{classicthesis} % The layout is based on the Classic Thesis style
 
@@ -71,14 +82,19 @@ dottedtoc % Dotted lines leading to the page numbers in the table of contents
 
 \usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
 
-\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
 
 \usepackage{varioref} % More descriptive referencing
-
+\usepackage{xeCJK}
+\setCJKmainfont{IPAMincho}
+\setCJKsansfont{IPAGothic}
+\setCJKmonofont{IPAGothic}
+\usepackage[margin=1.5cm,bottom=2cm,top=2cm ]{geometry}
+\usepackage[backend=bibtex,style=chem-angew,natbib=true]{biblatex}
+\addbibresource{$bibliography$,bibcustom}
 $for(header-includes)$
   $header-includes$
 $endfor$
-
+\titlespacing*{\section}{0pt}{*2}{*2}
 
 %----------------------------------------------------------------------------------------
 %	THEOREM STYLES
@@ -120,9 +136,18 @@ pdfproducer={LaTeX with hyperref and ClassicThesis} % PDF producer
 
 \author{\spacedlowsmallcaps{John Smith* \& James Smith\textsuperscript{1}}} % The article author(s) - author affiliations need to be specified in the AUTHOR AFFILIATIONS block
 
-\date{} % An optional date to appear under the author(s)
+%\date{} % An optional date to appear under the author(s)
 
 %----------------------------------------------------------------------------------------
+
+\newcommand{\ttitle}{$title$}
+ \newcommand{\ttitlejapstraight}{
+   $for(titlejap)$ $titlejap$ $endfor$
+ }
+ \newcommand{\ttitlejap}{
+   $for(titlejap)$$titlejap$$sep$\linebreak $endfor$
+ }
+
 
 \begin{document}
 $for(include-before)$
@@ -137,21 +162,48 @@ $endfor$
 %\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
 \lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
 
-\pagestyle{scrheadings} % Enable the headers specified in this block
+%\pagestyle{scrheadings} % Enable the headers specified in this block
+\pagestyle{plain} % Enable the headers specified in this block
 
 %----------------------------------------------------------------------------------------
 %	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
 %----------------------------------------------------------------------------------------
+\titlepage
+%\maketitle % Print the title/author/date block
 
-\maketitle % Print the title/author/date block
+\begin{center}
+{\large \bfseries Abstract}\vspace{3cm} % Thesis title
 
-\setcounter{tocdepth}{2} % Set the depth of the table of contents to show sections and subsections only
+{\large \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
+\end{center}
 
-\tableofcontents % Print the table of contents
+\vspace{4cm}
+\begin{flushleft}
+Graduate School of \\
+Natural Science \& Technology \\
+Kanazawa University
+\end{flushleft}
+\vspace{1cm}
 
-\listoffigures % Print the list of figures
+\begin{flushright}
+Division of Mathematical and Physical Sciences
+\end{flushright}
 
-\listoftables % Print the list of tables
+\vspace{4cm}
+\begin{flushleft}
+Student ID No. 1724012006 \\
+Name: Hasan Al Rasyid \\
+Chief Advisor: Professor Tatsuki ODA \\
+Date of Submission: \today
+\end{flushleft}
+
+\newpage
+
+%\tableofcontents % Print the table of contents
+%
+%\listoffigures % Print the list of figures
+%
+%\listoftables % Print the list of tables
 
 %----------------------------------------------------------------------------------------
 %	ABSTRACT
@@ -159,19 +211,21 @@ $endfor$
 
 \section*{Abstract} % This section will not appear in the table of contents due to the star (\section*)
 
-\lipsum[1] % Dummy text
+$abstract$
+%\lipsum[1] % Dummy text
 
 %----------------------------------------------------------------------------------------
 %	AUTHOR AFFILIATIONS
 %----------------------------------------------------------------------------------------
 
-\let\thefootnote\relax\footnotetext{* \textit{Department of Biology, University of Examples, London, United Kingdom}}
-
-\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Chemistry, University of Examples, London, United Kingdom}}
+%\let\thefootnote\relax\footnotetext{* \textit{Department of Biology, University of Examples, London, United Kingdom}}
+%
+%\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Chemistry, University of Examples, London, United Kingdom}}
 
 %----------------------------------------------------------------------------------------
 
 \newpage % Start the article content on the second page, remove this if you have a longer abstract that goes onto the second page
+\setcounter{tocdepth}{1} % Set the depth of the table of contents to show sections and subsections only
 
 $body$
 %
@@ -181,10 +235,7 @@ $body$
 
 \renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
 
-\bibliographystyle{unsrt}
-
-\bibliography{sample.bib} % The file containing the bibliography
-
+\printbibliography
 %----------------------------------------------------------------------------------------
 
 \end{document}

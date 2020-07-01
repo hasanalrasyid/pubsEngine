@@ -1,6 +1,9 @@
 EXTs := $(shell ls extern/*tbz)
 Extracted := $(lastword $(shell find extern -maxdepth 1 -type d))
 
+justbuild:
+	stack build diagrams-pandoc:pubsEngine
+
 build:
 ifeq ($(Extracted),extern)
 	$(info "Unpacking external libraries")

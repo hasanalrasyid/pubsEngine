@@ -5,7 +5,7 @@ header-includes:
 
 ## testnya
 
-![Inilah pgf caption](./images/floor.png)
+![Inilah pgf caption\label{pakelabel}](./images/floor.png){#fig:desc}
 
 Here is a square:
 

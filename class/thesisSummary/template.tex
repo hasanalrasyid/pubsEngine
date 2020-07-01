@@ -1,0 +1,285 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Arsclassica Article
+% LaTeX Template
+% Version 1.1 (1/8/17)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Lorenzo Pantieri (http://www.lorenzopantieri.net) with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+11pt, % Main document font size
+a4paper, % Paper type, use 'letterpaper' for US Letter paper
+oneside, % One page layout (no page indentation)
+%twoside, % Two page layout (page indentation for binding and different headers)
+%headinclude,footinclude, % Extra spacing for the header and footer
+BCOR5mm, % Binding correction
+]{article}
+\makeatletter
+\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+\makeatother
+
+
+%\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
+% Arsclassica Article
+% Structure Specification File
+%
+% This file has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Lorenzo Pantieri (http://www.lorenzopantieri.net) with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	REQUIRED PACKAGES
+%----------------------------------------------------------------------------------------
+
+\usepackage{amsfonts,amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
+%\usepackage[
+%nochapters, % Turn off chapters since this is an article
+%beramono, % Use the Bera Mono font for monospaced text (\texttt)
+%eulermath,% Use the Euler font for mathematics
+%%pdfspacing, % Makes use of pdftex’ letter spacing capabilities via the microtype package
+%dottedtoc % Dotted lines leading to the page numbers in the table of contents
+%]{classicthesis} % The layout is based on the Classic Thesis style
+
+%\usepackage{arsclassica} % Modifies the Classic Thesis package
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+
+\usepackage{graphicx} % Required for including images
+\graphicspath{{Figures/}} % Set the default folder for images
+
+\usepackage{enumitem} % Required for manipulating the whitespace between and within lists
+
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+
+\usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
+
+
+\usepackage{varioref} % More descriptive referencing
+\usepackage{xeCJK}
+\setCJKmainfont{IPAMincho}
+\setCJKsansfont{IPAGothic}
+\setCJKmonofont{IPAGothic}
+\usepackage[margin=2cm]{geometry}
+\usepackage{setspace}
+\usepackage[backend=bibtex,style=chem-angew,natbib=true]{biblatex}
+\addbibresource{$bibliography$,bibcustom}
+$for(header-includes)$
+  $header-includes$
+$endfor$
+
+%----------------------------------------------------------------------------------------
+%	THEOREM STYLES
+%---------------------------------------------------------------------------------------
+
+\theoremstyle{definition} % Define theorem styles here based on the definition style (used for definitions and examples)
+\newtheorem{definition}{Definition}
+
+\theoremstyle{plain} % Define theorem styles here based on the plain style (used for theorems, lemmas, propositions)
+\newtheorem{theorem}{Theorem}
+
+\theoremstyle{remark} % Define theorem styles here based on the remark style (used for remarks and notes)
+
+%----------------------------------------------------------------------------------------
+%	HYPERLINKS
+%---------------------------------------------------------------------------------------
+\usepackage[colorlinks]{hyperref}
+%\hypersetup{
+%%draft, % Uncomment to remove all links (useful for printing in black and white)
+%colorlinks=true, breaklinks=true, bookmarks=true,bookmarksnumbered,
+%urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen, % Link colors
+%pdftitle={}, % PDF title
+%pdfauthor={\textcopyright}, % PDF Author
+%pdfsubject={}, % PDF Subject
+%pdfkeywords={}, % PDF Keywords
+%pdfcreator={pdfLaTeX}, % PDF Creator
+%pdfproducer={LaTeX with hyperref and ClassicThesis} % PDF producer
+%}
+
+\hyphenation{Fortran hy-phen-ation} % Specify custom hyphenation points in words with dashes where you would like hyphenation to occur, or alternatively, don't put any dashes in a word to stop hyphenation altogether
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND AUTHOR(S)
+%----------------------------------------------------------------------------------------
+
+\title{\normalfont\spacedallcaps{Article Title}} % The article title
+
+%\subtitle{Subtitle} % Uncomment to display a subtitle
+
+\author{\spacedlowsmallcaps{John Smith* \& James Smith\textsuperscript{1}}} % The article author(s) - author affiliations need to be specified in the AUTHOR AFFILIATIONS block
+
+%\date{} % An optional date to appear under the author(s)
+
+%----------------------------------------------------------------------------------------
+
+\newcommand{\ttitle}{$title$}
+ \newcommand{\ttitlejapstraight}{
+   $for(titlejap)$ $titlejap$ $endfor$
+ }
+ \newcommand{\ttitlejap}{
+   $for(titlejap)$$titlejap$$sep$\linebreak $endfor$
+ }
+
+
+\begin{document}
+$for(include-before)$
+  $include-before$
+$endfor$
+
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%%	HEADERS
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%
+%%%hasan%%%%\renewcommand{\sectionmark}[1]{\markright{\spacedlowsmallcaps{#1}}} % The header for all pages (oneside) or for even pages (twoside)
+%%%hasan%%%%%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
+%%%hasan%%%%\lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
+%%%hasan%%%%
+%%%hasan%%%%%\pagestyle{scrheadings} % Enable the headers specified in this block
+%%%hasan%%%%\pagestyle{plain} % Enable the headers specified in this block
+%%%hasan%%%%
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%%	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%\titlepage
+%%%hasan%%%%%\maketitle % Print the title/author/date block
+%%%hasan%%%%
+%%%hasan%%%%\begin{center}
+%%%hasan%%%%{\large \bfseries Abstract}\vspace{3cm} % Thesis title
+%%%hasan%%%%
+%%%hasan%%%%{\large \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
+%%%hasan%%%%\end{center}
+%%%hasan%%%%
+%%%hasan%%%%\vspace{4cm}
+%%%hasan%%%%\begin{flushleft}
+%%%hasan%%%%Graduate School of \\
+%%%hasan%%%%Natural Science \& Technology \\
+%%%hasan%%%%Kanazawa University
+%%%hasan%%%%\end{flushleft}
+%%%hasan%%%%\vspace{1cm}
+%%%hasan%%%%
+%%%hasan%%%%\begin{flushright}
+%%%hasan%%%%Division of Mathematical and Physical Sciences
+%%%hasan%%%%\end{flushright}
+%%%hasan%%%%
+%%%hasan%%%%\vspace{4cm}
+%%%hasan%%%%\begin{flushleft}
+%%%hasan%%%%Student ID No. 1724012006 \\
+%%%hasan%%%%Name: Hasan Al Rasyid \\
+%%%hasan%%%%Chief Advisor: Professor Tatsuki ODA \\
+%%%hasan%%%%Date of Submission: \today
+%%%hasan%%%%\end{flushleft}
+%%%hasan%%%%
+%%%hasan%%%%\newpage
+%%%hasan%%%%
+%%%hasan%%%%%\tableofcontents % Print the table of contents
+%%%hasan%%%%%
+%%%hasan%%%%%\listoffigures % Print the list of figures
+%%%hasan%%%%%
+%%%hasan%%%%%\listoftables % Print the list of tables
+%%%hasan%%%%
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%%	ABSTRACT
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%
+%%%hasan%%%%\section*{Abstract} % This section will not appear in the table of contents due to the star (\section*)
+%%%hasan%%%%
+%%%hasan%%%%$abstract$
+%%%hasan%%%%%\lipsum[1] % Dummy text
+%%%hasan%%%%
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%%	AUTHOR AFFILIATIONS
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%
+%%%hasan%%%%%\let\thefootnote\relax\footnotetext{* \textit{Department of Biology, University of Examples, London, United Kingdom}}
+%%%hasan%%%%%
+%%%hasan%%%%%\let\thefootnote\relax\footnotetext{\textsuperscript{1} \textit{Department of Chemistry, University of Examples, London, United Kingdom}}
+%%%hasan%%%%
+%%%hasan%%%%%----------------------------------------------------------------------------------------
+%%%hasan%%%%
+%%%hasan%%%%\newpage % Start the article content on the second page, remove this if you have a longer abstract that goes onto the second page
+%%%hasan%%%%\setcounter{tocdepth}{1} % Set the depth of the table of contents to show sections and subsections only
+%%%hasan%%%%
+%%%hasan%%%%
+
+\noindent 甲（Kou） \\
+様式　４．（Form 4）
+
+\begin{center}
+\centering
+\huge
+学  位  論  文  概  要 \\
+Dissertation Summary
+\end{center}
+
+学位請求論文（Dissertation）
+  \vspace{0.5cm}
+
+{\setstretch{1.5}
+題名  Electronic structures of spinel nickel cobaltite from a spin-polarized quasi-particle self-consistent GW method \\
+(邦訳又は英訳）スピン分極準粒子自己無撞着GW法によるスピネル-ニッケル-コバルタイトの電子構造
+  \vspace{1.0cm}
+  }
+
+
+\hspace{2cm}
+\begin{tabular}{ll}
+専攻（Division）& ：Mathematical and Physical Science \\
+学籍番号（Student ID Number）& ：1724012006 \\
+氏名（Name）& ：Hasan al Rasyid \\
+主任指導教員氏名（Chief supervisor）& ：Tatsuki Oda
+\end{tabular}
+  \vspace{0.5cm}
+
+学位論文概要（Dissertation Summary）
+
+\renewcommand{\topfraction}{1}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\setlength{\floatsep}{5pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{5pt plus 2pt minus 2pt}
+\setlength{\intextsep}{5pt plus 2pt minus 2pt}
+\setstretch{1}
+$body$
+%
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+%\renewcommand{\refname}{\spacedlowsmallcaps{References}} % For modifying the bibliography heading
+%
+%\printbibliography
+%----------------------------------------------------------------------------------------
+
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%end document%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

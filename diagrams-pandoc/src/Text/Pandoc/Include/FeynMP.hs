@@ -42,6 +42,7 @@ doInclude (CodeBlock (_, classes, opts) mp)
                      `hashWithSalt` "_build"
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
+          label = lookup "label" opts
       let out = "Figures" </> mpHash
       let tex = unlines [ "\\documentclass{article}"
                         , "\\usepackage{amsmath}"
@@ -68,8 +69,8 @@ doInclude (CodeBlock (_, classes, opts) mp)
                                     return ()
       return $ Div nullAttr
                 $ [Para
-                    [Image nullAttr
-                      [Str $ fromMaybe "FenymanDiagram" caption] (out, "fig:")
+                    [Image (fromMaybe "" label, [], [])
+                      [RawInline (Format "tex") $ fromMaybe "FenymanDiagram" caption] (out, "fig:")
                     ]
                   ]
 

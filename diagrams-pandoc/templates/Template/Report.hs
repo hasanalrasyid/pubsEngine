@@ -7,7 +7,7 @@ module Template.Report where
 import Text.RawString.QQ
 
 templateLatex = [r|
-%%%%% Template Report
+%%%%% Template Report templates/Template/Report.hs
 \PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
 \PassOptionsToPackage{hyphens}{url}
 $if(colorlinks)$

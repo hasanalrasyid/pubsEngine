@@ -215,9 +215,7 @@ $endfor$
 
 
 $if(title)$
-  $if(beamer)$
-
-  $else$
+$endif$
 
 \frontmatter
 
