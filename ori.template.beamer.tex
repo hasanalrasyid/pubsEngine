@@ -162,7 +162,11 @@ $if(subtitle)$
 \subtitle{$subtitle$}
 $endif$
 $if(author)$
-\author{\small $for(author)$$author$$sep$ \and $endfor$}
+\author{\small $for(author)$$author$$sep$ \and $endfor$ \\
+$if(supervisor)$
+Supervisor: $supervisor$
+$endif$
+}
 $endif$
 $if(date)$
 \date{$date$}

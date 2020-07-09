@@ -51,21 +51,25 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
     width = case lookup "width" namevals of
               Just w -> read w :: Double
               Nothing -> 10
+    label = case lookup "label" namevals of
+              Just w -> w
+              Nothing -> "labelNull"
     img = do
           d <- compileDiagram contents width
-          let imgBlock = RawBlock (Format "latex") $
+          let imgBlock =
                            case d of
                              ParseErr err -> "ParseErr : " ++ err
                              InterpErr err -> "InterpErr : " ++ ppInterpError err ++ contents
                              Skipped hash -> "\\input{" ++ getPGFfilename "Figures/" hash ++ "}"
                              OK _ texnya -> LB.unpack $ toLazyByteString texnya
-                                            {- unlines  [ "\\begin{figure}"
+          let imgBlockFin = RawBlock (Format "latex") $ unlines  [ "\\begin{figure}"
                                                      , "\\centering"
-                                                     , LB.unpack $ toLazyByteString texnya
+                                                     , imgBlock
                                                      , "\\caption{" ++ capt ++ "}"
+                                                     , "\\label{" ++ label ++ "}"
                                                      , "\\end{figure}"
-                                                     ] -}
-          return $ Div (ident,[],[("label",capt)]) [imgBlock,Para [Str capt]]
+                                                     ]
+          return $ Div  (ident,[],[("label",label)]) [imgBlockFin]
     --bl' = CodeBlock (ident, delete "diagram" classes, namevals) contents
 
 processDiagram block = return block
@@ -77,6 +81,7 @@ compileDiagram xDia dWidth = do
   let bopts = mkBuildOpts PGF (zero :: V2 Double)
                 (PGFOptions def (mkWidth dWidth) False standaloneTex)
                   & snippets .~ []
+                  & pragmas .~ [ "FlexibleContexts" ]
                   & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow" ]
                   & diaExpr .~ xDia
                   & decideRegen .~ alwaysRegenerate

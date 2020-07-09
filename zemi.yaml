@@ -17,13 +17,14 @@ biblio-title: Reference
 header-includes: |
   \usepackage{appendix}
   \usepackage{chemfig}
-  \usepackage[version=4]{mhchem}
+  \usepackage{graphicx}
+  \usepackage{grffile}
+  \usepackage[version=3]{mhchem}
   \mhchemoptions{layout=stacked}
   \usepackage{longtable}
   \usepackage{siunitx}
-  \usepackage{hasanCustom}
-  \usepackage{localStyle}
   \usepackage{booktabs}
+  \usepackage{localStyle}
   \def\begincols{\begin{columns}}
   \def\begincol{\begin{column}}
   \def\endcol{\end{column}}
@@ -36,9 +37,10 @@ header-includes: |
   \def\esmallA{}}
   \def\rad{^\bullet}
   \usepackage[absolute,overlay]{textpos}
-
+  \usepackage{caption}
+  \usepackage{modiagram,chemfig}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}
-
+  \captionsetup[figure]{labelfont={bf},labelformat={default},labelsep=period,name={}}
 ---

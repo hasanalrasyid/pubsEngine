@@ -22,7 +22,7 @@ biblio-style: |
             maxbibnames=2,
             block=none
 bibliography: draft.bib
-csl: pubsEngine/classAbstract/physical-review-a.csl
+csl: pubsEngine/class/abstract/physical-review-a.csl
 biblio-title: Reference
 papersize: a4
 header-includes: |

@@ -10,23 +10,24 @@ $if(latex-dir-rtl)$
 $endif$
 $endif$
 %
-\documentclass{article}
+\documentclass[12pt,oneside,a4paper]{article}
 
-\usepackage[numbers]{natbib}
 \usepackage{rotating}
 \usepackage{graphicx}
 
 \usepackage[$margin$]{geometry}
 
-$if(csl-refs)$
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newenvironment{cslreferences}%
-  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
-  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
-  {\par}
-$endif$
+%$if(csl-refs)$
+%\newlength{\cslhangindent}
+%\setlength{\cslhangindent}{1.5em}
+%\newenvironment{cslreferences}%
+%  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
+%  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
+%  {\par}
+%$endif$
 
+\usepackage[backend=bibtex,style=chem-angew,natbib=true]{biblatex}
+\addbibresource{$bibliography$,bibcustom}
 $for(header-includes)$
 $header-includes$
 $endfor$
@@ -37,10 +38,13 @@ $for(include-before)$
 $include-before$
 $endfor$
 
+\pagestyle{empty}
 
 % Title portion
 $if(title)$
-$title$
+\begin{center}
+  {\fontsize{14pt}{1pt}\selectfont  $title$}
+\end{center}
 $endif$
 
 %\affil[aff1]{Replace this text with an author's affiliation (use complete addresses). Note the use of superscript ``a)'' to indicate the author's e-mail address below. Use b), c), etc. to indicate e-mail addresses for more than 1 author.}
@@ -48,28 +52,37 @@ $endif$
 %\affil[aff3]{You would list an author's second affiliation here.}
 %\corresp[cor1]{Corresponding author: your@emailaddress.xxx}
 
+\begin{center}
 $if(author)$
-$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$ $endfor$
+$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$, $endfor$
 $endif$
+  \vspace{0.5cm}
 
 $if(affiliation)$
 $for(affiliation)$
 $$^$affiliation.idx$$${\em $affiliation.aff$} \\
 $endfor$
 $endif$
+\end{center}
 
 
 $if(email)$
+{\begin{center}
 * E-mail: $email$
+\end{center}
+}
 $endif$
+
+\vspace{0.5cm}
 
 $body$
 
-%$if(bibliography)$
+$if(bibliography)$
+\printbibliography
 %\nocite{*}
 %\bibliographystyle{aipnum-cp}%
 %\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
-%$endif$
+$endif$
 
 
 \end{document}
