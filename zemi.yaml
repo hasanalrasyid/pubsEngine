@@ -38,9 +38,11 @@ header-includes: |
   \def\rad{^\bullet}
   \usepackage[absolute,overlay]{textpos}
   \usepackage{caption}
+  \usepackage{braket}
   \usepackage{modiagram,chemfig}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}
-  \captionsetup[figure]{labelfont={bf},labelformat={default},labelsep=period,name={}}
+  \captionsetup[figure]{labelformat=empty}% redefines the caption setup of the figures environment in the beamer class.
+
 ---
