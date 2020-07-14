@@ -31,6 +31,9 @@ dependencies:
 - diagrams
 - diagrams-lib
 - diagrams-builder
+- Chart
+- Chart-diagrams
+- string-qq
 - bytestring
 - containers # pandoc-crossref
 - utility-ht
@@ -55,7 +58,7 @@ library:
 executables:
   pubsEngine:
     main:                pubs.hs
-    source-dirs:         
+    source-dirs:
       - app
       - templates
     dependencies:

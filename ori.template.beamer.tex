@@ -162,17 +162,18 @@ $if(subtitle)$
 \subtitle{$subtitle$}
 $endif$
 $if(author)$
-\author{\small $for(author)$$author$$sep$ \and $endfor$ \\
-$if(supervisor)$
-Supervisor: $supervisor$
-$endif$
+\author{\small $author$
 }
 $endif$
 $if(date)$
 \date{$date$}
 $endif$
 $if(institute)$
-\institute{$institute$}
+\institute{
+$if(supervisor)$
+Supervisor : $supervisor$ \\ \vspace{10pt}
+$endif$
+$institute$}
 $endif$
 
 \providecommand{\tightlist}{%

@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -28,6 +29,7 @@ import Diagrams.Builder.Modules
 import Language.Haskell.Exts.Simple -- Module
 import Data.Hashable -- hashWithSalt
 import System.Directory -- doesFileExist
+import Data.String.QQ
 
 --addPackagePGF pd = addPackagePGF' processDiagram pd
 
@@ -76,13 +78,67 @@ processDiagram block = return block
 
 getPGFfilename d h = d ++ hashToHexStr h ++ ".pgf"
 
+barSnippet :: String
+barSnippet = [s|
+{-
+barStack :: [String] -> [(String,[Double])] -> String -> IO (QDiagram PGF V2 Double Any)
+barStack titles values y_title = do
+       let
+         target = C.plot_bars_titles .~ titles
+                $ C.plot_bars_style .~ C.BarsStacked
+                $ C.plot_bars_values .~ values
+                $ def
+         cb1 = do
+               C.layout_all_font_styles . C.font_size .= 24
+               C.layout_y_axis . C.laxis_title .= y_title
+               C.layout_x_axis . C.laxis_generate .= C.autoIndexAxis (map fst values)
+               C.plot $ C.plotBars target -- $ C.bars titles (C.addIndexes (map snd values))
+         cb = C.render (C.toRenderable (C.execEC cb1))(C._fo_size def)
+       fontSelector <- C._fo_fonts def
+       let env = C.createEnv C.vectorAlignmentFns 800 600 fontSelector
+       let (res,_) = C.runBackend env cb
+       return $ res :: IO (QDiagram PGF V2 Double Any)
+-}
+genBarStack titles vals = C.liftEC $ do
+    styles <- sequence [fmap mkStyle C.takeColor | _ <- titles]
+    C.plot_bars_titles      .= titles
+    C.plot_bars_values      .= vals
+    C.plot_bars_style       .= C.BarsClustered
+    C.plot_bars_spacing     .= C.BarsFixGap 30 5
+    C.plot_bars_item_styles .= styles
+  where
+    mkStyle c = (C.solidFillStyle c, Just (C.solidLine 1.0 $ opaque black))
+--barChart :: [String] -> [(String,[Double])] -> String -> IO (QDiagram PGF V2 Double Any)
+barChart :: [String] -> [(String,[Double])] -> String -> IO (QDiagram PGF V2 Double Any)
+barChart t v y = barChartPrime t v y C.bars
+barStack :: [String] -> [(String,[Double])] -> String -> IO (QDiagram PGF V2 Double Any)
+barStack t v y = barChartPrime t v y genBarStack
+
+barChartPrime titles values y_title genBars = do
+       let
+         cb1 = do
+               C.layout_all_font_styles . C.font_size .= 24
+               C.layout_y_axis . C.laxis_title .= y_title
+               C.layout_x_axis . C.laxis_generate .= C.autoIndexAxis (map fst values)
+               C.plot $ fmap C.plotBars $ genBars titles (C.addIndexes (map snd values))
+         cb = C.render (C.toRenderable (C.execEC cb1))(C._fo_size def)
+       fontSelector <- C._fo_fonts def
+       let env = C.createEnv C.vectorAlignmentFns 800 600 fontSelector
+       let (res,_) = C.runBackend env cb
+       return $ res :: IO (QDiagram PGF V2 Double Any)
+|]
+
 compileDiagram xDia dWidth = do
   let standaloneTex = False
   let bopts = mkBuildOpts PGF (zero :: V2 Double)
                 (PGFOptions def (mkWidth dWidth) False standaloneTex)
-                  & snippets .~ []
+                  & snippets .~ [ barSnippet ]
                   & pragmas .~ [ "FlexibleContexts" ]
-                  & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow" ]
+                  & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow", "Data.List" ]
+                  & qimports .~ [ ("Graphics.Rendering.Chart.State", "C")
+                                , ("Graphics.Rendering.Chart.Easy", "C")
+                                , ("Graphics.Rendering.Chart.Backend.Diagrams", "C")
+                                ]
                   & diaExpr .~ xDia
                   & decideRegen .~ alwaysRegenerate
   buildDiagram' bopts

@@ -37,12 +37,11 @@ header-includes: |
   \def\esmallA{}}
   \def\rad{^\bullet}
   \usepackage[absolute,overlay]{textpos}
-  \usepackage{caption}
+  \usepackage[labelformat=empty]{caption}
   \usepackage{braket}
   \usepackage{modiagram,chemfig}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}
-  \captionsetup[figure]{labelformat=empty}% redefines the caption setup of the figures environment in the beamer class.
 
 ---
