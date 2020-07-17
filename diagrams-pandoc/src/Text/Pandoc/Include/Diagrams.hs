@@ -126,6 +126,8 @@ barChartPrime titles values y_title genBars = do
        let env = C.createEnv C.vectorAlignmentFns 800 600 fontSelector
        let (res,_) = C.runBackend env cb
        return $ res :: IO (QDiagram PGF V2 Double Any)
+
+textOnly h w d c t = text t <> rect h w # lw d # (fcA $ withOpacity c 0.1)
 |]
 
 compileDiagram xDia dWidth = do

@@ -1,6 +1,7 @@
 ---
 classoption: fragile
 grid: true
+date: false
 fontsize: 10pt
 colorlinks: true
 polyglossia-lang:
@@ -40,6 +41,13 @@ header-includes: |
   \usepackage[labelformat=empty]{caption}
   \usepackage{braket}
   \usepackage{modiagram,chemfig}
+  \usetheme{Boadilla}
+  \usecolortheme{spruce}
+  \usepackage{xeCJK}
+  \setCJKmainfont{IPAMincho}
+  \setCJKsansfont{IPAGothic}
+  \setCJKmonofont{IPAGothic}
+  \everymath{\displaystyle}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}

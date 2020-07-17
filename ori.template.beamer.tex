@@ -162,18 +162,23 @@ $if(subtitle)$
 \subtitle{$subtitle$}
 $endif$
 $if(author)$
-\author{\small $author$
-}
-$endif$
-$if(date)$
-\date{$date$}
-$endif$
-$if(institute)$
-\institute{
+
+\vspace{40pt}
+
+\author[$author$]{\small $author$
 $if(supervisor)$
-Supervisor : $supervisor$ \\ \vspace{10pt}
+\\ Supervisor : $supervisor$ \\ \vspace{60pt}
 $endif$
-$institute$}
+}
+%$endif$
+%$if(date)$
+%\date{$date$}
+%$endif$
+
+
+$if(institute)$
+\institute[$institute-short$]{
+\large $institute$}
 $endif$
 
 \providecommand{\tightlist}{%
@@ -183,6 +188,8 @@ $if(grid)$
 \usepackage[texcoord,grid,gridcolor=red!10,subgridcolor=green!10,gridunit=pt]{eso-pic}
 $endif$
 
+
+\date{}
 \begin{document}
 $for(include-before)$
 $include-before$
