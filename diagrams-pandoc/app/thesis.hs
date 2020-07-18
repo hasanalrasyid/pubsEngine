@@ -42,6 +42,7 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
   | "note" `elem` classes = genEnv t  "}" "\\note{"
+  | "hidethis" `elem` classes = genEnv ""  "\\fi" "\\iffalse"
   | "postbegin" `elem` classes =
     genEnv t "" $
       "\\begin{columns}[t,onlytextwidth] \\begin{column}{0.485\\textwidth}"
