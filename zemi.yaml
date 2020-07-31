@@ -43,6 +43,7 @@ header-includes: |
   \usepackage{modiagram,chemfig}
   \usetheme{Boadilla}
   \usecolortheme{spruce}
+  \usepackage{xhfill}
   \usepackage{xeCJK}
   \setCJKmainfont{IPAMincho}
   \setCJKsansfont{IPAGothic}

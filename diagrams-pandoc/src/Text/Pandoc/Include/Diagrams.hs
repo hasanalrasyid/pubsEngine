@@ -127,6 +127,8 @@ barChartPrime titles values y_title genBars = do
        let (res,_) = C.runBackend env cb
        return $ res :: IO (QDiagram PGF V2 Double Any)
 
+hideThis x = x # opacity 0
+
 textOnly h w d c t = text t <> rect h w # lw d # (fcA $ withOpacity c 0.1)
 |]
 
@@ -136,10 +138,11 @@ compileDiagram xDia dWidth = do
                 (PGFOptions def (mkWidth dWidth) False standaloneTex)
                   & snippets .~ [ barSnippet ]
                   & pragmas .~ [ "FlexibleContexts" ]
-                  & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow", "Data.List" ]
+                  & imports .~ [ "Diagrams.Backend.PGF" , "Diagrams.TwoD.Arrow", "Data.List"]
                   & qimports .~ [ ("Graphics.Rendering.Chart.State", "C")
                                 , ("Graphics.Rendering.Chart.Easy", "C")
                                 , ("Graphics.Rendering.Chart.Backend.Diagrams", "C")
+                                , ("Diagrams.Color.XKCD", "X")
                                 ]
                   & diaExpr .~ xDia
                   & decideRegen .~ alwaysRegenerate
