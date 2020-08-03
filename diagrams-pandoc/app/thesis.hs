@@ -19,11 +19,18 @@ import Data.Maybe
 import System.Environment (getArgs)
 
 import System.Exit
+-- import System.IO (hPutStrLn, stderr)
 
 doThemAll (Pandoc mt blks) = do
-  blks' <- walkM doBlock blks
-  blks'' <- walkM doBlock blks'
+--  hPutStrLn stderr $ "===doThemAll"
+  blks' <- do
+--    hPutStrLn stderr "===blks'"
+    walkM doBlock blks
+  blks'' <- do
+--    hPutStrLn stderr "===blks'"
+    walkM doBlock blks'
   p <- doPandoc (Pandoc mt blks'')
+--  hPutStrLn stderr $ "!==doThemAll"
   return p
 
 doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
@@ -35,7 +42,12 @@ doCrossRef p@(Pandoc meta blocks) = do
       meta' = autoEqnLabels True <> meta
 
 doBlock :: Block -> IO Block
-doBlock cb@(CodeBlock (_, classes, namevals) t)
+doBlock c = do
+--  hPutStrLn stderr $ "====doBlock=====" ++ show c
+  doBlock1 c
+
+doBlock1 :: Block -> IO Block
+doBlock1 cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = IMM.doInclude cb
   | "feynmp" `elem` classes = IF.doInclude cb
   | "delegate" `elem` classes = IDel.doInclude cb
@@ -71,7 +83,9 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
                                      , [ RawBlock (Format "latex") en ]
                                      ]
 
-doBlock x = return x
+doBlock1 x = do
+--  hPutStrLn stderr $ "unknown x" ++ show x
+  return x
 
 data NLine = SingleLine | MultiLine
 
