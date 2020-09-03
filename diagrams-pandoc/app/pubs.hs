@@ -33,6 +33,7 @@ import qualified Template.Report as R
 
 import Text.Pandoc.Include.Common
 import qualified Data.Map as M
+import qualified Data.Key as MM
 
 main :: IO ()
 main = do
@@ -45,7 +46,9 @@ main = do
   doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
-             Right p -> doThemAll p
+             Right p -> do
+--               p1 <- updateMeta1 p
+               doThemAll p
              --Right p -> doThemAll $ updateMeta defaultMeta p
   --result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
   templateLatex <- TIO.readFile templateFile
@@ -57,6 +60,20 @@ main = do
    setTemplate "abstract" = A.templateLatex
    setTemplate "thesis" = Thesis.templateLatex
    setTemplate _ = R.templateLatex
+
+updateMeta1 (Pandoc (Meta mt) blks) = do
+  putStrLn $ show mt
+  mt' <- MM.mapWithKeyM updateMeta2 mt
+  return $ Pandoc (Meta $ M.fromList $ M.elems mt') blks
+    where
+      updateMeta2 "mdacknowledgements" (MetaInlines (Str ackF :_)) = do
+        ackMD <- TIO.readFile ackF
+        ackEP <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) ackMD
+        case ackEP of
+          Left _ -> error "failed in updateMeta2"
+          Right (Pandoc _ ackBlocks) -> pure $ ("acknowledgements", MetaBlocks ackBlocks)
+      updateMeta2 k m = pure (k,m)
+
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) =
   let mt' = M.mapWithKey (updateMeta' mt) mt0

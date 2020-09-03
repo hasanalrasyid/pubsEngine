@@ -29,13 +29,16 @@ md2LaTeX t = let param = def { readerExtensions = foldr enableExtension pandocEx
 
 linkTex :: Pandoc -> IO Pandoc
 linkTex p@(Pandoc mt blks) = do
-  let md@(bib:mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["bibliography","mdappendix","mdquote","mdacknowledgements"]
+  let md@(bib:mdappendix:mdquote:mdacknowledgements:mdabbrev:mddedication:_) =
+        map ((flip lookupMeta) mt) ["bibliography","mdappendix","mdquote","mdacknowledgements","mdabbrev","mddedication"]
   let mdall = concat $ map fromMetaInlines_Str $ catMaybes md
   mapM_ mdFile2LaTeX mdall
-  let mt' = genMeta mt [ ("auto-appendix",[mdappendix])
-                       , ("auto-acknowledgements",[mdacknowledgements])
-                       , ("auto-quote",[mdquote])
-                       ]
+
+  mt' <- autoMeta "auto-acknowledgements" mdacknowledgements mt >>=
+         autoMeta "auto-quote" mdquote >>=
+         autoMeta "auto-abbreviations" mdabbrev >>=
+         autoMeta "auto-dedication" mddedication
+
 --  putStrLn $ (++) "====" $ show $ catMaybes texs
   let command = map genLn $ concat $ map (map (genPerintah ".bib")) $ map fromMetaInlines_Str $ catMaybes [bib]
   if (null bib) then return ()
@@ -43,6 +46,17 @@ linkTex p@(Pandoc mt blks) = do
 
   return $ Pandoc mt' blks
     where
+      autoMeta autoX mdX target = do
+        ackMD <- T.readFile $ fromMaybeMetaValue "blank.md" mdX
+        ackEP <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) ackMD
+        ackBlocks <- case ackEP of
+                      Left _ -> error "error ackEP"
+                      Right (Pandoc _ a) -> pure a
+        pure $ addMetaField autoX (MetaBlocks ackBlocks) target
+
+      fromMaybeMetaValue s Nothing = s
+      fromMaybeMetaValue _ (Just (MetaInlines (Str s:_))) = s ++ ".md"
+      fromMaybeMetaValue s _ = s
       genMeta r0 ((s,ts):sts) =
         let rM = addMetaField s (fromList $ map genRawBlock ts) r0
          in genMeta rM sts

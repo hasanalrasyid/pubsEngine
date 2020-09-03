@@ -1,3 +1,7 @@
+---
+mdacknowledgements: ack.md
+---
+
 testthis
 
 ~~~~{.textblock w=340pt pos=(10pt,50pt)}

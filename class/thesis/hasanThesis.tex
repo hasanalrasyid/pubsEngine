@@ -23,7 +23,7 @@
 %----------------------------------------------------------------------------------------
 
 \documentclass[
-11pt, % The default document font size, options: 10pt, 11pt, 12pt
+12pt, % The default document font size, options: 10pt, 11pt, 12pt
 %oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
 english, % ngerman for German
 %singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing
@@ -62,6 +62,11 @@ $endfor$
 
 \usepackage{xspace}
 \usepackage{datetime}
+\usepackage{caption}
+
+\usepackage{fontspec}
+
+
 \usepackage{xeCJK}
 \setCJKmainfont{IPAMincho}
 \setCJKsansfont{IPAGothic}
@@ -125,12 +130,12 @@ $endfor$
 \begin{titlepage}
 \begin{center}
 
-\vspace*{.03\textheight}
+\vspace*{-0.02\textheight}
 %{\scshape\LARGE \univname\par}\vspace{1.5cm} % University name
 \textsc{\large $thesistype$ Thesis}\\[0.5cm] % Thesis type
 
 \HRule \\[0.4cm] % Horizontal line
-  {\center\LARGE \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
+  {\center\large \bfseries \ttitle \\{\textsf\ttitlejap} \par}\vspace{0.4cm} % Thesis title
 \HRule \\[1.5cm] % Horizontal line
 
 \begin{minipage}[t]{0.4\textwidth}
@@ -192,7 +197,7 @@ $authoridnum$
 
 \vspace*{0.2\textheight}
 
-$quotation$
+$auto-quote$
 
 %\noindent\enquote{\itshape Thanks to my solid academic training, today I can write hundreds of words on virtually any topic without possessing a shred of information, which is how I got a good job in journalism.}\bigbreak
 %
@@ -213,7 +218,7 @@ $abstract$
 
 \begin{acknowledgements}
 \addchaptertocentry{\acknowledgementname} % Add the acknowledgements to the table of contents
-$acknowledgements$
+$auto-acknowledgements$
 %The acknowledgments and the people to thank go here, don't forget to include your project advisor\ldots
 \end{acknowledgements}
 
@@ -231,16 +236,19 @@ $acknowledgements$
 %	ABBREVIATIONS
 %----------------------------------------------------------------------------------------
 
-\begin{abbreviations}{ll} % Include a list of abbreviations (a table of two columns)
 
-\input{$abbreviationtex$}
-\end{abbreviations}
+%%%%%%%\begin{abbreviations}{ll} % Include a list of abbreviations (a table of two columns)
+%%%%%%%
+%%%%%%%  \captionsetup[table]{list=no}
+%%%%%%%
+%%%%%%%auto-abbreviations
+%%%%%%%\end{abbreviations}
 
 %----------------------------------------------------------------------------------------
 %	DEDICATION
 %----------------------------------------------------------------------------------------
 
-\dedicatory{$dedication$\ldots}
+\dedicatory{$auto-dedication$}
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - CHAPTERS
@@ -252,6 +260,8 @@ $acknowledgements$
 
 % Include the chapters of the thesis as separate files from the Chapters folder
 % Uncomment the lines as you write the chapters
+
+\captionsetup[table]{list=yes}
 
 $body$
 
