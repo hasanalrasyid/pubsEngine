@@ -1,0 +1,3 @@
+just
+  make
+make sure have pandoc and pandoc-citeproc from outside pandoc
