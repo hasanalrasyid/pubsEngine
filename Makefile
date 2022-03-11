@@ -3,11 +3,11 @@ Extracted := $(lastword $(shell find extern -maxdepth 1 -type d))
 
 build:
 ifeq ($(Extracted),extern)
+	$(info "Checked external libraries")
+else
 	$(info "Unpacking external libraries")
 	$(foreach tbz,$(EXTs),\
 		$(shell tar -xf $(tbz) -C extern))
-else
-	$(info "Checked external libraries")
 endif
 	stack install pandoc
 	stack build

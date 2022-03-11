@@ -22,6 +22,7 @@ test/images
 test/*.html
 /test/.cabal-sandbox
 .stack-work/
-diagrams-pandoc.cabal
+*.cabal
 extern/nodejs
 .mermaid
+*.lock
