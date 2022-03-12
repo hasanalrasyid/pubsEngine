@@ -45,10 +45,10 @@ $if(author)$
 
   \author{$for(author)$$author.name$
          \inst{$author.number$}$if(author.correspond)$\fnmsep\thanks{Corresponding author}$endif$
-         $sep$, $endfor$}
+         $sep$\and $endfor$}
 
    \institute{$for(author)$ $author.affiliation$, $author.address$ \\
-              \email{$author.email$}$sep$, $endfor$ }
+              \email{$author.email$}$sep$\and $endfor$ }
 % Institute for Astronomy (IfA), University of Vienna,
 %              T\"urkenschanzstrasse 17, A-1180 Vienna\\
 %              \email{wuchterl@amok.ast.univie.ac.at}

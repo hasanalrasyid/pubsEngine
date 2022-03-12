@@ -37,6 +37,8 @@ header-includes: |
   \usepackage{longtable}
   \usepackage{siunitx}
   \usepackage{booktabs}
+  \providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}

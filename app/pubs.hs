@@ -43,9 +43,8 @@ import System.Process (callCommand)
 
 main :: IO ()
 main = do
-  (mdFileName:format:_) <- getArgs
-  mdFile <- TIO.readFile mdFileName
-  let fileName = takeBaseName mdFileName
+  (fileName:format:_) <- getArgs
+  mdFile <- TIO.readFile $ fileName ++ ".md"
   d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
   let defaultMeta = case d of
                       Left err -> error "error on meta"
@@ -61,24 +60,22 @@ main = do
   rst <- handleError result
   TIO.writeFile ("_build/" ++ fileName ++ ".tex") rst
   let (Pandoc (Meta meta) _) = newDoc
-  putStrLn $ show meta
   TIO.putStrLn "======================"
   _ <- case M.lookup "linkDir" meta of
         Nothing -> return $ MetaList []
         Just linkDir -> flip walkM linkDir $ \(Str a) -> do
                           putStrLn $ show a
-                          callCommand $ unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
+                          callCommand $ unlines [ "rm -f _build/" ++ a
+                                                , unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
+                                                ]
                           return $ Str a
   callCommand $ unlines [ "pushd _build"
-                        , "unzip additional.zip"
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "bibtex " ++ fileName
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "popd" ]
   TIO.putStrLn "======================"
-    --Just (MetaList linkDir) -> forM_ linkDir $ \(MetaInlines m) -> do
-    --                            putStrLn $ show $ concat m
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
