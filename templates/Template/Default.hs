@@ -37,14 +37,21 @@ header-includes: |
   \usepackage{longtable}
   \usepackage{siunitx}
   \usepackage{booktabs}
+  \usepackage{algorithm}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}
-title: "Default Title"
-author: "Default Author Ph.D"
+title:
+author:
+titleshort:
+authorshort:
 email: "defaultEmail@domain.edu"
-abstract: "Default Abstract"
+abstract:
+abstractTex:
 appendix:
 linkDir:
+acknowledgements:
+keywords: default keywords -- math symbol $\gamma$ -- latex -- pandoc
+
 ---
   |]

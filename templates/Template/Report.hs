@@ -62,12 +62,12 @@ mainTemplate = return [r|
 
 
 $if(title)$
-  \slimtitle{$title$}
+  \slimtitle{$titleshort$}
 $endif$
 %\slimtitle{Paperlighter Example}
 
 $if(author)$
-\slimauthor{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$ $endfor$}
+\slimauthor{$authorshort$}
 $endif$
 %\slimauthor{Author One et al.}
 
@@ -80,7 +80,7 @@ $endif$
 %\lightertitle{Paperlighter Example}
 
 $if(author)$
-  \lighterauthor{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep${, }$endfor$}
+  \lighterauthor{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.affiliation$}$$$sep${, }$endfor$}
 
 $endif$
 
@@ -112,7 +112,7 @@ $body$
 %\bibliographystyle{plainnat}
 %\bibliography{ref}
 $if(bibliography)$
-\bibliographystyle{aipnum-cp}%
+\bibliographystyle{plainnat}%
 \bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
 $endif$
 

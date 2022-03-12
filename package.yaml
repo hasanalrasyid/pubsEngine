@@ -59,6 +59,7 @@ executables:
       - app
       - templates
     dependencies:
+      - file-embed
       - pubsEngine
     ghc-options:
     - -threaded

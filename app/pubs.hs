@@ -31,6 +31,7 @@ import qualified Template.Poster as P
 import qualified Template.Abstract as A
 import qualified Template.Thesis as Thesis
 import qualified Template.Report as R
+import qualified Template.Article as Article
 import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
@@ -52,7 +53,9 @@ main = do
   doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
-             Right p -> doThemAll $ updateMeta defaultMeta p fileName
+             Right p@(Pandoc pM pP) -> do
+              putStrLn $ show pM
+              doThemAll $ updateMeta defaultMeta p fileName
   template <- setTemplate format
   result <- runIO $ writeLaTeX (def{writerTemplate = Just template, writerTopLevelDivision = TopLevelSection}) newDoc
   rst <- handleError result
@@ -66,6 +69,13 @@ main = do
                           putStrLn $ show a
                           callCommand $ unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
                           return $ Str a
+--callCommand $ unlines [ "pushd _build"
+--                      , "unzip additional.zip"
+--                      , "pdflatex " ++ fileName ++ ".tex"
+--                      , "bibtex " ++ fileName
+--                      , "pdflatex " ++ fileName ++ ".tex"
+--                      , "pdflatex " ++ fileName ++ ".tex"
+--                      , "popd" ]
   TIO.putStrLn "======================"
     --Just (MetaList linkDir) -> forM_ linkDir $ \(MetaInlines m) -> do
     --                            putStrLn $ show $ concat m
@@ -74,7 +84,9 @@ main = do
    setTemplate "abstract" = A.templateLatex
    setTemplate "thesis" = Thesis.templateLatex
    setTemplate "report" = R.templateLatex
+   setTemplate "article" = Article.templateLatex
    setTemplate _ = R.templateLatex
+
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
   let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0
