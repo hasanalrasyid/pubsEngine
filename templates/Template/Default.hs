@@ -37,7 +37,6 @@ header-includes: |
   \usepackage{longtable}
   \usepackage{siunitx}
   \usepackage{booktabs}
-  \usepackage{algorithm}
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}

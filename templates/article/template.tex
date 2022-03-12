@@ -43,9 +43,9 @@ $if(author)$
 %  \author{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.affiliation$}$$$sep${, }$endfor$}
 %\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
 
-%  \author{$for(author)$$author.name$
-%         \inst{$author.number$}$if(author.correspond)$\fnmsep\thanks{Corresponding author}$endif$
-%         $sep$, $endfor$}
+  \author{$for(author)$$author.name$
+         \inst{$author.number$}$if(author.correspond)$\fnmsep\thanks{Corresponding author}$endif$
+         $sep$, $endfor$}
 
    \institute{$for(author)$ $author.affiliation$, $author.address$ \\
               \email{$author.email$}$sep$, $endfor$ }

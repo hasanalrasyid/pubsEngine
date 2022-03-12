@@ -69,13 +69,13 @@ main = do
                           putStrLn $ show a
                           callCommand $ unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
                           return $ Str a
---callCommand $ unlines [ "pushd _build"
---                      , "unzip additional.zip"
---                      , "pdflatex " ++ fileName ++ ".tex"
---                      , "bibtex " ++ fileName
---                      , "pdflatex " ++ fileName ++ ".tex"
---                      , "pdflatex " ++ fileName ++ ".tex"
---                      , "popd" ]
+  callCommand $ unlines [ "pushd _build"
+                        , "unzip additional.zip"
+                        , "pdflatex " ++ fileName ++ ".tex"
+                        , "bibtex " ++ fileName
+                        , "pdflatex " ++ fileName ++ ".tex"
+                        , "pdflatex " ++ fileName ++ ".tex"
+                        , "popd" ]
   TIO.putStrLn "======================"
     --Just (MetaList linkDir) -> forM_ linkDir $ \(MetaInlines m) -> do
     --                            putStrLn $ show $ concat m
