@@ -46,13 +46,15 @@ main = do
   newDoc <- case doc of
              Left err -> error "we have error"
              Right p -> doThemAll $ updateMeta defaultMeta p
-  result <- runIO $ writeLaTeX (def{writerTemplate = Just $ setTemplate format}) newDoc
+  template <- setTemplate format
+  result <- runIO $ writeLaTeX (def{writerTemplate = Just template}) newDoc
   rst <- handleError result
   TIO.putStrLn rst
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
-   setTemplate "Thesis" = Thesis.templateLatex
+   setTemplate "thesis" = Thesis.templateLatex
+   setTemplate "report" = R.templateLatex
    setTemplate _ = R.templateLatex
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) =

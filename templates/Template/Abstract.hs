@@ -6,7 +6,8 @@ module Template.Abstract where
 
 import Text.RawString.QQ
 
-templateLatex = [r|
+templateLatex :: IO String
+templateLatex = return [r|
 %%%% Template Abstract
 % Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode$for(hyperrefoptions)$,$hyperrefoptions$$endfor$}{hyperref}

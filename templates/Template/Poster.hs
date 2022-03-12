@@ -6,7 +6,8 @@ module Template.Poster where
 
 import Text.RawString.QQ
 
-templateLatex = [r|
+templateLatex :: IO String
+templateLatex = return [r|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Local Variables:

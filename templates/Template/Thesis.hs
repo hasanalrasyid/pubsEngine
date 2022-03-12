@@ -7,7 +7,8 @@ module Template.Thesis where
 import Text.RawString.QQ
 import qualified Data.Text as T
 
-templateLatex = [r|
+templateLatex :: IO String
+templateLatex = return [r|
 %%%% Template Thesis
 \PassOptionsToPackage{unicode=true}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
