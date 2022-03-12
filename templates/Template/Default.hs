@@ -45,5 +45,6 @@ author: "Default Author Ph.D"
 email: "defaultEmail@domain.edu"
 abstract: "Default Abstract"
 appendix:
+linkDir:
 ---
   |]

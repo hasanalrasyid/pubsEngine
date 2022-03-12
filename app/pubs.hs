@@ -2,6 +2,7 @@
 --stack --resolver lts-11.9  --install-ghc runghc --package diagrams-pandoc --stack-yaml /home/aku/kanazawa/report/pubsEngine/diagrams-pandoc/stack.yaml
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 import qualified Text.Pandoc.Include.Table as IT
 import qualified Text.Pandoc.Include.Thesis as IH
@@ -35,6 +36,9 @@ import qualified Template.Default as Default
 import Text.Pandoc.Include.Common
 import qualified Data.Map as M
 import System.FilePath.Posix (takeBaseName)
+import Data.Aeson (toJSON)
+import Control.Monad (forM_)
+import System.Process (callCommand)
 
 main :: IO ()
 main = do
@@ -55,8 +59,16 @@ main = do
   TIO.writeFile ("_build/" ++ fileName ++ ".tex") rst
   let (Pandoc (Meta meta) _) = newDoc
   putStrLn $ show meta
-  --TIO.putStrLn "======================"
-  --putStrLn $ show defaultMeta
+  TIO.putStrLn "======================"
+  _ <- case M.lookup "linkDir" meta of
+        Nothing -> return $ MetaList []
+        Just linkDir -> flip walkM linkDir $ \(Str a) -> do
+                          putStrLn $ show a
+                          callCommand $ unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
+                          return $ Str a
+  TIO.putStrLn "======================"
+    --Just (MetaList linkDir) -> forM_ linkDir $ \(MetaInlines m) -> do
+    --                            putStrLn $ show $ concat m
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -70,13 +82,13 @@ updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
 
 -- ("appendix",MetaBlocks [Plain [Str "appendix/app1",SoftBreak,Str "appendix/app2"]])
 -- ("appendix",MetaString "")
-updateMeta' mt "appendix" x = case M.lookup "appendix" mt of
-                                Nothing -> x
-                                Just a -> a
 updateMeta' mt key x = case M.lookup key mt of
                          Nothing -> x
-                         Just (MetaBlocks a) -> let (MetaBlocks xx) = x
-                                                 in MetaBlocks $ xx ++ a
+                         Just m@(MetaBlocks a) -> case key of
+                                                    "appendix" -> m
+                                                    "linkDir" -> m
+                                                    _ -> let (MetaBlocks xx) = x
+                                                          in MetaBlocks $ xx ++ a
                          Just a -> a
 
 doThemAll (Pandoc mt blks) = do

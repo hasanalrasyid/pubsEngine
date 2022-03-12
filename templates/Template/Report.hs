@@ -80,7 +80,7 @@ $endif$
 %\lightertitle{Paperlighter Example}
 
 $if(author)$
-  \lighterauthor{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep$ $endfor$}
+  \lighterauthor{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.aff$}$$$sep${, }$endfor$}
 
 $endif$
 
@@ -120,7 +120,7 @@ $if(appendix)$
 \newpage
 \appendix
   $for(appendix)$
-    \input{$appendix$$sep$,}
+    \input{$appendix$}
   $endfor$%
 $endif$
 %\newpage
