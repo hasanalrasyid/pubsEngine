@@ -402,5 +402,7 @@ header-includes: |
 include-before: |
   \input{hasanHyp}
   \sisetup{table-format=-3.4}
+title: "Default Title"
+author: "Default Author Ph.D"
 ---
   |]

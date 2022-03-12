@@ -30,26 +30,33 @@ import qualified Template.Poster as P
 import qualified Template.Abstract as A
 import qualified Template.Thesis as Thesis
 import qualified Template.Report as R
+import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
 import qualified Data.Map as M
+import System.FilePath.Posix (takeBaseName)
 
 main :: IO ()
 main = do
-  (mdF:format:_) <- getArgs
-  mdFile <- TIO.readFile mdF
-  d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Thesis.templateYaml
+  (mdFileName:format:_) <- getArgs
+  mdFile <- TIO.readFile mdFileName
+  let fileName = takeBaseName mdFileName
+  d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
   let defaultMeta = case d of
                       Left err -> error "error on meta"
                       Right (Pandoc m _) -> m
   doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
   newDoc <- case doc of
              Left err -> error "we have error"
-             Right p -> doThemAll $ updateMeta defaultMeta p
+             Right p -> doThemAll $ updateMeta defaultMeta p fileName
   template <- setTemplate format
-  result <- runIO $ writeLaTeX (def{writerTemplate = Just template}) newDoc
+  result <- runIO $ writeLaTeX (def{writerTemplate = Just template, writerTopLevelDivision = TopLevelSection}) newDoc
   rst <- handleError result
-  TIO.putStrLn rst
+  TIO.writeFile ("_build/" ++ fileName ++ ".tex") rst
+  let (Pandoc (Meta meta) _) = newDoc
+  putStrLn $ show meta
+  --TIO.putStrLn "======================"
+  --putStrLn $ show defaultMeta
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -57,10 +64,15 @@ main = do
    setTemplate "report" = R.templateLatex
    setTemplate _ = R.templateLatex
 
-updateMeta (Meta mt0) (Pandoc (Meta mt) blks) =
-  let mt' = M.mapWithKey (updateMeta' mt) mt0
+updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
+  let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0
    in Pandoc (Meta mt') blks
 
+-- ("appendix",MetaBlocks [Plain [Str "appendix/app1",SoftBreak,Str "appendix/app2"]])
+-- ("appendix",MetaString "")
+updateMeta' mt "appendix" x = case M.lookup "appendix" mt of
+                                Nothing -> x
+                                Just a -> a
 updateMeta' mt key x = case M.lookup key mt of
                          Nothing -> x
                          Just (MetaBlocks a) -> let (MetaBlocks xx) = x
