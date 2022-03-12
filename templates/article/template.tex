@@ -60,7 +60,10 @@ $if(author)$
 %             }
 $endif$
 
-   \date{Received September 15, 1996; accepted March 16, 1997}
+$if(processDate)$
+  \date{Received $processDate.received$; accepted $processDate.accepted$}
+%   \date{Received September 15, 1996; accepted March 16, 1997}
+$endif$
 
 % \abstract{}{}{}{}{}
 % 5 {} token are mandatory

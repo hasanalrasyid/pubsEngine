@@ -75,7 +75,8 @@ main = do
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "popd" ]
-  TIO.putStrLn "======================"
+  putStrLn "======================"
+  putStrLn $ show meta
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
