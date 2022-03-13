@@ -76,9 +76,6 @@ main = do
                         , "pdflatex " ++ fileName ++ ".tex"
                         , "popd" ]
   putStrLn "======================"
-  putStrLn $ show meta
-  putStrLn "======================"
-  TIO.putStrLn rst
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -105,7 +102,7 @@ updateMeta' mt key x = case M.lookup key mt of
 
 doThemAll (Pandoc mt blks0) = do
   blks1 <- walkM doBlock blks0
-  blks2 <- walkM doBlock blks1
+  blks  <- walkM doBlock blks1
   p <- doPandoc (Pandoc mt blks)
   return p
 
