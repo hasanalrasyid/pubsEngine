@@ -77,6 +77,8 @@ main = do
                         , "popd" ]
   putStrLn "======================"
   putStrLn $ show meta
+  putStrLn "======================"
+  TIO.putStrLn rst
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -101,12 +103,13 @@ updateMeta' mt key x = case M.lookup key mt of
                                                           in MetaBlocks $ xx ++ a
                          Just a -> a
 
-doThemAll (Pandoc mt blks) = do
-  blks' <- walkM doBlock blks
-  blks'' <- walkM doBlock blks'
-  p <- doPandoc (Pandoc mt blks'')
+doThemAll (Pandoc mt blks0) = do
+  blks1 <- walkM doBlock blks0
+  blks2 <- walkM doBlock blks1
+  p <- doPandoc (Pandoc mt blks)
   return p
 
+doPandoc :: Pandoc -> IO Pandoc
 doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
 
 doCrossRef p@(Pandoc meta blocks) = do

@@ -13,7 +13,6 @@ import Control.Monad
 pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_raw_tex
                    , Ext_implicit_figures
-                   , Ext_table_captions
                    , Ext_yaml_metadata_block
                    ]
 
