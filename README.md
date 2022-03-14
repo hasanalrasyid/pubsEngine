@@ -19,5 +19,5 @@ as user:
   curl -o- -L https://yarnpkg.com/install.sh | bash
 
 install mermaid:
-  npm install mermaid-cli
-  ln -s ~/node_modules/.bin/mermaid ~/.local/bin/
+  npm install @mermaid-js/mermaid-cli
+  ln -sf  ~/node_modules/.bin/mmdc ~/.local/bin/mermaid
