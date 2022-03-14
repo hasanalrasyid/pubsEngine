@@ -4,3 +4,6 @@
 [submodule "extern/MultiMarkdown-6"]
 	path = extern/MultiMarkdown-6
 	url = https://github.com/fletcher/MultiMarkdown-6
+[submodule "extern/mermaid-cli"]
+	path = extern/mermaid-cli
+	url = https://github.com/mermaid-js/mermaid-cli

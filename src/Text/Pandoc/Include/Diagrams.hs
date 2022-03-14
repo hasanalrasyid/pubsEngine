@@ -55,8 +55,6 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
           d <- compileDiagram contents width
           let imgBlock = RawBlock (Format "latex") $
                            case d of
-                             ParseErr err -> "ParseErr : " ++ err
-                             InterpErr err -> "InterpErr : " ++ ppInterpError err ++ contents
                              Skipped hash -> "\\input{" ++ getPGFfilename "Figures/" hash ++ "}"
                              OK _ texnya -> LB.unpack $ toLazyByteString texnya
                                             {- unlines  [ "\\begin{figure}"
@@ -65,6 +63,8 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                                                      , "\\caption{" ++ capt ++ "}"
                                                      , "\\end{figure}"
                                                      ] -}
+                             ParseErr err -> "\\begin{verbatim}\n" ++ "ParseErr : " ++ err ++ "\\end{verbatim}\n"
+                             InterpErr err -> "\begin{verbatim}\n" ++ "InterpErr : " ++ ppInterpError err ++ contents ++ "\\end{verbatim}\n"
           return $ Div (ident,[],[("label",capt)]) [imgBlock,Para [Str capt]]
     --bl' = CodeBlock (ident, delete "diagram" classes, namevals) contents
 
