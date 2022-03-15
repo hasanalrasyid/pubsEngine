@@ -18,8 +18,6 @@ import System.Process
 import Text.Pandoc.Definition
 import Data.Maybe
 
-import Text.Pandoc.Mermaid.Run (toPng)
-
 doInclude :: Block -> IO Block
 doInclude (CodeBlock (label, ["mermaid"], opts) md) = do
   let fileName = case lookup "file" opts of
