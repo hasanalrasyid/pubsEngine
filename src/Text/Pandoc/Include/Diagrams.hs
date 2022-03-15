@@ -63,8 +63,8 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                                                      , "\\caption{" ++ capt ++ "}"
                                                      , "\\end{figure}"
                                                      ] -}
-                             ParseErr err -> "\\begin{verbatim}\n" ++ "ParseErr : " ++ err ++ "\\end{verbatim}\n"
-                             InterpErr err -> "\begin{verbatim}\n" ++ "InterpErr : " ++ ppInterpError err ++ contents ++ "\\end{verbatim}\n"
+                             ParseErr err  -> "\\begin{verbatim}\n" ++ "ParseErr : " ++ err ++ "\\end{verbatim}\n"
+                             InterpErr err -> "\\begin{verbatim}\n" ++ "InterpErr : " ++ ppInterpError err ++ contents ++ "\\end{verbatim}\n"
           return $ Div (ident,[],[("label",capt)]) [imgBlock,Para [Str capt]]
     --bl' = CodeBlock (ident, delete "diagram" classes, namevals) contents
 

@@ -12,7 +12,7 @@ import qualified Text.Pandoc.Include.MultiMarkdown as IMM
 import qualified Text.Pandoc.Include.Diagrams as ID
 import qualified Text.Pandoc.Include.Delegate as IDel
 import qualified Text.Pandoc.Include.FeynMP as IF
-import qualified Text.Pandoc.Mermaid.Filter as Mermaid
+import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 
@@ -120,7 +120,7 @@ doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = IMM.doInclude cb
   | "feynmp" `elem` classes = IF.doInclude cb
-  | "mermaid" `elem` classes = Mermaid.doMermaid (Just (Format "latex")) cb
+  | "mermaid" `elem` classes = Mermaid.doInclude cb
   | "delegate" `elem` classes = IDel.doInclude cb
   | "inputTable" `elem` classes = IT.doInclude cb
   | "include" `elem` classes = IM.doInclude cb
