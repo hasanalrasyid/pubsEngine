@@ -118,8 +118,8 @@ executables:
       - app
       - templates
     dependencies:
+      - pandoc
       - file-embed
-      - doctemplates
       - pubsEngine
     ghc-options:
     - -threaded

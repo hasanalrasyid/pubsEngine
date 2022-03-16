@@ -68,10 +68,6 @@ import           Text.Pandoc.JSON
 
 import           Text.Pandoc.Walk
 import Text.Pandoc.Include.Common
---import Text.Pandoc.CrossRef.References.Blocks (divBlocks)
---import Text.Pandoc.CrossRef
-
-takeBlocks (Pandoc _ blocks) = blocks
 
 getContent :: FilePath -> IO [Block]
 getContent file = do
@@ -83,7 +79,6 @@ genPandoc c = do
   (Pandoc _ b) <- runIOorExplode $ readMarkdown param c
   --let b1 = walk divBlocks b
   let b1 = b
---  b1 <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks b
   return b1
     where
       meta' = nullMeta -- autoEqnLabels True

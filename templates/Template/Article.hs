@@ -12,18 +12,19 @@ import qualified Data.ByteString as BS
 import Data.FileEmbed
 import System.Process (callCommand)
 
-templateLatex :: IO String
+templateLatex :: IO (String, String)
 templateLatex = do
-  BS.writeFile "_build/additional.zip" additionalZip
+  BS.writeFile "_build/additional.tbz" additionalZip
+  writeFile "_build/default.tpl" mainTemplate
   callCommand $ unlines [ "pushd _build"
-                        , "unzip -o additional.zip"
+                        , "tar -xf additional.tbz"
                         , "popd"
                         ]
-  return mainTemplate
+  return ("_build/default.tpl", mainTemplate)
 
 mainTemplate :: String
 mainTemplate = $(embedStringFile "templates/article/template.tex")
 
 additionalZip :: BS.ByteString
-additionalZip = $(embedFile "templates/article/aa-package.zip")
+additionalZip = $(embedFile "templates/article/aastex631.tbz")
 

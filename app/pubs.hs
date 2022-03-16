@@ -14,7 +14,8 @@ import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
-import qualified Text.Pandoc.Templates
+import qualified Text.Pandoc.Class as PIO
+import qualified Text.Pandoc.Templates as PT
 
 import Data.Monoid ((<>))
 
@@ -37,8 +38,8 @@ import qualified Data.Map as M
 import System.Process (callCommand)
 
 import qualified Control.Exception as E
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TE
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Text.Pandoc.App
 
@@ -62,17 +63,45 @@ main = do
 --          E.throwIO PandocFailOnWarningError
         return res
 
-  putStrLn "============================================"
-  mdFile <- TIO.readFile $ fileName <> ".md"
+  putStrLn "1==========================================="
   resPandoc@(Pandoc resMeta _) <- runIO' $ do
-    (readerMarkdown, readerExts) <- getReader "markdown"
-    let readerOpts = def {readerStandalone = True}
-    res <- case readerMarkdown of
-            TextReader reader -> reader readerOpts mdFile
-            _ -> error "ERROR: we need markdown input"
-    return res
+    mdFile <- PIO.readFileStrict $ fileName <> ".md"
+    res <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) $ TE.decodeUtf8 mdFile
+    walkM includeMarkdown res
+    -- return res
+  putStrLn $ show resPandoc
+  putStrLn "2=============================="
   putStrLn $ show resMeta
+  r1 <- walkM doBlockIO resPandoc
+  putStrLn "3=============================="
+  case lookupMeta "linkDir" resMeta of
+    Just (MetaList linkDirs) -> do -- putStrLn $ show linkDirs
+      flip walkM_ linkDirs $ \l@(Str link) -> do
+        TIO.putStrLn $ "Creating symbolink link to: " <> link
+        callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> link
+                                           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
+                                           ]
+        return l
+    _ -> putStrLn "no linkDir available"
+  putStrLn "4=============================="
+  r2@(Pandoc t2 p2 ) <- doThemAll r1
+  putStrLn $ show t2
+  putStrLn "n=============================="
+  (tFileName, tFile) <- Article.templateLatex -- format
+--  let template = (templateTex <$) <$> writerTemplate def
+
+  resLatex <- runIO' $ do
+    template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
+    case template of
+      Left e -> error e
+      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) r2
+  TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
+  putStrLn $ show resLatex
   putStrLn "==============================="
+
+
+
+
 --(defaultMeta,p) <- runIO' $ do
 --    (Pandoc defaultMeta _) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
 --    (r :: Pandoc) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
@@ -90,7 +119,7 @@ main = do
   rst <- handleError result
   TIO.writeFile ("_build/" <> fileName <> ".tex") rst
   let (Pandoc (Meta meta) _) = newDoc
-  TIO.putStrLn "======================"
+  0TIO.putStrLn "======================"
   -}
 -- _ <- case M.lookup "linkDir" meta of
 --       Nothing -> return $ MetaList []
@@ -112,9 +141,7 @@ main = do
    setTemplate "abstract" = A.templateLatex
    setTemplate "thesis" = Thesis.templateLatex
    setTemplate "report" = R.templateLatex
-   setTemplate "article" = Article.templateLatex
    setTemplate _ = R.templateLatex
-
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
   let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0
@@ -132,15 +159,26 @@ updateMeta' mt key x = case M.lookup key mt of
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
-  blks1 <- walkM doBlock blks0
-  blks  <- walkM doBlock blks1
+  blks  <- walkM doBlockIO blks0
   p <- doPandoc (Pandoc mt blks)
   return p
 
+walkM_ a b = () <$ walkM a b
+
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
+includeMarkdown :: Block -> PandocIO Block
+includeMarkdown cb@(CodeBlock (_, ["include"], namevals) t) = do
+  let fileList = lines $ T.unpack t
+  (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
+    fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
+    r <- readMarkdown def fMd
+    (Pandoc _ s) <- walkM includeMarkdown r
+    return s
+  return $ Div nullAttr $ concat inMd
+includeMarkdown x = return x
 
-doBlock cb@(CodeBlock (_, classes, namevals) t)
+doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = MultiMarkdown.doInclude cb
   | "feynmp" `elem` classes = FeynMP.doInclude cb
   | "mermaid" `elem` classes = Mermaid.doInclude cb
@@ -177,7 +215,7 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
                                      , [ RawBlock (Format "latex") en ]
                                      ]
 
-doBlock x = return x
+doBlockIO x = return x
 
 data NLine = SingleLine | MultiLine
 
