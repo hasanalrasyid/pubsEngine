@@ -3,7 +3,6 @@
 
 import qualified Text.Pandoc.Include.Table as IT
 import qualified Text.Pandoc.Include.Thesis as IH
-import qualified Text.Pandoc.Include.CrossRef as IC
 import qualified Text.Pandoc.Include.Markdown as IM
 import qualified Text.Pandoc.Include.MultiMarkdown as IMM
 import qualified Text.Pandoc.Include.Diagrams as ID
@@ -12,13 +11,10 @@ import qualified Text.Pandoc.Include.FeynMP as IF
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 
-import Text.Pandoc.CrossRef
 import Data.Monoid ((<>))
 
 import Data.Maybe
 import System.Environment (getArgs)
-
-import System.Exit
 
 doThemAll (Pandoc mt blks) = do
   blks' <- walkM doBlock blks
@@ -26,13 +22,7 @@ doThemAll (Pandoc mt blks) = do
   p <- doPandoc (Pandoc mt blks'')
   return p
 
-doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
-
-doCrossRef p@(Pandoc meta blocks) = do
-  b <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks blocks
-  return $ Pandoc meta b
-    where
-      meta' = autoEqnLabels True <> meta
+doPandoc p = ID.addPackagePGF =<< IH.linkTex p
 
 doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, namevals) t)

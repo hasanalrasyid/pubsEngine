@@ -68,35 +68,36 @@ import           Text.Pandoc.JSON
 
 import           Text.Pandoc.Walk
 import Text.Pandoc.Include.Common
-import Text.Pandoc.CrossRef.References.Blocks (divBlocks)
-import Text.Pandoc.CrossRef
+--import Text.Pandoc.CrossRef.References.Blocks (divBlocks)
+--import Text.Pandoc.CrossRef
 
 takeBlocks (Pandoc _ blocks) = blocks
 
-getContent :: String -> IO [Block]
+getContent :: FilePath -> IO [Block]
 getContent file = do
   c <- T.readFile file
-  genPandoc $ T.unpack c
+  genPandoc c
 
-genPandoc :: String -> IO [Block]
+genPandoc :: T.Text -> IO [Block]
 genPandoc c = do
-  (Pandoc _ b) <- runIOorExplode $ readMarkdown param $ T.pack c
-  let b1 = walk divBlocks b
+  (Pandoc _ b) <- runIOorExplode $ readMarkdown param c
+  --let b1 = walk divBlocks b
+  let b1 = b
 --  b1 <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks b
   return b1
     where
-      meta' = autoEqnLabels True
+      meta' = nullMeta -- autoEqnLabels True
       param = def { readerExtensions = foldr enableExtension pandocExtensions
                     pandocExtSetting
                   }
 
-getProcessableFileList :: String -> IO [String]
+getProcessableFileList :: T.Text -> IO [FilePath]
 getProcessableFileList list = do
-  let f = lines list
+  let f = lines $ T.unpack list
   let files = filter (\x -> not $ "#" `isPrefixOf` x) f
   filterM doesFileExist files
 
-processFiles :: [String] -> IO Block
+processFiles :: [FilePath] -> IO Block
 processFiles toProcess = do
   b <- fmap concat (mapM getContent toProcess)
   return $ Div nullAttr b

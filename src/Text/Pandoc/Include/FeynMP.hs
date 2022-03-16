@@ -4,16 +4,7 @@
 
 module Text.Pandoc.Include.FeynMP (doInclude)
   where
---import Text.Pandoc.JSON
---import Text.Pandoc.Shared (addMetaField)
---import Text.Pandoc.Builder (fromList)
---import System.Process (callCommand)
---import Data.Maybe
---import System.FilePath.Posix (takeFileName)
-import Text.Pandoc
---import qualified Data.Text as T
---import qualified Data.Text.IO as T
---import Text.Pandoc.Include.Common
+--import Text.Pandoc
 import System.Process
 import Text.Pandoc.Definition
 import Data.Maybe
@@ -21,6 +12,7 @@ import System.Directory
 import System.FilePath
 import Data.Hashable
 import Diagrams.Builder
+import qualified Data.Text as T
 
 withDir :: FilePath -> IO a -> IO a
 withDir path f = do
@@ -38,8 +30,7 @@ inDir path f = do
 doInclude :: Block -> IO Block
 doInclude (CodeBlock (_, classes, opts) mp)
   | "feynmp" `elem` classes = do
-      let mpHas' = 0 `hashWithSalt` mp
-                     `hashWithSalt` "_build"
+      let (mpHas' :: Int) = hashWithSalt 0 $ "_build" <> mp
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
       let out = "Figures" </> mpHash
@@ -50,7 +41,7 @@ doInclude (CodeBlock (_, classes, opts) mp)
                         , "\\pagestyle{empty}"
                         , "\\unitlength = 1mm"
                         , "\\begin{fmffile}{"++ mpHash ++ "}"
-                        , mp
+                        , T.unpack mp
                         , "\\end{fmffile}"
                         , "\\end{document}"
                         ]
@@ -69,7 +60,7 @@ doInclude (CodeBlock (_, classes, opts) mp)
       return $ Div nullAttr
                 $ [Para
                     [Image nullAttr
-                      [Str $ fromMaybe "FenymanDiagram" caption] (out, "fig:")
+                      [Str $ fromMaybe "FenymanDiagram" caption] (T.pack out, "fig:")
                     ]
                   ]
 

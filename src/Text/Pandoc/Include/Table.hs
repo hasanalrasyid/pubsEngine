@@ -13,8 +13,6 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 import Text.Pandoc.JSON
---import Text.Pandoc.Definition (fromString)
-import Data.Version (showVersion)
 import Text.Pandoc.Walk (walk)
 import Text.Pandoc.Include.Common
 
@@ -25,19 +23,20 @@ doInclude cb@(CodeBlock cx@(id, classes, namevals) captionContent)
   where
     readTableFile = case lookup "file" namevals of
        Nothing    -> return cb
-       Just f     -> processMdTable cx captionContent =<< T.readFile f
+       Just f     -> processMdTable cx (T.unpack captionContent) =<< (T.readFile $ T.unpack f)
 doInclude x = return x
 
 processMdTable :: Attr -> String -> T.Text -> IO Block
 processMdTable cx caption text = do
   c <- runIOorExplode $ readMarkdown param $ T.pack caption
   t <- runIOorExplode $ readMarkdown param text
-  let x = takeBlocks $ walk (renewCap c) t
+  let x = takeBlocks $ walk (renewCaption c) t
   return $ Div nullAttr x
     where
       param = def{ readerExtensions = foldr enableExtension pandocExtensions
                      pandocExtSetting
                  }
-      renewCap (Pandoc _ ((Para nc):_)) (Table _ a b c d) = Table nc a b c d
-      renewCap _ tx = tx
+      renewCaption :: Pandoc -> Block -> Block
+      renewCaption (Pandoc _ (nc@(Para _):_)) (Table attr _ b c d e) = Table attr (Caption Nothing [nc]) b c d e
+      renewCaption _ tx = tx
       takeBlocks (Pandoc _ b) = b

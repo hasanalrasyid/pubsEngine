@@ -36,7 +36,6 @@ linkTex p@(Pandoc mt blks) = do
                        , ("auto-acknowledgements",[mdacknowledgements])
                        , ("auto-quote",[mdquote])
                        ]
---  putStrLn $ (++) "====" $ show $ catMaybes texs
   let command = map genLn $ concat $ map (map (genPerintah ".bib")) $ map fromMetaInlines_Str $ catMaybes [bib]
   if (null bib) then return ()
                  else callCommand $ unlines [ "mkdir -p _build", unlines command]
@@ -47,9 +46,9 @@ linkTex p@(Pandoc mt blks) = do
         let rM = addMetaField s (fromList $ map genRawBlock ts) r0
          in genMeta rM sts
       genMeta res [] = res
-      genRawBlock (Just a) = RawBlock (Format "latex") $ unlines  [ t | s <- fromMetaInlines_Str a
+      genRawBlock (Just a) = RawBlock (Format "latex") $ T.unlines  [ t | s <- fromMetaInlines_Str a
                                                                       , let u = takeFileName s
-                                                                      , let t = "\\input{" ++ u ++ "}"
+                                                                      , let t = T.pack $ "\\input{" ++ u ++ "}"
                                                                       ]
       genRawBlock Nothing = Null
       genLn s = "ln -s -f " ++ s ++ " _build/"
@@ -57,6 +56,6 @@ linkTex p@(Pandoc mt blks) = do
       fromMetaInlines_Str (MetaInlines a) = map fromStr a
       fromMetaInlines_Str (MetaBlocks ((Plain a):_)) = filter (not . null) $ map fromStr a
       fromMetaInlines_Str _ = ["fromMetaInlines_Str failed"]
-      fromStr (Str a) = a
+      fromStr (Str a) = T.unpack a
       fromStr SoftBreak = ""
       fromStr _ = "fromStr failed"

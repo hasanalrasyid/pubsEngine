@@ -6,7 +6,6 @@
 
 import qualified Text.Pandoc.Include.Table as IT
 import qualified Text.Pandoc.Include.Thesis as IH
-import qualified Text.Pandoc.Include.CrossRef as IC
 import qualified Text.Pandoc.Include.Markdown as IM
 import qualified Text.Pandoc.Include.MultiMarkdown as IMM
 import qualified Text.Pandoc.Include.Diagrams as ID
@@ -15,14 +14,12 @@ import qualified Text.Pandoc.Include.FeynMP as IF
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
+import qualified Text.Pandoc.Templates
 
-import Text.Pandoc.CrossRef
 import Data.Monoid ((<>))
 
 import Data.Maybe
 import System.Environment (getArgs)
-
-import System.Exit
 
 import Text.Pandoc
 import qualified Data.Text as T
@@ -37,15 +34,12 @@ import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
 import qualified Data.Map as M
-import System.FilePath.Posix (takeBaseName)
-import Data.Aeson (toJSON)
-import Control.Monad (forM_)
 import System.Process (callCommand)
 
 main :: IO ()
 main = do
   (fileName:format:_) <- getArgs
-  mdFile <- TIO.readFile $ fileName ++ ".md"
+  mdFile <- TIO.readFile $ fileName <> ".md"
   d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
   let defaultMeta = case d of
                       Left err -> error "error on meta"
@@ -55,26 +49,32 @@ main = do
              Left err -> error "we have error"
              Right p@(Pandoc pM pP) -> do
               putStrLn $ show pM
-              doThemAll $ updateMeta defaultMeta p fileName
-  template <- setTemplate format
-  result <- runIO $ writeLaTeX (def{writerTemplate = Just template, writerTopLevelDivision = TopLevelSection}) newDoc
+              doThemAll $ updateMeta defaultMeta p $ T.pack fileName
+  t0 <- setTemplate format
+  result <- runIO $ do
+--  template <- PT.getTemplate $ "_build/" <> fileName <> ".tpl"
+    t <- compileTemplate ("_build/" <> fileName <> ".tpl") $ T.pack t0
+    let template = case t of
+                    Left _ -> fromJust $ writerTemplate def
+                    Right a -> a
+    writeLaTeX (def{writerTemplate = (Just template), writerTopLevelDivision = TopLevelSection}) newDoc
   rst <- handleError result
-  TIO.writeFile ("_build/" ++ fileName ++ ".tex") rst
+  TIO.writeFile ("_build/" <> fileName <> ".tex") rst
   let (Pandoc (Meta meta) _) = newDoc
   TIO.putStrLn "======================"
   _ <- case M.lookup "linkDir" meta of
         Nothing -> return $ MetaList []
         Just linkDir -> flip walkM linkDir $ \(Str a) -> do
                           putStrLn $ show a
-                          callCommand $ unlines [ "rm -f _build/" ++ a
-                                                , unwords [ "ln -s -f",("../" ++ a), "_build/" ++ a ]
+                          callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> a
+                                                , T.unwords [ "ln -s -f",("../" <> a), "_build/" <> a ]
                                                 ]
                           return $ Str a
   callCommand $ unlines [ "pushd _build"
-                        , "pdflatex " ++ fileName ++ ".tex"
-                        , "bibtex " ++ fileName
-                        , "pdflatex " ++ fileName ++ ".tex"
-                        , "pdflatex " ++ fileName ++ ".tex"
+                        , "pdflatex " <> fileName <> ".tex"
+                        , "bibtex " <> fileName
+                        , "pdflatex " <> fileName <> ".tex"
+                        , "pdflatex " <> fileName <> ".tex"
                         , "popd" ]
   putStrLn "======================"
   where
@@ -98,7 +98,7 @@ updateMeta' mt key x = case M.lookup key mt of
                                                     "appendix" -> m
                                                     "linkDir" -> m
                                                     _ -> let (MetaBlocks xx) = x
-                                                          in MetaBlocks $ xx ++ a
+                                                          in MetaBlocks $ xx <> a
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
@@ -108,13 +108,7 @@ doThemAll (Pandoc mt blks0) = do
   return p
 
 doPandoc :: Pandoc -> IO Pandoc
-doPandoc p = doCrossRef =<< ID.addPackagePGF =<< IH.linkTex p
-
-doCrossRef p@(Pandoc meta blocks) = do
-  b <- runCrossRefIO meta' (Just $ Format "latex") crossRefBlocks blocks
-  return $ Pandoc meta b
-    where
-      meta' = autoEqnLabels True <> meta
+doPandoc p = ID.addPackagePGF =<< IH.linkTex p
 
 doBlock :: Block -> IO Block
 doBlock cb@(CodeBlock (_, classes, namevals) t)
@@ -138,14 +132,15 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
     genEnv t "" "\\end{block}"
   | "postblockbegin" `elem` classes =
     genEnv t "" $
-      "\\begin{block}{\\protect\\textbf{" ++
-      (fromMaybe "" $ lookup "caption" namevals) ++
+      "\\begin{block}{\\protect\\textbf{" <>
+      (fromMaybe "" $ lookup "caption" namevals) <>
       "}}\n\\justify"
   | "textblock" `elem` classes = do
     let oWidth = fromMaybe "100pt"     $ lookup "w" namevals
     let oLoc   = fromMaybe "10pt,10pt" $ lookup "pos" namevals
-    genEnv t "\\end{textblock*}" $ concat["\\begin{textblock*}{", oWidth,"}",oLoc,""]
+    genEnv t "\\end{textblock*}" $ T.concat["\\begin{textblock*}{", oWidth,"}",oLoc,""]
   where
+    genEnv :: T.Text -> T.Text -> T.Text -> IO Block
     genEnv tx en st = do
       tx' <- IM.genPandoc tx
       return $ Div nullAttr $ concat [ [ RawBlock (Format "latex") st ]
@@ -157,10 +152,10 @@ doBlock x = return x
 
 data NLine = SingleLine | MultiLine
 
+    {-
 main1 :: IO ()
 main1 = do
   toJSONFilter doThemAll
-    {-
   args <- getArgs
   if null args then return ()
                else do

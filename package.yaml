@@ -27,30 +27,89 @@ dependencies:
 - directory
 - pandoc
 - process
-- diagrams-pgf        # library
-- diagrams
-- diagrams-lib
-- diagrams-builder
+# diagrams-pgf        # library
+# diagrams
+# diagrams-lib
+# diagrams-builder
 - bytestring
 - containers # pandoc-crossref
-- utility-ht
+# utility-ht
 - data-default
 - mtl
-- data-accessor
-- data-accessor-transformers
-- data-accessor-template
-- syb
-- roman-numerals
-- template-haskell
-- hashable
-- haskell-src-exts-simple
-- random
-- aeson
-- cryptonite
+# data-accessor
+# data-accessor-transformers
+# data-accessor-template
+# syb
+# roman-numerals
+# template-haskell
+# haskell-src-exts-simple
+# random
+# aeson
+# cryptonite
 - raw-strings-qq
+# Diagrams
+- linear
+#     monoid-extras
+- groups
+- semigroupoids
+# diagrams-core
+- profunctors
+- unordered-containers
+- distributive
+- adjunctions
+- optparse-applicative
+#   dual-tree
+- newtype-generics
+# diagrams-lib
+- intervals
+- diagrams-solve
+- data-default-class
+- colour
+- cereal
+- fingertree
+- array
+- fsnotify
+# Diagrams Backend: PGF
+- hashable
+- zlib
+- JuicyPixels
+- vector
+#     Monoid Extras
+- QuickCheck
+#     Texrunner
+- attoparsec
+- temporary
+- io-streams
+# Diagrams Builder
+- cmdargs
+- lens
+- haskell-src-exts
+- exceptions
+- transformers
+- split
+- base-orphans
+- hint
 
 library:
-  source-dirs: src
+  source-dirs:
+    - src
+    - extern/monoid-extras/src
+    - extern/dual-tree/src
+    - extern/active/src
+    - extern/diagrams-core/src
+    - extern/diagrams-lib/src
+    - extern/diagrams-pgf/src
+    - extern/texrunner/src
+    - extern/diagrams-builder/src
+    - extern/haskell-src-exts-simple/src
+  default-extensions: OverloadedStrings
+                    , DeriveAnyClass
+                    , ScopedTypeVariables
+                    , RecordWildCards
+                    , DeriveDataTypeable
+                    , GADTs
+                    , FlexibleContexts
+                    , StandaloneDeriving
 
 executables:
   pubsEngine:
@@ -60,6 +119,7 @@ executables:
       - templates
     dependencies:
       - file-embed
+      - doctemplates
       - pubsEngine
     ghc-options:
     - -threaded
