@@ -4,13 +4,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-import qualified Text.Pandoc.Include.Table as IT
-import qualified Text.Pandoc.Include.Thesis as IH
-import qualified Text.Pandoc.Include.Markdown as IM
-import qualified Text.Pandoc.Include.MultiMarkdown as IMM
-import qualified Text.Pandoc.Include.Diagrams as ID
-import qualified Text.Pandoc.Include.Delegate as IDel
-import qualified Text.Pandoc.Include.FeynMP as IF
+import qualified Text.Pandoc.Include.Table as InTable
+import Text.Pandoc.Include.Thesis (linkTex)
+import qualified Text.Pandoc.Include.Markdown as Markdown
+import qualified Text.Pandoc.Include.MultiMarkdown as MultiMarkdown
+import qualified Text.Pandoc.Include.Diagrams as Diagrams
+import qualified Text.Pandoc.Include.Delegate as Delegate
+import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
@@ -36,47 +36,77 @@ import Text.Pandoc.Include.Common
 import qualified Data.Map as M
 import System.Process (callCommand)
 
+import qualified Control.Exception as E
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
+import Text.Pandoc.App
+
 main :: IO ()
 main = do
   (fileName:format:_) <- getArgs
+
+  let runIO' :: PandocIO a -> IO a
+      runIO' f = do
+        (res, reports) <- runIOorExplode $ do
+--                           setTrace (optTrace opts)
+--                           setVerbosity verbosity
+                             x <- f
+                             rs <- getLog
+                             return (x, rs)
+--      case optLogFile opts of
+--           Nothing      -> return ()
+--           Just logfile -> putStrLn $ logfile (encodeLogMessages reports)
+        let isWarning msg = messageVerbosity msg == WARNING
+--      when (optFailIfWarnings opts && any isWarning reports) $
+--          E.throwIO PandocFailOnWarningError
+        return res
+
+  putStrLn "============================================"
   mdFile <- TIO.readFile $ fileName <> ".md"
-  d <- runIO $  readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
-  let defaultMeta = case d of
-                      Left err -> error "error on meta"
-                      Right (Pandoc m _) -> m
-  doc <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
-  newDoc <- case doc of
-             Left err -> error "we have error"
-             Right p@(Pandoc pM pP) -> do
-              putStrLn $ show pM
-              doThemAll $ updateMeta defaultMeta p $ T.pack fileName
-  t0 <- setTemplate format
+  resPandoc@(Pandoc resMeta _) <- runIO' $ do
+    (readerMarkdown, readerExts) <- getReader "markdown"
+    let readerOpts = def {readerStandalone = True}
+    res <- case readerMarkdown of
+            TextReader reader -> reader readerOpts mdFile
+            _ -> error "ERROR: we need markdown input"
+    return res
+  putStrLn $ show resMeta
+  putStrLn "==============================="
+--(defaultMeta,p) <- runIO' $ do
+--    (Pandoc defaultMeta _) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
+--    (r :: Pandoc) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
+--    return (defaultMeta,r)
+--  inputDoc  <- doThemAll $ updateMeta defaultMeta p $ T.pack fileName
+--  putStrLn $ show inputDoc
+--  putStrLn $ show defaultMeta
+
+  {-
+  t0 <- T.pack <$> setTemplate format
+  putStrLn $ show $ (t0 <$) <$> writerTemplate def
   result <- runIO $ do
---  template <- PT.getTemplate $ "_build/" <> fileName <> ".tpl"
-    t <- compileTemplate ("_build/" <> fileName <> ".tpl") $ T.pack t0
-    let template = case t of
-                    Left _ -> fromJust $ writerTemplate def
-                    Right a -> a
-    writeLaTeX (def{writerTemplate = (Just template), writerTopLevelDivision = TopLevelSection}) newDoc
+    let template = (t0 <$) <$> writerTemplate def
+    writeLaTeX (def{writerTemplate = template, writerTopLevelDivision = TopLevelSection}) newDoc
   rst <- handleError result
   TIO.writeFile ("_build/" <> fileName <> ".tex") rst
   let (Pandoc (Meta meta) _) = newDoc
   TIO.putStrLn "======================"
-  _ <- case M.lookup "linkDir" meta of
-        Nothing -> return $ MetaList []
-        Just linkDir -> flip walkM linkDir $ \(Str a) -> do
-                          putStrLn $ show a
-                          callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> a
-                                                , T.unwords [ "ln -s -f",("../" <> a), "_build/" <> a ]
-                                                ]
-                          return $ Str a
-  callCommand $ unlines [ "pushd _build"
-                        , "pdflatex " <> fileName <> ".tex"
-                        , "bibtex " <> fileName
-                        , "pdflatex " <> fileName <> ".tex"
-                        , "pdflatex " <> fileName <> ".tex"
-                        , "popd" ]
-  putStrLn "======================"
+  -}
+-- _ <- case M.lookup "linkDir" meta of
+--       Nothing -> return $ MetaList []
+--       Just linkDir -> flip walkM linkDir $ \(Str a) -> do
+--                         putStrLn $ show a
+--                         callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> a
+--                                               , T.unwords [ "ln -s -f",("../" <> a), "_build/" <> a ]
+--                                               ]
+--                         return $ Str a
+-- callCommand $ unlines [ "pushd _build"
+--                       , "pdflatex " <> fileName <> ".tex"
+--                       , "bibtex " <> fileName
+--                       , "pdflatex " <> fileName <> ".tex"
+--                       , "pdflatex " <> fileName <> ".tex"
+--                       , "popd" ]
+-- putStrLn "======================"
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -107,17 +137,16 @@ doThemAll (Pandoc mt blks0) = do
   p <- doPandoc (Pandoc mt blks)
   return p
 
-doPandoc :: Pandoc -> IO Pandoc
-doPandoc p = ID.addPackagePGF =<< IH.linkTex p
+doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
-doBlock :: Block -> IO Block
+
 doBlock cb@(CodeBlock (_, classes, namevals) t)
-  | "multiTable" `elem` classes = IMM.doInclude cb
-  | "feynmp" `elem` classes = IF.doInclude cb
+  | "multiTable" `elem` classes = MultiMarkdown.doInclude cb
+  | "feynmp" `elem` classes = FeynMP.doInclude cb
   | "mermaid" `elem` classes = Mermaid.doInclude cb
-  | "delegate" `elem` classes = IDel.doInclude cb
-  | "inputTable" `elem` classes = IT.doInclude cb
-  | "include" `elem` classes = IM.doInclude cb
+  | "delegate" `elem` classes = Delegate.doInclude cb
+  | "inputTable" `elem` classes = InTable.doInclude cb
+  | "include" `elem` classes = Markdown.doInclude cb
   | "note" `elem` classes = genEnv t  "}" "\\note{"
   | "postbegin" `elem` classes =
     genEnv t "" $
@@ -142,7 +171,7 @@ doBlock cb@(CodeBlock (_, classes, namevals) t)
   where
     genEnv :: T.Text -> T.Text -> T.Text -> IO Block
     genEnv tx en st = do
-      tx' <- IM.genPandoc tx
+      tx' <- Markdown.genPandoc tx
       return $ Div nullAttr $ concat [ [ RawBlock (Format "latex") st ]
                                      , tx'
                                      , [ RawBlock (Format "latex") en ]
@@ -163,4 +192,3 @@ main1 = do
                                          "$(stack exec env|grep GHC_PACKAGE_PATH) pandoc -F thesis input.md":[]
                     exitSuccess
     -}
-
