@@ -1,148 +1,3 @@
-%                                                                 aa.dem
-% AA vers. 9.1, LaTeX class for Astronomy & Astrophysics
-% demonstration file
-%                                                       (c) EDP Sciences
-%-----------------------------------------------------------------------
-%
-%\documentclass[referee]{aa} % for a referee version
-%\documentclass[onecolumn]{aa} % for a paper on 1 column
-%\documentclass[longauth]{aa} % for the long lists of affiliations
-%\documentclass[letter]{aa} % for the letters
-%\documentclass[bibyear]{aa} % if the references are not structured
-%                              according to the author-year natbib style
-
-%
-\documentclass{aa}
-
-%
-\usepackage{graphicx}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{txfonts}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\usepackage[options]{hyperref}
-% To add links in your PDF file, use the package "hyperref"
-% with options according to your LaTeX or PDFLaTeX drivers.
-%
-\begin{document}
-
-%   \title{Hydrodynamics of giant planet formation}
-
-$if(subtitle)$
-  \subtitle{$subtitle$}
-$endif$
-
-$if(author)$
-%  \author{$for(author)$$if(author.newline)$\\ $endif$$if(author.correspond)$\underline{$endif$$author.name$$if(author.correspond)$}$endif$$$^{$author.affiliation$}$$$sep${, }$endfor$}
-%\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}%
-
-  \author{$for(author)$$author.name$
-         \inst{$author.number$}$if(author.correspond)$\fnmsep\thanks{Corresponding author}$endif$
-         $sep$\and $endfor$}
-
-   \institute{$for(author)$ $author.affiliation$, $author.address$ \\
-              \email{$author.email$}$sep$\and $endfor$ }
-% Institute for Astronomy (IfA), University of Vienna,
-%              T\"urkenschanzstrasse 17, A-1180 Vienna\\
-%              \email{wuchterl@amok.ast.univie.ac.at}
-%         \and
-%             University of Alexandria, Department of Geography, ...\\
-%             \email{c.ptolemy@hipparch.uheaven.space}
-%             \thanks{The university of heaven temporarily does not
-%                     accept e-mails}
-%             }
-$endif$
-
-$if(processDate)$
-  \date{Received $processDate.received$; accepted $processDate.accepted$}
-%   \date{Received September 15, 1996; accepted March 16, 1997}
-$endif$
-
-% \abstract{}{}{}{}{}
-% 5 {} token are mandatory
-
-$if(abstract)$
-\begin{abstract}
-  $abstract$
-\end{abstract}
-$endif$
-
-$if(abstractTex)$
-%%%%% we need several parts: {context(optional)} {aims(mandatory)} {methods(mandatory)} {results(mandatory)} {conclusions(optional)}
- $abstractTex$
-$endif$
-
-\keywords{
-$if(keywords)$
-  $keywords$
-$endif$
-}
-
-   \maketitle
-%
-%________________________________________________________________
-
-$body$
-
-$if(acknowledgements)$
-\begin{acknowledgements}
-$acknowledgements$
-\end{acknowledgements}
-$endif$
-
-
-% WARNING
-%-------------------------------------------------------------------
-% Please note that we have included the references to the file aa.dem in
-% order to compile it, but we ask you to:
-%
-% - use BibTeX with the regular commands:
-%   \bibliographystyle{aa} % style aa.bst
-%   \bibliography{Yourfile} % your references Yourfile.bib
-%
-% - join the .bib files when you upload your source files
-%-------------------------------------------------------------------
-
-$if(bibliography)$
-\bibliographystyle{aa}
-\bibliography{$bibliography$}
-$endif$
-
-%\begin{thebibliography}{}
-%
-%  \bibitem[Baker(1966)]{baker} Baker, N. 1966,
-%      in Stellar Evolution,
-%      ed.\ R. F. Stein,\& A. G. W. Cameron
-%      (Plenum, New York) 333
-%
-%   \bibitem[Balluch(1988)]{balluch} Balluch, M. 1988,
-%      A\&A, 200, 58
-%
-%   \bibitem[Cox(1980)]{cox} Cox, J. P. 1980,
-%      Theory of Stellar Pulsation
-%      (Princeton University Press, Princeton) 165
-%
-%   \bibitem[Cox(1969)]{cox69} Cox, A. N.,\& Stewart, J. N. 1969,
-%      Academia Nauk, Scientific Information 15, 1
-%
-%   \bibitem[Mizuno(1980)]{mizuno} Mizuno H. 1980,
-%      Prog. Theor. Phys., 64, 544
-%
-%   \bibitem[Tscharnuter(1987)]{tscharnuter} Tscharnuter W. M. 1987,
-%      A\&A, 188, 55
-%
-%   \bibitem[Terlevich(1992)]{terlevich} Terlevich, R. 1992, in ASP Conf. Ser. 31,
-%      Relationships between Active Galactic Nuclei and Starburst Galaxies,
-%      ed. A. V. Filippenko, 13
-%
-%   \bibitem[Yorke(1980a)]{yorke80a} Yorke, H. W. 1980a,
-%      A\&A, 86, 286
-%
-%   \bibitem[Zheng(1997)]{zheng} Zheng, W., Davidsen, A. F., Tytler, D. \& Kriss, G. A.
-%      1997, preprint
-%\end{thebibliography}
-
-\end{document}
 %% Beginning of file 'sample631.tex'
 %%
 %% Modified 2021 March
@@ -239,7 +94,6 @@ $endif$
 %%
 \newcommand{\vdag}{(v)^\dagger}
 \newcommand\aastex{AAS\TeX}
-\newcommand\latex{La\TeX}
 
 $if(header-includes)$
 $header-includes$
@@ -408,12 +262,12 @@ $if(collaborator)$
   \collaboration{6}{$collaborator.theme$}
 %\collaboration{6}{(AAS Journals Data Editors)}
 
-  $for($collaborator.author$)$
-    \author{collaborator.author.name}
-    $for($collaborator.author.affiliation$)$
+  $for(collaborator.author)$
+    \author{$collaborator.author.name$}
+    $for(collaborator.author.affiliation)$
       \affiliation{$collaborator.author.affiliation$}
     $endfor$
-    $if($collaborator.author.altaffiliation$)$
+    $if(collaborator.author.altaffiliation)$
       \altaffiliation{$collaborator.author.altaffiliation$}
     $endif$
     %\affiliation{AAS Journals Associate Editor-in-Chief}
@@ -446,7 +300,7 @@ $endif$
 %% the nearby authors are not part of surrounding collaborations.
 
 %% Mark off the abstract in the ``abstract'' environment.
-$$if(abstract)
+$if(abstract)$
 \begin{abstract}
 $abstract$
 %This example manuscript is intended to serve as a tutorial and template for
@@ -560,7 +414,7 @@ $endif$
 $if(appendix)$
 \appendix
 $appendix$
-$\endif$
+$endif$
 
 %% For this sample we use BibTeX plus aasjournals.bst to generate the
 %% the bibliography. The sample631.bib file was populated from ADS. To
@@ -574,7 +428,7 @@ $\endif$
 $if(bibliography)$
 \bibliography{sample631}{}
 \bibliographystyle{$bibliography$}
-$bibliography$
+$endif$
 
 %% This command is needed to show the entire author+affiliation list when
 %% the collaboration and author truncation commands are used.  It has to
