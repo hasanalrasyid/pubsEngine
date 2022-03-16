@@ -31,6 +31,7 @@ biblio-title: Reference
 papersize: a4
 header-includes: |
   \usepackage{appendix}
+  \usepackage{amsmath}
   \usepackage{chemfig}
   \usepackage[version=4]{mhchem}
   \mhchemoptions{layout=stacked}
