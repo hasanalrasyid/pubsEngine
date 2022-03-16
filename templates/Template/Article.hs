@@ -27,4 +27,3 @@ mainTemplate = $(embedStringFile "templates/article/template.tex")
 
 additionalZip :: BS.ByteString
 additionalZip = $(embedFile "templates/article/aastex631.tbz")
-
