@@ -30,10 +30,10 @@ inDir path f = do
 doInclude :: Block -> IO Block
 doInclude (CodeBlock (_, classes, opts) mp)
   | "feynmp" `elem` classes = do
-      let (mpHas' :: Int) = hashWithSalt 0 $ "_build" <> mp
+      let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
-      let out = "Figures" </> mpHash
+      let out = "_build/auto" </> mpHash
       let tex = unlines [ "\\documentclass{article}"
                         , "\\usepackage{amsmath}"
                         , "\\usepackage{feynmp-auto}"

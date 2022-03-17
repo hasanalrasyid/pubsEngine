@@ -55,7 +55,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
       d <- compileDiagram (T.unpack contents) width
       let imgBlock = RawBlock (Format "latex") $
                        case d of
-                        Skipped hash -> T.pack $ "\\input{" <> getPGFfilename "Figures/" hash <> "}"
+                        Skipped hash -> T.pack $ "\\input{" <> getPGFfilename "_build/auto/" hash <> "}"
                         OK _ texnya ->T.pack "try this" --  T.pack $ LB.unpack $ BSB.toLazyByteString texnya
                                         {- unlines  [ "\\begin{figure}"
                                                  , "\\centering"
@@ -92,7 +92,7 @@ buildDiagram' bopts = do
                                                       , (unwords $ bopts ^. backendOpts.surface.arguments)
                                                       , "_build"
                                                       ]
-      let f = getPGFfilename "Figures/" diaHash
+      let f = getPGFfilename "_build/auto/" diaHash
       isCompiled <- doesFileExist f
       case isCompiled of
         True -> return $ Skipped diaHash

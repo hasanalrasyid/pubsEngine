@@ -50,92 +50,45 @@ main = do
   let runIO' :: PandocIO a -> IO a
       runIO' f = do
         (res, reports) <- runIOorExplode $ do
---                           setTrace (optTrace opts)
---                           setVerbosity verbosity
                              x <- f
                              rs <- getLog
                              return (x, rs)
---      case optLogFile opts of
---           Nothing      -> return ()
---           Just logfile -> putStrLn $ logfile (encodeLogMessages reports)
-        let isWarning msg = messageVerbosity msg == WARNING
---      when (optFailIfWarnings opts && any isWarning reports) $
---          E.throwIO PandocFailOnWarningError
+        TIO.putStrLn $ T.unlines $ map showLogMessage reports
         return res
 
-  putStrLn "1==========================================="
-  resPandoc@(Pandoc resMeta _) <- runIO' $ do
-    mdFile <- PIO.readFileStrict $ fileName <> ".md"
-    res <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) $ TE.decodeUtf8 mdFile
-    walkM includeMarkdown res
-    -- return res
-  putStrLn $ show resPandoc
-  putStrLn "2=============================="
-  putStrLn $ show resMeta
-  r1 <- walkM doBlockIO resPandoc
-  putStrLn "3=============================="
+  mdIncludedPandoc@(Pandoc resMeta _) <- runIO' $ do
+    mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
+    readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
+      >>= walkM includeMarkdown
+
   case lookupMeta "linkDir" resMeta of
-    Just (MetaList linkDirs) -> do -- putStrLn $ show linkDirs
+    Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
         TIO.putStrLn $ "Creating symbolink link to: " <> link
-        callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> link
-                                           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
-                                           ]
+        callCommand $ T.unpack $ T.unlines
+          [ "rm -f _build/" <> link
+          , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
+          ]
         return l
     _ -> putStrLn "no linkDir available"
-  putStrLn "4=============================="
-  r2@(Pandoc t2 p2 ) <- doThemAll r1
-  putStrLn $ show t2
-  putStrLn "n=============================="
-  (tFileName, tFile) <- Article.templateLatex -- format
---  let template = (templateTex <$) <$> writerTemplate def
 
+  resPandoc@(Pandoc t2 p2 ) <- doThemAll mdIncludedPandoc
+  (tFileName, tFile) <- Article.templateLatex
   resLatex <- runIO' $ do
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
       Left e -> error e
-      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) r2
+      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) resPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
-  putStrLn $ show resLatex
   putStrLn "==============================="
 
-
-
-
---(defaultMeta,p) <- runIO' $ do
---    (Pandoc defaultMeta _) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) Default.templateYaml
---    (r :: Pandoc) <- readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
---    return (defaultMeta,r)
---  inputDoc  <- doThemAll $ updateMeta defaultMeta p $ T.pack fileName
---  putStrLn $ show inputDoc
---  putStrLn $ show defaultMeta
-
-  {-
-  t0 <- T.pack <$> setTemplate format
-  putStrLn $ show $ (t0 <$) <$> writerTemplate def
-  result <- runIO $ do
-    let template = (t0 <$) <$> writerTemplate def
-    writeLaTeX (def{writerTemplate = template, writerTopLevelDivision = TopLevelSection}) newDoc
-  rst <- handleError result
-  TIO.writeFile ("_build/" <> fileName <> ".tex") rst
-  let (Pandoc (Meta meta) _) = newDoc
-  0TIO.putStrLn "======================"
-  -}
--- _ <- case M.lookup "linkDir" meta of
---       Nothing -> return $ MetaList []
---       Just linkDir -> flip walkM linkDir $ \(Str a) -> do
---                         putStrLn $ show a
---                         callCommand $ T.unpack $ T.unlines [ "rm -f _build/" <> a
---                                               , T.unwords [ "ln -s -f",("../" <> a), "_build/" <> a ]
---                                               ]
---                         return $ Str a
--- callCommand $ unlines [ "pushd _build"
---                       , "pdflatex " <> fileName <> ".tex"
---                       , "bibtex " <> fileName
---                       , "pdflatex " <> fileName <> ".tex"
---                       , "pdflatex " <> fileName <> ".tex"
---                       , "popd" ]
--- putStrLn "======================"
+  callCommand $ unlines [ "pushd _build"
+                        , "xelatex " <> fileName <> ".tex"
+                        , "bibtex  " <> fileName
+                        , "xelatex " <> fileName <> ".tex"
+                        , "xelatex " <> fileName <> ".tex"
+                        , "popd" ]
+  putStrLn "======================"
   where
    setTemplate "poster" = P.templateLatex
    setTemplate "abstract" = A.templateLatex
@@ -159,7 +112,7 @@ updateMeta' mt key x = case M.lookup key mt of
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
-  blks  <- walkM doBlockIO blks0
+  blks <- walkM doBlockIO blks0 >>= walkM doBlockIO
   p <- doPandoc (Pandoc mt blks)
   return p
 
