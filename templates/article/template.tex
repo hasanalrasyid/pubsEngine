@@ -95,9 +95,6 @@
 \usepackage{amsmath}
 \usepackage{booktabs}
 
-\newcommand{\vdag}{(v)^\dagger}
-\newcommand\aastex{AAS\TeX}
-
 $if(header-includes)$
 $header-includes$
 $endif$
@@ -179,9 +176,7 @@ $endif$
 %% where dimension is any recognized LaTeX dimension, e.g. pt, in, etc.
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-$if(graphicspath)$
-  \graphicspath{$for(graphicspath)${$graphicspath$}$endfor$}%
-$endif$
+\graphicspath{{./}{figures/}{auto/}$for(graphicspath)${$graphicspath$}$endfor$}%
 %\graphicspath{{./}{Figure/}}
 %% This is the end of the preamble.  Indicate the beginning of the
 %% manuscript itself with \begin{document}.

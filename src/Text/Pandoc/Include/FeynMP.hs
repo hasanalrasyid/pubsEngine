@@ -60,7 +60,7 @@ doInclude (CodeBlock (_, classes, opts) mp)
       return $ Div nullAttr
                 $ [Para
                     [Image nullAttr
-                      [Str $ fromMaybe "FenymanDiagram" caption] (T.pack out, "fig:")
+                      [Str $ fromMaybe "FenymanDiagram" caption] (T.pack mpHash, "fig:")
                     ]
                   ]
 
