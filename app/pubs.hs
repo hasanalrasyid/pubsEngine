@@ -66,7 +66,8 @@ main = do
       flip walkM_ linkDirs $ \l@(Str link) -> do
         TIO.putStrLn $ "Creating symbolink link to: " <> link
         callCommand $ T.unpack $ T.unlines
-          [ "rm -f _build/" <> link
+          [ "mkdir -p _build/{auto,temp}"
+          , "rm -f _build/" <> link
           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
           ]
         return l
