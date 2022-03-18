@@ -135,7 +135,7 @@ includeScript cb@(CodeBlock (label, ["script","py",outType], opts) script) = do
               Left e -> error $ show e
               Right (Pandoc _ b) -> return $ Div nullAttr b
     "img" -> do
-      let fileName = case lookup "out" opts of
+      let fileName = case lookup "file" opts of
                                          Nothing -> "script"
                                          Just a -> a
           caption = fromMaybe "No caption" $ lookup "caption" opts
