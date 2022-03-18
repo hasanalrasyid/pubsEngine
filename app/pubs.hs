@@ -35,7 +35,7 @@ import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
 import qualified Data.Map as M
-import System.Process (callCommand)
+import System.Process (callCommand, readProcess)
 
 import qualified Control.Exception as E
 import qualified Data.Text as T
@@ -113,13 +113,43 @@ updateMeta' mt key x = case M.lookup key mt of
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
-  blks <- walkM doBlockIO blks0 >>= walkM doBlockIO
+  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO
   p <- doPandoc (Pandoc mt blks)
   return p
 
 walkM_ a b = () <$ walkM a b
 
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
+
+includeScript :: Block -> IO Block
+includeScript cb@(CodeBlock (label, ["script","py",outType], opts) script) = do
+  TIO.writeFile ("_build/temp/script.py") script
+  callCommand "chmod +x _build/temp/script.py"
+  res <- readProcess "python3" [] $ T.unpack script
+  return $ Div nullAttr [Para [Str "script is run"]]
+  case outType of
+    "md" -> do
+            r <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) $ T.pack res
+            case r of
+              Left e -> error $ show e
+              Right (Pandoc _ b) -> return $ Div nullAttr b
+    "img" -> do
+      let fileName = "_build/auto/" <> case lookup "out" opts of
+                                         Nothing -> "script"
+                                         Just a -> a
+          caption = fromMaybe "No caption" $ lookup "caption" opts
+          width  = fromMaybe "800" $ lookup "width" opts
+          height = fromMaybe "600" $ lookup "height" opts
+      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName,label) ]]
+
+    _ -> do
+      return $ Div nullAttr [Para [Str "nothing"]]
+
+includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
+  includeScript $ CodeBlock (a,["script","py","md"], opts) t
+includeScript cb = return cb
+
+
 
 includeMarkdown :: Block -> PandocIO Block
 includeMarkdown cb@(CodeBlock (_, ["include"], namevals) t) = do
