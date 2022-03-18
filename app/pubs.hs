@@ -42,6 +42,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Text.Pandoc.App
+import System.FilePath (replaceDirectory)
 
 main :: IO ()
 main = do
@@ -66,7 +67,7 @@ main = do
       flip walkM_ linkDirs $ \l@(Str link) -> do
         TIO.putStrLn $ "Creating symbolink link to: " <> link
         callCommand $ T.unpack $ T.unlines
-          [ "mkdir -p _build/{auto,temp}"
+          [ "mkdir -p _build/{auto,temp,lib}"
           , "rm -f _build/" <> link
           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
           ]
@@ -134,13 +135,13 @@ includeScript cb@(CodeBlock (label, ["script","py",outType], opts) script) = do
               Left e -> error $ show e
               Right (Pandoc _ b) -> return $ Div nullAttr b
     "img" -> do
-      let fileName = "_build/auto/" <> case lookup "out" opts of
+      let fileName = case lookup "out" opts of
                                          Nothing -> "script"
                                          Just a -> a
           caption = fromMaybe "No caption" $ lookup "caption" opts
           width  = fromMaybe "800" $ lookup "width" opts
           height = fromMaybe "600" $ lookup "height" opts
-      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName,label) ]]
+      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
 
     _ -> do
       return $ Div nullAttr [Para [Str "nothing"]]
