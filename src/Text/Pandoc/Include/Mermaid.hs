@@ -18,7 +18,7 @@ doInclude (CodeBlock (label, ["mermaid"], opts) md) = do
                     Just a -> T.unpack a
       width  = fromMaybe "800" $ lookup "width" opts
       height = fromMaybe "600" $ lookup "height" opts
-  T.writeFile (fileName ++ ".mmd") md
+  T.writeFile ("_build/temp/" ++ fileName ++ ".mmd") md
   _ <- readProcess "mermaid" ["-w", T.unpack width,"-H", T.unpack height,"-i", fileName ++ ".mmd", "-o", "_build/auto/" ++ fileName ++ ".png" ] []
   let caption = fromMaybe "No caption" $ lookup "caption" opts
   return $ Div nullAttr [ Para [Image (label,[],opts) [Str caption] ((T.pack $ fileName ++ ".png"),label)]]
