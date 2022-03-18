@@ -28,12 +28,11 @@ inDir path f = do
   withDir dir $ f file
 
 doInclude :: Block -> IO Block
-doInclude (CodeBlock (_, classes, opts) mp)
+doInclude (CodeBlock (label, classes, opts) mp)
   | "feynmp" `elem` classes = do
       let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
-      let out = "_build/auto" </> mpHash
       let tex = unlines [ "\\documentclass{article}"
                         , "\\usepackage{amsmath}"
                         , "\\usepackage{feynmp-auto}"
@@ -45,21 +44,21 @@ doInclude (CodeBlock (_, classes, opts) mp)
                         , "\\end{fmffile}"
                         , "\\end{document}"
                         ]
-      isCompiled <- doesFileExist $ out <.> "pdf"
+      isCompiled <- doesFileExist $ "_build/auto" </> mpHash <.> "pdf"
       if isCompiled then return ()
-                    else inDir ("_build" </> mpHash) $
+                    else inDir ("_build/temp" </> mpHash) $
                             \f -> do
                                     _ <- readProcess "xelatex" [] tex
                                     _ <- readProcess "mpost" [f] []
                                     _ <- readProcess "xelatex" [] tex
                                     _ <- readProcess "pdfcrop" ["texput.pdf"] []
                                     _ <- readProcess "mv" [ "texput-crop.pdf"
-                                                          , ".." </> out <.> "pdf"
+                                                          , "../auto" </> mpHash <.> "pdf"
                                                           ] []
                                     return ()
       return $ Div nullAttr
                 $ [Para
-                    [Image nullAttr
+                    [Image (label,[],opts)
                       [Str $ fromMaybe "FenymanDiagram" caption] (T.pack mpHash, "fig:")
                     ]
                   ]
