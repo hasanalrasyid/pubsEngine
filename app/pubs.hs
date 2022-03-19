@@ -69,7 +69,7 @@ main = do
       flip walkM_ linkDirs $ \l@(Str link) -> do
         TIO.putStrLn $ "Creating symbolink link to: " <> link
         callCommand $ T.unpack $ T.unlines
-          [ "mkdir -p _build/{auto,temp,lib}"
+          [ "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh}"
           , "rm -f _build/" <> link
           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
           ]
@@ -128,21 +128,52 @@ doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
 
 includeScript :: Block -> IO Block
-includeScript cb@(CodeBlock (label, ["script","py","lib"], opts) script) = do
-  let fileName = T.unpack $ fromMaybe "pyLibDefault" $ lookup "file" opts
-  TIO.writeFile ("_build/lib/py" </> fileName <.> "py") script
-  r <- readProcess "python3" [] $ T.unpack $ T.unlines [script,"print(description)"]
+-----------------------------------------zShell----------------------------------------
+includeScript cb@(CodeBlock (label, ["script","sh","lib"], opts) script) = do
+  let fileName = T.unpack $ fromMaybe "shLibDefault" $ lookup "file" opts
+  TIO.writeFile ("_build/temp/lib/sh" </> fileName <.> "sh") script
+  r <- readProcess "zsh" [] $ T.unpack $ T.unlines [script,"echo $description"]
   res <- runIO $ readMarkdown mdOption $ T.pack r
   return $ case res of
     Left e -> Null
     Right (Pandoc _ b) -> Div nullAttr b
 
+includeScript cb@(CodeBlock (label, classes@["script","sh",outType], opts) script) = do
+  files <- listDirectory "_build/temp/lib/sh"
+  let header = unlines $ map (\f -> ". _build/temp/lib/sh" </> f) files
+      s = unlines [header,T.unpack script]
+  putStrLn s
+  res <- readProcess "zsh" [] s
+  case outType of
+    "md" -> do
+            r <- runIO $ readMarkdown mdOption $ T.pack res
+            return $ Div nullAttr $ case r of
+              Left e -> [Para [Str $ T.pack $ "ERROR: script.sh.md: cannot parse the markdown output: " <> show e]]
+              Right (Pandoc _ b) -> b
+    "img" -> do
+      let fileName = fromMaybe "zshImg" $ lookup "file" opts
+          caption = fromMaybe "" $ lookup "caption" opts
+          width  = fromMaybe "800" $ lookup "width" opts
+          height = fromMaybe "600" $ lookup "height" opts
+      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
+    _ -> do
+      return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show classes ]]
+
+-----------------------------------------Python----------------------------------------
+includeScript cb@(CodeBlock (label, ["script","py","lib"], opts) script) = do
+  let fileName = T.unpack $ fromMaybe "pyLibDefault" $ lookup "file" opts
+  TIO.writeFile ("_build/temp/lib/py" </> fileName <.> "py") script
+  r <- readProcess "python3" [] $ T.unpack $ T.unlines [script,"print(description)"]
+  res <- runIO $ readMarkdown mdOption $ T.pack r
+  return $ case res of
+    Left e -> Null
+    Right (Pandoc _ b) -> Div nullAttr b
 includeScript cb@(CodeBlock (label, classes@["script","py",outType], opts) script) = do
   TIO.writeFile ("_build/temp/script.py") script
-  files <- fmap (delete "__pycache__")$ listDirectory "_build/lib/py"
+  files <- fmap (delete "__pycache__")$ listDirectory "_build/temp/lib/py"
   callCommand "chmod +x _build/temp/script.py"
   let header = unlines [ "import sys, os"
-                       , unlines $ map (\f -> unwords ["from _build.lib.py." <> f,"import *"] ) $ map takeBaseName files
+                       , unlines $ map (\f -> unwords ["from _build.temp.lib.py." <> f,"import *"] ) $ map takeBaseName files
                        ]
       s = unlines [header,T.unpack script]
   putStrLn s
