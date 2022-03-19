@@ -42,7 +42,9 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Encoding.Error as TE
 import Text.Pandoc.App
-import System.FilePath (replaceDirectory)
+import System.FilePath -- (replaceDirectory)
+import System.Directory -- (listDirectory)
+import Data.List -- (delete)
 
 main :: IO ()
 main = do
@@ -83,20 +85,21 @@ main = do
       Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) resPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
   putStrLn "==============================="
-
-  callCommand $ unlines [ "pushd _build"
-                        , "xelatex " <> fileName <> ".tex"
-                        , "bibtex  " <> fileName
-                        , "xelatex " <> fileName <> ".tex"
-                        , "xelatex " <> fileName <> ".tex"
-                        , "popd" ]
-  putStrLn "======================"
+  compileLatex fileName
   where
-   setTemplate "poster" = P.templateLatex
-   setTemplate "abstract" = A.templateLatex
-   setTemplate "thesis" = Thesis.templateLatex
-   setTemplate "report" = R.templateLatex
-   setTemplate _ = R.templateLatex
+    compileLatex fileName = do
+      callCommand $ unlines [ "pushd _build"
+                            , "xelatex " <> fileName <> ".tex"
+                            , "bibtex  " <> fileName
+                            , "xelatex " <> fileName <> ".tex"
+                            , "xelatex " <> fileName <> ".tex"
+                            , "popd" ]
+      putStrLn "======================"
+    setTemplate "poster" = P.templateLatex
+    setTemplate "abstract" = A.templateLatex
+    setTemplate "thesis" = Thesis.templateLatex
+    setTemplate "report" = R.templateLatex
+    setTemplate _ = R.templateLatex
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
   let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0
@@ -122,15 +125,31 @@ walkM_ a b = () <$ walkM a b
 
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
+mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
+
 includeScript :: Block -> IO Block
-includeScript cb@(CodeBlock (label, ["script","py",outType], opts) script) = do
+includeScript cb@(CodeBlock (label, ["script","py","lib"], opts) script) = do
+  let fileName = T.unpack $ fromMaybe "pyLibDefault" $ lookup "file" opts
+  TIO.writeFile ("_build/lib" </> fileName <.> "py") script
+  r <- readProcess "python3" [] $ T.unpack $ T.unlines [script,"print(description)"]
+  res <- runIO $ readMarkdown mdOption $ T.pack r
+  return $ case res of
+    Left e -> Null
+    Right (Pandoc _ b) -> Div nullAttr b
+
+includeScript cb@(CodeBlock (label, classes@["script","py",outType], opts) script) = do
   TIO.writeFile ("_build/temp/script.py") script
+  files <- fmap (delete "__pycache__")$ listDirectory "_build/lib"
   callCommand "chmod +x _build/temp/script.py"
-  res <- readProcess "python3" [] $ T.unpack script
-  return $ Div nullAttr [Para [Str "script is run"]]
+  let header = unlines [ "import sys, os"
+                       , unlines $ map (\f -> unwords ["from _build.lib." <> f,"import *"] ) $ map takeBaseName files
+                       ]
+      s = unlines [header,T.unpack script]
+  putStrLn s
+  res <- readProcess "python3" [] s
   case outType of
     "md" -> do
-            r <- runIO $ readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) $ T.pack res
+            r <- runIO $ readMarkdown mdOption $ T.pack res
             case r of
               Left e -> error $ show e
               Right (Pandoc _ b) -> return $ Div nullAttr b
@@ -142,9 +161,8 @@ includeScript cb@(CodeBlock (label, ["script","py",outType], opts) script) = do
           width  = fromMaybe "800" $ lookup "width" opts
           height = fromMaybe "600" $ lookup "height" opts
       return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
-
     _ -> do
-      return $ Div nullAttr [Para [Str "nothing"]]
+      return $ Div nullAttr [Para [Str $ "ERROR: unacceptable script class headers, we got: " <> (T.pack $ show classes) ]]
 
 includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
   includeScript $ CodeBlock (a,["script","py","md"], opts) t
