@@ -103,7 +103,7 @@ library:
     - extern/diagrams-builder/src
     - extern/haskell-src-exts-simple/src
   default-extensions: OverloadedStrings
-                    , DeriveAnyClass
+                    , GeneralizedNewtypeDeriving
                     , ScopedTypeVariables
                     , RecordWildCards
                     , DeriveDataTypeable

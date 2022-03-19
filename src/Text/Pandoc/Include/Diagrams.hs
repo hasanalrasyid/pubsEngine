@@ -55,7 +55,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
       d <- compileDiagram (T.unpack contents) width
       let imgBlock = RawBlock (Format "latex") $
                        case d of
-                        Skipped hash -> T.pack $ "\\input{" <> getPGFfilename "_build/auto/" hash <> "}"
+                        Skipped hash -> T.pack $ "\\input{" <> getPGFfilename "auto/" hash <> "}"
                         OK _ texnya ->T.pack "try this" --  T.pack $ LB.unpack $ BSB.toLazyByteString texnya
                                         {- unlines  [ "\\begin{figure}"
                                                  , "\\centering"
