@@ -130,7 +130,7 @@ mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandoc
 includeScript :: Block -> IO Block
 includeScript cb@(CodeBlock (label, ["script","py","lib"], opts) script) = do
   let fileName = T.unpack $ fromMaybe "pyLibDefault" $ lookup "file" opts
-  TIO.writeFile ("_build/lib" </> fileName <.> "py") script
+  TIO.writeFile ("_build/lib/py" </> fileName <.> "py") script
   r <- readProcess "python3" [] $ T.unpack $ T.unlines [script,"print(description)"]
   res <- runIO $ readMarkdown mdOption $ T.pack r
   return $ case res of
@@ -139,10 +139,10 @@ includeScript cb@(CodeBlock (label, ["script","py","lib"], opts) script) = do
 
 includeScript cb@(CodeBlock (label, classes@["script","py",outType], opts) script) = do
   TIO.writeFile ("_build/temp/script.py") script
-  files <- fmap (delete "__pycache__")$ listDirectory "_build/lib"
+  files <- fmap (delete "__pycache__")$ listDirectory "_build/lib/py"
   callCommand "chmod +x _build/temp/script.py"
   let header = unlines [ "import sys, os"
-                       , unlines $ map (\f -> unwords ["from _build.lib." <> f,"import *"] ) $ map takeBaseName files
+                       , unlines $ map (\f -> unwords ["from _build.lib.py." <> f,"import *"] ) $ map takeBaseName files
                        ]
       s = unlines [header,T.unpack script]
   putStrLn s
