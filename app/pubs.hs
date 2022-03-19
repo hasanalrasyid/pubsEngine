@@ -153,14 +153,14 @@ includeScript cb = return cb
 
 
 includeMarkdown :: Block -> PandocIO Block
-includeMarkdown cb@(CodeBlock (_, ["include"], namevals) t) = do
+includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
   let fileList = lines $ T.unpack t
   (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
     fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
     r <- readMarkdown def fMd
     (Pandoc _ s) <- walkM includeMarkdown r
     return s
-  return $ Div nullAttr $ concat inMd
+  return $ Div (label,[],[]) $ concat inMd
 includeMarkdown x = return x
 
 doBlockIO cb@(CodeBlock (_, classes, namevals) t)
