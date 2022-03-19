@@ -46,16 +46,16 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
   where
     capt = case lookup "caption" namevals of
              Just f -> f
-             Nothing -> "{\\color{red}====No Caption Provided, add caption on diagram statement in md file, i.e. \\{.diagram width=100 caption=\"any caption\"\\}}"
-    width = fromMaybe "1.0" $ lookup "width" namevals
+             Nothing -> "{\\color{red}====No Caption Provided, add caption on diagram statement in md file, i.e. \\{.diagram size=0.8 caption=\"any caption\"\\}}"
+    size = fromMaybe "1.0" $ lookup "size" namevals
     img = do
-      d <- compileDiagram (T.unpack contents) 100.0
+      d <- compileDiagram (T.unpack contents) 800.0
       let imgBlock = RawBlock (Format "latex") $
                        case d of
                         Skipped hash -> T.pack $ unlines
                           [ "\\begin{figure}"
                           , "\\centering"
-                          , "\\resizebox{" <> T.unpack width <> "\\textwidth}{!}{\\input{" <> getPGFfilename "auto/" hash <> "}}"
+                          , "\\resizebox{" <> T.unpack size <> "\\linewidth}{!}{\\input{" <> getPGFfilename "auto/" hash <> "}}"
                           , T.unpack $ "\\caption{" <> capt <> "}"
                           , T.unpack $ "\\label{"<> ident <> "}"
                           , "\\end{figure}"
