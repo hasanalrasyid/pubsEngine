@@ -117,7 +117,7 @@ updateMeta' mt key x = case M.lookup key mt of
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
-  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO
+  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO >>= walkM upgradeImageIO
   p <- doPandoc (Pandoc mt blks)
   return p
 
@@ -126,6 +126,15 @@ walkM_ a b = () <$ walkM a b
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
+
+upgradeImageIO :: Block -> IO Block
+-----------------------------------------zShell----------------------------------------
+upgradeImageIO cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
+-- file _build/auto/pyImage.png|grep PNG
+-- _build/auto/pyImage.png: PNG image data, 640 x 622, 8-bit/color RGBA, non-interlaced
+  return cb
+upgradeImageIO c = return c
+
 
 includeScript :: Block -> IO Block
 -----------------------------------------zShell----------------------------------------
