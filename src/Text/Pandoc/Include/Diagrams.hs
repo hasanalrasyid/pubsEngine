@@ -26,6 +26,7 @@ import Data.Hashable -- hashWithSalt
 import System.Directory -- doesFileExist
 import qualified Data.Text as T
 import qualified Data.Text.Read as T
+import Data.Maybe
 
 --addPackagePGF pd = addPackagePGF' processDiagram pd
 
@@ -46,16 +47,19 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
     capt = case lookup "caption" namevals of
              Just f -> f
              Nothing -> "{\\color{red}====No Caption Provided, add caption on diagram statement in md file, i.e. \\{.diagram width=100 caption=\"any caption\"\\}}"
-    width = case lookup "width" namevals of
-              Just w -> case T.double w of -- :: Double
-                          Left err -> error err
-                          Right (a,_) -> a
-              Nothing -> 10
+    width = fromMaybe "1.0" $ lookup "width" namevals
     img = do
-      d <- compileDiagram (T.unpack contents) width
+      d <- compileDiagram (T.unpack contents) 100.0
       let imgBlock = RawBlock (Format "latex") $
                        case d of
-                        Skipped hash -> T.pack $ "\\input{" <> getPGFfilename "auto/" hash <> "}"
+                        Skipped hash -> T.pack $ unlines
+                          [ "\\begin{figure}"
+                          , "\\centering"
+                          , "\\resizebox{" <> T.unpack width <> "\\textwidth}{!}{\\input{" <> getPGFfilename "auto/" hash <> "}}"
+                          , T.unpack $ "\\caption{" <> capt <> "}"
+                          , T.unpack $ "\\label{"<> ident <> "}"
+                          , "\\end{figure}"
+                          ]
                         OK _ texnya ->T.pack "try this" --  T.pack $ LB.unpack $ BSB.toLazyByteString texnya
                                         {- unlines  [ "\\begin{figure}"
                                                  , "\\centering"
@@ -65,8 +69,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                                                  ] -}
                         ParseErr err  -> T.pack $ "\\begin{verbatim}\n" ++ "ParseErr : " ++ err ++ "\\end{verbatim}\n"
                         InterpErr err -> T.pack $ "\\begin{verbatim}\n" <> "InterpErr : " <> ppInterpError err <> T.unpack contents <> "\\end{verbatim}\n"
-      return $ Div (ident,[],[("label",capt)]) [imgBlock,Para [Str capt]]
-    --bl' = CodeBlock (ident, delete "diagram" classes, namevals) contents
+      return $ Div nullAttr [imgBlock,Para [Str capt]]
 
 processDiagram block = return block
 
