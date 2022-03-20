@@ -46,31 +46,33 @@ import System.FilePath -- (replaceDirectory)
 import System.Directory -- (listDirectory)
 import Data.List -- (delete)
 
+
+runIO' :: PandocIO a -> IO a
+runIO' f = do
+  (res, reports) <- runIOorExplode $ do
+    x <- f
+    rs <- getLog
+    return (x, rs)
+  TIO.putStrLn $ T.unlines $ map showLogMessage reports
+  return res
+
+
 main :: IO ()
 main = do
   (fileName:format:_) <- getArgs
 
-  let runIO' :: PandocIO a -> IO a
-      runIO' f = do
-        (res, reports) <- runIOorExplode $ do
-                             x <- f
-                             rs <- getLog
-                             return (x, rs)
-        TIO.putStrLn $ T.unlines $ map showLogMessage reports
-        return res
-
+  callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh}"
   mdIncludedPandoc@(Pandoc resMeta _) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
       >>= walkM includeMarkdown
 
-  case lookupMeta "linkDir" resMeta of
+  case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
         TIO.putStrLn $ "Creating symbolink link to: " <> link
         callCommand $ T.unpack $ T.unlines
-          [ "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh}"
-          , "rm -f _build/" <> link
+          [ "rm -f _build/" <> link
           , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
           ]
         return l
@@ -117,7 +119,12 @@ updateMeta' mt key x = case M.lookup key mt of
                          Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
-  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO >>= walkM upgradeImageIO
+  let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
+                    Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
+                    _ -> []
+  putStrLn "imageDirs =============================="
+  putStrLn $ show imageDirs
+  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO >>= walkM (upgradeImageIO imageDirs)
   p <- doPandoc (Pandoc mt blks)
   return p
 
@@ -127,13 +134,19 @@ doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
 
-upgradeImageIO :: Block -> IO Block
+upgradeImageIO :: [String] -> Block -> IO Block
 -----------------------------------------zShell----------------------------------------
-upgradeImageIO cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
--- file _build/auto/pyImage.png|grep PNG
--- _build/auto/pyImage.png: PNG image data, 640 x 622, 8-bit/color RGBA, non-interlaced
-  return cb
-upgradeImageIO c = return c
+upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
+  latex <- runIO $ writeLaTeX def $ Pandoc nullMeta [cb]
+  case latex of
+    Left _ -> return cb
+    Right a -> do
+      TIO.writeFile "_build/temp/upgradeImageIO.tmp" a
+      let width = fromMaybe "1.0" $ lookup "size" opts
+      r <- readProcess "zsh" [] $ "sed -e 's/\\(includegraphics\\){\\|\\[\\([^]]*\\)\\]{/\\1[keepaspectratio=true,width="<> T.unpack width <>"\\\\linewidth]{/g' _build/temp/upgradeImageIO.tmp"
+      callCommand "rm -f _build/temp/upgradeImageIO.tmp"
+      return $ RawBlock (Format "latex") $ T.pack r
+upgradeImageIO _ c = return c
 
 
 includeScript :: Block -> IO Block

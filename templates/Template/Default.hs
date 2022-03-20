@@ -51,7 +51,7 @@ email: "defaultEmail@domain.edu"
 abstract:
 abstractTex:
 appendix:
-linkDir:
+imageDir:
 acknowledgements:
 keywords: default keywords -- math symbol $\gamma$ -- latex -- pandoc
 processDate:
