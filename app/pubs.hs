@@ -150,6 +150,7 @@ upgradeImageIO _ c = return c
 
 
 saveLibrary :: [T.Text] -> FilePath -> String -> IO [Block]
+  {-
 saveLibrary (_:"sh":_) fileName script = do
   writeFile ("_build/temp/lib/sh" </> fileName <.> "sh") script
   r <- readProcess "zsh" [] $ unlines [script,"echo $description"]
@@ -173,6 +174,21 @@ saveLibrary (_:"gnuplot":_) fileName script = do
   return $ case res of
       Left e -> []
       Right (Pandoc _ b) -> b
+-}
+saveLibrary (_:lib:_) fileName script = do
+  let libName = T.unpack lib
+  writeFile ("_build/temp/lib/" </> libName </> fileName <.> libName) script
+  let (cmd,description) = getCommand libName
+  r <- readProcess cmd [] $ unlines [script, description]
+  res <- runIO $ readMarkdown mdOption $ T.pack r
+  return $ case res of
+      Left e -> [Para [Str $ "ERROR: saveLibrary: readMarkdown: " <> (T.pack $ show e)]]
+      Right (Pandoc _ b) -> b
+  where
+    getCommand "py"      = ("python","print(description)")
+    getCommand "sh"      = ("zsh","echo description")
+    getCommand "gnuplot" = ("gnuplot",unlines ["set print '-'", "print description"])
+    getCommand a         = ("zsh","echo ERROR: getDescription: saveLibrary: do not know how to call the library for class: " <> a)
 
 includeScript :: Block -> IO Block
 -----------------------------------------Library----------------------------------------
