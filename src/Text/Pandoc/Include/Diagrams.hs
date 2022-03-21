@@ -69,7 +69,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                                                  ] -}
                         ParseErr err  -> T.pack $ "\\begin{verbatim}\n" ++ "ParseErr : " ++ err ++ "\\end{verbatim}\n"
                         InterpErr err -> T.pack $ "\\begin{verbatim}\n" <> "InterpErr : " <> ppInterpError err <> T.unpack contents <> "\\end{verbatim}\n"
-      return $ Div nullAttr [imgBlock,Para [Str capt]]
+      return $ Div nullAttr [imgBlock]
 
 processDiagram block = return block
 
