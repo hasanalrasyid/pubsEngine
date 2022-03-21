@@ -331,7 +331,7 @@ $endif$
 %% but this old "keyword" functionality is maintained in case authors want
 %% to include these concepts in their preprints.
 $if(keywords)$
-  \keywords{$keywords$}
+  \keywords{$for(keywords)$$keywords$$sep$ --- $endfor$}
 $endif$
 %\keywords{Classical Novae (251) --- Ultraviolet astronomy(1736) --- History of astronomy(1868) --- Interdisciplinary astronomy(804)}
 

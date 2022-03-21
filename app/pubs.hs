@@ -135,7 +135,7 @@ doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
 
 upgradeImageIO :: [String] -> Block -> IO Block
------------------------------------------zShell----------------------------------------
+-----------------------------------------UpgradeImage----------------------------------------
 upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
   latex <- runIO $ writeLaTeX def $ Pandoc nullMeta [cb]
   case latex of
@@ -180,8 +180,6 @@ writeScriptResult res (label, ["script",_,"img"], opts) = do
       caption = case lookup "caption" opts of
                   Nothing -> []
                   Just a -> [Str a]
-      width  = fromMaybe "800" $ lookup "width" opts
-      height = fromMaybe "600" $ lookup "height" opts
   return $ Div nullAttr [Para [Image (label,[],opts) caption (fileName, label) ]]
 writeScriptResult res c = return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show c ]]
 
@@ -194,7 +192,7 @@ includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) script) 
   lowerPart <- saveLibrary classes fileName $ T.unpack script
   return $ Div nullAttr $ upperPart <> lowerPart
 
------------------------------------------GNUplot----------------------------------------
+-----------------------------------------Program----------------------------------------
 includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) script) = do
   let command = T.unpack c
   files <- listDirectory $ "_build/temp/lib/" <> command
@@ -203,63 +201,9 @@ includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) script) = d
   putStrLn s
   res <- readProcess cmd [] s
   writeScriptResult res attr
-
 includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
   includeScript $ CodeBlock (a,["script","py","md"], opts) t
 includeScript cb = return cb
-  {-
------------------------------------------zShell----------------------------------------
-includeScript cb@(CodeBlock (label, classes@["script","sh",outType], opts) script) = do
-  files <- listDirectory "_build/temp/lib/sh"
-  let header = unlines $ map (\f -> ". _build/temp/lib/sh" </> f) files
-      s = unlines [header,T.unpack script]
-  putStrLn s
-  res <- readProcess "zsh" [] s
-  case outType of
-    "md" -> do
-            r <- runIO $ readMarkdown mdOption $ T.pack res
-            return $ Div nullAttr $ case r of
-              Left e -> [Para [Str $ T.pack $ "ERROR: script.sh.md: cannot parse the markdown output: " <> show e]]
-              Right (Pandoc _ b) -> b
-    "img" -> do
-      let fileName = fromMaybe "zshImg" $ lookup "file" opts
-          caption = fromMaybe "" $ lookup "caption" opts
-          width  = fromMaybe "800" $ lookup "width" opts
-          height = fromMaybe "600" $ lookup "height" opts
-      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
-    _ -> do
-      return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show classes ]]
-
------------------------------------------Python----------------------------------------
-includeScript cb@(CodeBlock (label, classes@["script","py",outType], opts) script) = do
-  TIO.writeFile ("_build/temp/script.py") script
-  files <- fmap (delete "__pycache__")$ listDirectory "_build/temp/lib/py"
-  callCommand "chmod +x _build/temp/script.py"
-  let header = unlines [ "import sys, os"
-                       , unlines $ map (\f -> unwords ["from _build.temp.lib.py." <> f,"import *"] ) $ map takeBaseName files
-                       ]
-      s = unlines [header,T.unpack script]
-  putStrLn s
-  res <- readProcess "python3" [] s
-  case outType of
-    "md" -> do
-            r <- runIO $ readMarkdown mdOption $ T.pack res
-            case r of
-              Left e -> error $ show e
-              Right (Pandoc _ b) -> return $ Div nullAttr b
-    "img" -> do
-      let fileName = case lookup "file" opts of
-                                         Nothing -> "script"
-                                         Just a -> a
-          caption = fromMaybe "No caption" $ lookup "caption" opts
-          width  = fromMaybe "800" $ lookup "width" opts
-          height = fromMaybe "600" $ lookup "height" opts
-      return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
-    _ -> do
-      return $ Div nullAttr [Para [Str $ "ERROR: unacceptable script class headers, we got: " <> (T.pack $ show classes) ]]
--}
-
-
 
 includeMarkdown :: Block -> PandocIO Block
 includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
