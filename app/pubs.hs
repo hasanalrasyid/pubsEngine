@@ -148,47 +148,42 @@ upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = d
       return $ RawBlock (Format "latex") $ T.pack r
 upgradeImageIO _ c = return c
 
-
 saveLibrary :: [T.Text] -> FilePath -> String -> IO [Block]
-  {-
-saveLibrary (_:"sh":_) fileName script = do
-  writeFile ("_build/temp/lib/sh" </> fileName <.> "sh") script
-  r <- readProcess "zsh" [] $ unlines [script,"echo $description"]
-  res <- runIO $ readMarkdown mdOption $ T.pack r
-  return $ case res of
-      Left e -> []
-      Right (Pandoc _ b) -> b
-
-saveLibrary (_:"py":_) fileName script = do
-  writeFile ("_build/temp/lib/py" </> fileName <.> "py") script
-  r <- readProcess "python3" [] $ unlines [script,"print(description)"]
-  res <- runIO $ readMarkdown mdOption $ T.pack r
-  return $ case res of
-      Left e -> []
-      Right (Pandoc _ b) -> b
-
-saveLibrary (_:"gnuplot":_) fileName script = do
-  writeFile ("_build/temp/lib/gnuplot" </> fileName <.> "gpl") script
-  r <- readProcess "gnuplot" [] $ unlines [script,"set print '-'", "print description"]
-  res <- runIO $ readMarkdown mdOption $ T.pack r
-  return $ case res of
-      Left e -> []
-      Right (Pandoc _ b) -> b
--}
 saveLibrary (_:lib:_) fileName script = do
   let libName = T.unpack lib
   writeFile ("_build/temp/lib/" </> libName </> fileName <.> libName) script
-  let (cmd,description) = getCommand libName
+  let (cmd,description,_) = getCommand libName []
   r <- readProcess cmd [] $ unlines [script, description]
   res <- runIO $ readMarkdown mdOption $ T.pack r
   return $ case res of
       Left e -> [Para [Str $ "ERROR: saveLibrary: readMarkdown: " <> (T.pack $ show e)]]
       Right (Pandoc _ b) -> b
-  where
-    getCommand "py"      = ("python","print(description)")
-    getCommand "sh"      = ("zsh","echo description")
-    getCommand "gnuplot" = ("gnuplot",unlines ["set print '-'", "print description"])
-    getCommand a         = ("zsh","echo ERROR: getDescription: saveLibrary: do not know how to call the library for class: " <> a)
+
+getCommand c@"py"      files = ( "python","print(description)"
+                               , unlines [ "import sys, os"
+                                         , unlines $ map (\f -> unwords ["from _build.temp.lib.py." <> f,"import *"] ) $ map takeBaseName files
+                                         ]
+                               )
+getCommand c@"sh"      files = ("zsh","echo description"
+                               ,  unlines $ map (\f -> ". '_build/temp/lib"</> c </> f <> "'") files )
+getCommand c@"gnuplot" files = ("gnuplot",unlines ["set print '-'", "print description"]
+                               ,  unlines $ map (\f -> "load '_build/temp/lib"</> c </> f <> "'") files )
+getCommand a         _ = ("zsh","echo ERROR: getDescription: saveLibrary: do not know how to call the library for class: " <> a, "")
+
+writeScriptResult res (_, ["script",cmd,"md"], _) = do
+  r <- runIO $ readMarkdown mdOption $ T.pack res
+  return $ Div nullAttr $ case r of
+    Left e -> [Para [Str $ "ERROR: script."<> cmd <>".md: cannot parse the markdown output: " <> (T.pack $ show e)]]
+    Right (Pandoc _ b) -> b
+writeScriptResult res (label, ["script",_,"img"], opts) = do
+  let fileName = fromMaybe "defaultImg" $ lookup "file" opts
+      caption = case lookup "caption" opts of
+                  Nothing -> []
+                  Just a -> [Str a]
+      width  = fromMaybe "800" $ lookup "width" opts
+      height = fromMaybe "600" $ lookup "height" opts
+  return $ Div nullAttr [Para [Image (label,[],opts) caption (fileName, label) ]]
+writeScriptResult res c = return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show c ]]
 
 includeScript :: Block -> IO Block
 -----------------------------------------Library----------------------------------------
@@ -200,29 +195,19 @@ includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) script) 
   return $ Div nullAttr $ upperPart <> lowerPart
 
 -----------------------------------------GNUplot----------------------------------------
-includeScript cb@(CodeBlock (label, classes@["script","gnuplot",outType], opts) script) = do
-  files <- listDirectory "_build/temp/lib/gnuplot"
-  let header = unlines $ map (\f -> "load '_build/temp/lib/gnuplot" </> f <> "'") files
+includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) script) = do
+  let command = T.unpack c
+  files <- listDirectory $ "_build/temp/lib/" <> command
+  let (cmd,_,header) = getCommand command files
       s = unlines [header,T.unpack script]
   putStrLn s
-  res <- readProcess "gnuplot" [] s
-  case outType of
-    "md" -> do
-            r <- runIO $ readMarkdown mdOption $ T.pack res
-            return $ Div nullAttr $ case r of
-              Left e -> [Para [Str $ T.pack $ "ERROR: script.gnuplot.md: cannot parse the markdown output: " <> show e]]
-              Right (Pandoc _ b) -> b
-    "img" -> do
-      let fileName = fromMaybe "defaultImg" $ lookup "file" opts
-          caption = case lookup "caption" opts of
-                      Nothing -> []
-                      Just a -> [Str a]
-          width  = fromMaybe "800" $ lookup "width" opts
-          height = fromMaybe "600" $ lookup "height" opts
-      return $ Div nullAttr [Para [Image (label,[],opts) caption (fileName, label) ]]
-    _ -> do
-      return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show classes ]]
+  res <- readProcess cmd [] s
+  writeScriptResult res attr
 
+includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
+  includeScript $ CodeBlock (a,["script","py","md"], opts) t
+includeScript cb = return cb
+  {-
 -----------------------------------------zShell----------------------------------------
 includeScript cb@(CodeBlock (label, classes@["script","sh",outType], opts) script) = do
   files <- listDirectory "_build/temp/lib/sh"
@@ -272,10 +257,7 @@ includeScript cb@(CodeBlock (label, classes@["script","py",outType], opts) scrip
       return $ Div nullAttr [Para [Image (label,[],opts) [Str caption] (fileName, label) ]]
     _ -> do
       return $ Div nullAttr [Para [Str $ "ERROR: unacceptable script class headers, we got: " <> (T.pack $ show classes) ]]
-
-includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
-  includeScript $ CodeBlock (a,["script","py","md"], opts) t
-includeScript cb = return cb
+-}
 
 
 
