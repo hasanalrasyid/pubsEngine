@@ -185,7 +185,10 @@ writeScriptResult res c = return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: un
 
 includeScript :: Block -> IO Block
 -----------------------------------------Library----------------------------------------
-includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) script) = do
+includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) text) = do
+  script <- case lookup "src" opts of
+              Just a -> TIO.readFile $ T.unpack a
+              _ -> return text
   let fileName = T.unpack $ fromMaybe "libDefault" $ lookup "file" opts
   let upperPart = if elem "show" classes then [CodeBlock (label,[],[]) $ T.pack $ unlines $ deleteBy isPrefixOf "description"  $ lines $ T.unpack script]
                                          else []
@@ -193,7 +196,10 @@ includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) script) 
   return $ Div nullAttr $ upperPart <> lowerPart
 
 -----------------------------------------Program----------------------------------------
-includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) script) = do
+includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) text) = do
+  script <- case lookup "src" opts of
+              Just a -> TIO.readFile $ T.unpack a
+              _ -> return text
   let command = T.unpack c
   files <- listDirectory $ "_build/temp/lib/" <> command
   let (cmd,_,header) = getCommand command files
