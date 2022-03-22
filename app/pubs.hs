@@ -12,7 +12,7 @@ import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
-import           Text.Pandoc.Include.Script hiding (runIO')
+import           Text.Pandoc.Include.Script hiding (runIO',mdOption)
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
@@ -154,7 +154,7 @@ includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
   let fileList = lines $ T.unpack t
   (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
     fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
-    r <- readMarkdown def fMd
+    r <- readMarkdown mdOption fMd
     (Pandoc _ s) <- walkM includeMarkdown r
     return s
   return $ Div (label,[],[]) $ concat inMd
