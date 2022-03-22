@@ -166,7 +166,6 @@ doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "mermaid" `elem` classes = Mermaid.doInclude cb
   | "delegate" `elem` classes = Delegate.doInclude cb
   | "inputTable" `elem` classes = InTable.doInclude cb
-  | "include" `elem` classes = Markdown.doInclude cb
   | "note" `elem` classes = genEnv t  "}" "\\note{"
   | "postbegin" `elem` classes =
     genEnv t "" $
