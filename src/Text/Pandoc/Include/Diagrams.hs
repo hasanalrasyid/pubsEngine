@@ -60,7 +60,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
                           , T.unpack $ "\\label{"<> ident <> "}"
                           , "\\end{figure}"
                           ]
-                        OK _ texnya ->T.pack "try this" --  T.pack $ LB.unpack $ BSB.toLazyByteString texnya
+                        OK _ texnya -> T.pack $ LB.unpack $ BSB.toLazyByteString texnya
                                         {- unlines  [ "\\begin{figure}"
                                                  , "\\centering"
                                                  , LB.unpack $ toLazyByteString texnya

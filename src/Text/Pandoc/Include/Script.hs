@@ -38,7 +38,7 @@ import System.FilePath -- (replaceDirectory)
 import System.Directory -- (listDirectory)
 import Data.List -- (delete)
 
-
+  {-
 runIO' :: PandocIO a -> IO a
 runIO' f = do
   (res, reports) <- runIOorExplode $ do
@@ -47,8 +47,7 @@ runIO' f = do
     return (x, rs)
   TIO.putStrLn $ T.unlines $ map showLogMessage reports
   return res
-
-mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
+-}
 
 saveLibrary :: [T.Text] -> FilePath -> String -> IO [Block]
 saveLibrary (_:lib:_) fileName script = do

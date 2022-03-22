@@ -16,6 +16,8 @@ pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_yaml_metadata_block
                    ]
 
+mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
+
 withDir :: FilePath -> IO a -> IO a
 withDir path f = do
   dir <- getCurrentDirectory

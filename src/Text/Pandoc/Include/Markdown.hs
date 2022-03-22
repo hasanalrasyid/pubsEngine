@@ -61,12 +61,14 @@ import           System.Directory
 
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 
 import           Text.Pandoc
 import           Text.Pandoc.Error
 import           Text.Pandoc.JSON
 
 import           Text.Pandoc.Walk
+import qualified Text.Pandoc.Class as PIO
 import Text.Pandoc.Include.Common
 
 getContent :: FilePath -> IO [Block]
@@ -104,3 +106,15 @@ doInclude (CodeBlock (_, classes, _) list)
     processFiles =<< toProcess
 
 doInclude x = return x
+
+includeMarkdown :: Block -> PandocIO Block
+includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
+  let fileList = lines $ T.unpack t
+  (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
+    fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
+    r <- readMarkdown mdOption fMd
+    (Pandoc _ s) <- walkM includeMarkdown r
+    return s
+  return $ Div (label,[],[]) $ concat inMd
+includeMarkdown x = return x
+

@@ -12,7 +12,8 @@ import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
-import           Text.Pandoc.Include.Script hiding (runIO',mdOption)
+import           Text.Pandoc.Include.Script
+import           Text.Pandoc.Include.Common.IO
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
@@ -48,15 +49,6 @@ import System.Directory -- (listDirectory)
 import Data.List -- (delete)
 
 
-runIO' :: PandocIO a -> IO a
-runIO' f = do
-  (res, reports) <- runIOorExplode $ do
-    x <- f
-    rs <- getLog
-    return (x, rs)
-  TIO.putStrLn $ T.unlines $ map showLogMessage reports
-  return res
-
 
 main :: IO ()
 main = do
@@ -66,7 +58,7 @@ main = do
   mdIncludedPandoc@(Pandoc resMeta _) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
-      >>= walkM includeMarkdown
+      >>= walkM Markdown.includeMarkdown
 
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
@@ -133,8 +125,6 @@ walkM_ a b = () <$ walkM a b
 
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
-mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
-
 upgradeImageIO :: [String] -> Block -> IO Block
 -----------------------------------------UpgradeImage----------------------------------------
 upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
@@ -148,17 +138,6 @@ upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = d
       callCommand "rm -f _build/temp/upgradeImageIO.tmp"
       return $ RawBlock (Format "latex") $ T.pack r
 upgradeImageIO _ c = return c
-
-includeMarkdown :: Block -> PandocIO Block
-includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
-  let fileList = lines $ T.unpack t
-  (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
-    fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
-    r <- readMarkdown mdOption fMd
-    (Pandoc _ s) <- walkM includeMarkdown r
-    return s
-  return $ Div (label,[],[]) $ concat inMd
-includeMarkdown x = return x
 
 doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = MultiMarkdown.doInclude cb
