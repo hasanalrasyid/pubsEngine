@@ -175,20 +175,29 @@ writeScriptResult res (_, ["script",cmd,"md"], _) = do
   return $ Div nullAttr $ case r of
     Left e -> [Para [Str $ "ERROR: script."<> cmd <>".md: cannot parse the markdown output: " <> (T.pack $ show e)]]
     Right (Pandoc _ b) -> b
-writeScriptResult res (label, ["script",_,"img"], opts) = do
+writeScriptResult res (label, ["script",c,"img"], opts) = do
   let fileName = fromMaybe "defaultImg" $ lookup "file" opts
-      caption = case lookup "caption" opts of
-                  Nothing -> []
-                  Just a -> [Str a]
+  ltx <- runIO $ do
+    let c = fromMaybe "" $ lookup "caption" opts
+    (readMarkdown mdOption $ c) >>= writeLaTeX def
+  let caption = case ltx of
+                  Left e -> [Str $ "ERROR: script."<> c <>".md: cannot parse the markdown output: " <> (T.pack $ show e)]
+                  Right p -> [RawInline (Format "latex") p]
   return $ Div nullAttr [Para [Image (label,[],opts) caption (fileName, label) ]]
 writeScriptResult res c = return $ Div nullAttr [Para [Str $ T.pack $ "ERROR: unacceptable script class headers, we got: " <> show c ]]
 
+extractSource text opts0 =
+  case lookup "src" opts0 of
+    Just a -> do
+      t <- TIO.readFile $ T.unpack a
+      let o = M.toList $ M.alter (\_ -> Just text) "caption" $ M.fromList opts0
+      return (t,o)
+    _ -> return (text,opts0)
+
 includeScript :: Block -> IO Block
 -----------------------------------------Library----------------------------------------
-includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) text) = do
-  script <- case lookup "src" opts of
-              Just a -> TIO.readFile $ T.unpack a
-              _ -> return text
+includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts0) text) = do
+  (script,opts) <- extractSource text opts0
   let fileName = T.unpack $ fromMaybe "libDefault" $ lookup "file" opts
   let upperPart = if elem "show" classes then [CodeBlock (label,[],[]) $ T.pack $ unlines $ deleteBy isPrefixOf "description"  $ lines $ T.unpack script]
                                          else []
@@ -196,17 +205,16 @@ includeScript cb@(CodeBlock (label, classes@("script":_:"lib":_), opts) text) = 
   return $ Div nullAttr $ upperPart <> lowerPart
 
 -----------------------------------------Program----------------------------------------
-includeScript cb@(CodeBlock attr@(label, ["script",c,outType], opts) text) = do
-  script <- case lookup "src" opts of
-              Just a -> TIO.readFile $ T.unpack a
-              _ -> return text
+includeScript cb@(CodeBlock (label, a@["script",c,outType], opts0) text) = do
+  (script,opts) <- extractSource text opts0
+  putStrLn $ "===========" <> show opts
   let command = T.unpack c
   files <- listDirectory $ "_build/temp/lib/" <> command
   let (cmd,_,header) = getCommand command files
       s = unlines [header,T.unpack script]
   putStrLn s
   res <- readProcess cmd [] s
-  writeScriptResult res attr
+  writeScriptResult res (label,a,opts)
 includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
   includeScript $ CodeBlock (a,["script","py","md"], opts) t
 includeScript cb = return cb

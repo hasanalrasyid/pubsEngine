@@ -1,4 +1,5 @@
-implement manuscript status, submitted, reviewed, accepted
-implement advanced graphics {figure*}
-implement Cross-Reference
-implement APPENDIX
+[ ] manuscript status, submitted, reviewed, accepted
+[ ] advanced graphics {figure*}
+[ ] Cross-Reference
+[ ] APPENDIX
+[v] include script with caption in text codeblock
