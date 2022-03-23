@@ -30,6 +30,7 @@ system_ s = void $ system s
 runIO' :: PandocIO a -> IO a
 runIO' f = do
   (res, reports) <- runIOorExplode $ do
+    setTrace True
     x <- f
     rs <- getLog
     return (x, rs)

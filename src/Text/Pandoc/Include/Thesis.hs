@@ -1,7 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Text.Pandoc.Include.Thesis (linkTex)
+module Text.Pandoc.Include.Thesis
+  ( linkTex
+  , processPostDocument
+  )
   where
 import Text.Pandoc.JSON
 import Text.Pandoc.Shared (addMetaField)
@@ -12,8 +15,11 @@ import System.FilePath.Posix (takeFileName)
 import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import qualified Data.Text.Encoding as T
 import Text.Pandoc.Include.Common
-
+import qualified Text.Pandoc.Class as PIO
+import qualified Data.Map.Strict as M
+import Data.Map (Map)
 
 
 mdFile2LaTeX :: FilePath -> IO ()
@@ -59,3 +65,50 @@ linkTex p@(Pandoc mt blks) = do
       fromStr (Str a) = T.unpack a
       fromStr SoftBreak = ""
       fromStr _ = "fromStr failed"
+
+
+-- Start:
+-- convert meta appendix to div inside the pandoc [block]
+processPostDocument p@(Pandoc m l) = do
+  let facilities = case lookupMeta "facilities" m of
+                  Just (MetaInlines a) ->
+                    [ Div ("",["facilities"],[])
+                      [ LineBlock $ [ [ RawInline (Format "latex") $ T.unlines [ "%%%%%%%%%FACILITIES%%%%%%%%%"
+                                                                               ,  "\\vspace{5mm}"
+                                                                               , "\\facilities"
+                                                                               ]
+                                      , Span nullAttr a
+                                      ]
+                                    ]
+                      ]
+                    ]
+                  _ -> []
+  let software = case lookupMeta "software" m of
+                  Just (MetaInlines a) ->
+                    [ Div ("",["software"],[])
+                      [ LineBlock $ [ [ RawInline (Format "latex") $ T.unlines [ "%%%%%%%%%SOFTWARE%%%%%%%%%"
+                                                                               , "\\software"
+                                                                               ]
+                                      , Span nullAttr a
+                                      ]
+                                    ]
+                      ]
+                    ]
+                  _ -> []
+  let acknowledgements = case lookupMeta "acknowledgements" m of
+                  Just (MetaInlines a) -> [ Div ("",["acknowledgements"],[]) $
+                          [ RawBlock (Format "latex") "%%%%%%%%%ACKNOWLEDGEMENTS%%%%%%%%%"
+                          , RawBlock (Format "latex") "\\begin{acknowledgements}"
+                          ] <> [Plain a] <> [ RawBlock (Format "latex") "\\end{acknowledgements}"
+                          ]
+                        ]
+                  _ -> []
+  let appendix = case lookupMeta "appendix" m of
+                  Just (MetaList a) -> [ Div ("",["appendix"],[])
+                          [ RawBlock (Format "latex") "%%%%%%%%%APPENDIX%%%%%%%%%"
+                          , RawBlock (Format "latex") "\\appendix"
+                          , CodeBlock ("",["include"],[]) $ T.unlines $ flip map (concat $ flip map a $ \(MetaInlines s) -> s) $ \(Str f) -> f
+                          ]
+                        ]
+                  _ -> []
+  return (Pandoc m $ l <> acknowledgements <> facilities <> software <> appendix)

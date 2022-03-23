@@ -356,66 +356,51 @@ $body$
 %% not robust enough to handle our new dual anonymous review requirements and
 %% thus been replaced with the acknowledgment environment. If you try to
 %% compile with \acknowledgment you will get an error print to the screen
-%% and in the compiled pdf.
-$if(acknowledgments)$
-\begin{acknowledgments}
-$acknowledgments$
-\end{acknowledgments}
-$endif$
-%\begin{acknowledgments}
-%We thank all the people that have made this AASTeX what it is today.  This
-%includes but not limited to Bob Hanisch, Chris Biemesderfer, Lee Brotzman,
-%Pierre Landau, Arthur Ogawa, Maxim Markevitch, Alexey Vikhlinin and Amy
-%Hendrickson. Also special thanks to David Hogg and Daniel Foreman-Mackey
-%for the new "modern" style design. Considerable help was provided via bug
-%reports and hacks from numerous people including Patricio Cubillos, Alex
-%Drlica-Wagner, Sean Lake, Michele Bannister, Peter Williams, and Jonathan
-%Gagne.
-%\end{acknowledgments}
-
-%% To help institutions obtain information on the effectiveness of their
-%% telescopes the AAS Journals has created a group of keywords for telescope
-%% facilities.
+%%% and in the compiled pdf.
+%%\begin{acknowledgments}
+%%We thank all the people that have made this AASTeX what it is today.  This
+%%includes but not limited to Bob Hanisch, Chris Biemesderfer, Lee Brotzman,
+%%Pierre Landau, Arthur Ogawa, Maxim Markevitch, Alexey Vikhlinin and Amy
+%%Hendrickson. Also special thanks to David Hogg and Daniel Foreman-Mackey
+%%for the new "modern" style design. Considerable help was provided via bug
+%%reports and hacks from numerous people including Patricio Cubillos, Alex
+%%Drlica-Wagner, Sean Lake, Michele Bannister, Peter Williams, and Jonathan
+%%Gagne.
+%%\end{acknowledgments}
 %
-%% Following the acknowledgments section, use the following syntax and the
-%% \facility{} or \facilities{} macros to list the keywords of facilities used
-%% in the research for the paper.  Each keyword is check against the master
-%% list during copy editing.  Individual instruments can be provided in
-%% parentheses, after the keyword, but they are not verified.
-
-$if(facilities)$
-\vspace{5mm}
-\facilities{$facilities$}
-$endif$
-%\facilities{HST(STIS), Swift(XRT and UVOT), AAVSO, CTIO:1.3m,
-%CTIO:1.5m,CXO}
-%% Similar to \facility{}, there is the optional \software command to allow
-%% authors a place to specify which programs were used during the creation of
-%% the manuscript. Authors should list each code and include either a
-%% citation or url to the code inside ()s when available.
-
-$if(software)$
-\vspace{5mm}
-\software{$software$}
-$endif$
-%\software{astropy \citep{2013A&A...558A..33A,2018AJ....156..123A},
-%          Cloudy \citep{2013RMxAA..49..137F},
-%          Source Extractor \citep{1996A&AS..117..393B}
-%          }
-
-%% Appendix material should be preceded with a single \appendix command.
-%% There should be a \section command for each appendix. Mark appendix
-%% subsections with the same markup you use in the main body of the paper.
-
-%% Each Appendix (indicated with \section) will be lettered A, B, C, etc.
-%% The equation counter will reset when it encounters the \appendix
-%% command and will number appendix equations (A1), (A2), etc. The
-%% Figure and Table counter will not reset.
-
-$if(appendix)$
-\appendix
-$appendix$
-$endif$
+%%% To help institutions obtain information on the effectiveness of their
+%%% telescopes the AAS Journals has created a group of keywords for telescope
+%%% facilities.
+%%
+%%% Following the acknowledgments section, use the following syntax and the
+%%% \facility{} or \facilities{} macros to list the keywords of facilities used
+%%% in the research for the paper.  Each keyword is check against the master
+%%% list during copy editing.  Individual instruments can be provided in
+%%% parentheses, after the keyword, but they are not verified.
+%
+%%%\vspace{5mm}
+%%%%\facilities{HST(STIS), Swift(XRT and UVOT), AAVSO, CTIO:1.3m,
+%%%%CTIO:1.5m,CXO}
+%%% Similar to \facility{}, there is the optional \software command to allow
+%%% authors a place to specify which programs were used during the creation of
+%%% the manuscript. Authors should list each code and include either a
+%%% citation or url to the code inside ()s when available.
+%
+%%%%\vspace{5mm}
+%%%%%\software{astropy \citep{2013A&A...558A..33A,2018AJ....156..123A},
+%%%%%          Cloudy \citep{2013RMxAA..49..137F},
+%%%%%          Source Extractor \citep{1996A&AS..117..393B}
+%%%%%          }
+%%%%
+%%% Appendix material should be preceded with a single \appendix command.
+%%% There should be a \section command for each appendix. Mark appendix
+%%% subsections with the same markup you use in the main body of the paper.
+%
+%%% Each Appendix (indicated with \section) will be lettered A, B, C, etc.
+%%% The equation counter will reset when it encounters the \appendix
+%%% command and will number appendix equations (A1), (A2), etc. The
+%%% Figure and Table counter will not reset.
+%
 
 %% For this sample we use BibTeX plus aasjournals.bst to generate the
 %% the bibliography. The sample631.bib file was populated from ADS. To

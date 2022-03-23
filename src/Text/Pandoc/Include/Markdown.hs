@@ -111,7 +111,7 @@ includeMarkdown :: Block -> PandocIO Block
 includeMarkdown cb@(CodeBlock (label, ["include"], _) t) = do
   let fileList = lines $ T.unpack t
   (inMd :: [[Block]]) <- flip mapM fileList $ \f -> do
-    fMd <- TE.decodeUtf8 <$> PIO.readFileStrict f
+    fMd <- TE.decodeUtf8 <$> PIO.readFileStrict (f <> ".md")
     r <- readMarkdown mdOption fMd
     (Pandoc _ s) <- walkM includeMarkdown r
     return s

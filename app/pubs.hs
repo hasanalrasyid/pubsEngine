@@ -36,6 +36,7 @@ import qualified Template.Article as Article
 import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
+import Text.Pandoc.Include.Thesis (processPostDocument)
 import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
 
@@ -55,11 +56,11 @@ main = do
   (fileName:format:_) <- getArgs
 
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
-  mdIncludedPandoc@(Pandoc resMeta _) <- runIO' $ do
+  mdIncludedPandoc@(Pandoc resMeta resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
-    readMarkdown (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting}) mdFile
+    readMarkdown mdOption mdFile
+      >>= walkM processPostDocument
       >>= walkM Markdown.includeMarkdown
-
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
@@ -72,6 +73,7 @@ main = do
     _ -> putStrLn "no linkDir available"
 
   resPandoc@(Pandoc t2 p2 ) <- doThemAll mdIncludedPandoc
+
   (tFileName, tFile) <- Article.templateLatex
   resLatex <- runIO' $ do
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
@@ -80,6 +82,7 @@ main = do
       Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) resPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
   putStrLn "==============================="
+  putStrLn $ show t2
   compileLatex fileName
   where
     compileLatex fileName = do
