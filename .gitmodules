@@ -1,3 +1,3 @@
 [submodule "extern/MultiMarkdown-6"]
 	path = extern/MultiMarkdown-6
-	url = https://github.com/fletcher/MultiMarkdown-6
+	url = ssh://github/hasanalrasyid/MultiMarkdown-6
