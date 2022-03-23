@@ -74,7 +74,7 @@ main = do
 
   resPandoc@(Pandoc t2 p2 ) <- doThemAll mdIncludedPandoc
 
-  (tFileName, tFile) <- Article.templateLatex
+  (tFileName, tFile) <- setTemplate format
   resLatex <- runIO' $ do
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
@@ -93,11 +93,12 @@ main = do
                             , "xelatex " <> fileName <> ".tex"
                             , "popd" ]
       putStrLn "======================"
-    setTemplate "poster" = P.templateLatex
-    setTemplate "abstract" = A.templateLatex
-    setTemplate "thesis" = Thesis.templateLatex
-    setTemplate "report" = R.templateLatex
-    setTemplate _ = R.templateLatex
+    --setTemplate "poster" = P.templateLatex
+    --setTemplate "abstract" = A.templateLatex
+    --setTemplate "report" = R.templateLatex
+    setTemplate "article" =  Article.templateLatex
+    setTemplate "thesis" =  Thesis.templateLatex
+    setTemplate _ = Article.templateLatex
 
 updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
   let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0

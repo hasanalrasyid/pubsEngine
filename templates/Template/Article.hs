@@ -13,10 +13,10 @@ import System.Process (callCommand)
 
 templateLatex :: IO (String, String)
 templateLatex = do
-  BS.writeFile "_build/additional.tbz" additionalZip
+  BS.writeFile "_build/extra.tbz" extraZip
   writeFile "_build/default.tpl" mainTemplate
   callCommand $ unlines [ "pushd _build"
-                        , "tar -xf additional.tbz"
+                        , "tar -xf extra.tbz"
                         , "popd"
                         ]
   return ("_build/default.tpl", mainTemplate)
@@ -24,5 +24,5 @@ templateLatex = do
 mainTemplate :: String
 mainTemplate = $(embedStringFile "templates/article/template.tex")
 
-additionalZip :: BS.ByteString
-additionalZip = $(embedFile "templates/article/aastex631.tbz")
+extraZip :: BS.ByteString
+extraZip = $(embedFile "templates/article/extra.tbz")
