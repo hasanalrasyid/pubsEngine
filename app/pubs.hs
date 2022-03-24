@@ -75,12 +75,12 @@ main = do
   r2 <- doThemAll mdIncludedPandoc
   let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
 
-  (tFileName, tFile) <- setTemplate format
+  (tFileName, tFile, topLevel) <- setTemplate format
   resLatex <- runIO' $ do
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
       Left e -> error e
-      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) resPandoc
+      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) resPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
   putStrLn "==============================="
   putStrLn $ show t3

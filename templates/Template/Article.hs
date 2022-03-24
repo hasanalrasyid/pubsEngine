@@ -10,8 +10,9 @@ import qualified Data.Text as T
 import qualified Data.ByteString as BS
 import Data.FileEmbed
 import System.Process (callCommand)
+import Text.Pandoc.Options
 
-templateLatex :: IO (String, String)
+templateLatex :: IO (String, String, TopLevelDivision)
 templateLatex = do
   BS.writeFile "_build/extra.tbz" extraZip
   writeFile "_build/default.tpl" mainTemplate
@@ -19,7 +20,7 @@ templateLatex = do
                         , "tar -xf extra.tbz"
                         , "popd"
                         ]
-  return ("_build/default.tpl", mainTemplate)
+  return ("_build/default.tpl", mainTemplate, TopLevelSection)
 
 mainTemplate :: String
 mainTemplate = $(embedStringFile "templates/article/template.tex")
