@@ -36,7 +36,7 @@ import qualified Template.Article as Article
 import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
-import Text.Pandoc.Include.Thesis (processPostDocument)
+import Text.Pandoc.Include.Thesis (processPreDoc, processPostDoc)
 import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
 
@@ -59,7 +59,7 @@ main = do
   mdIncludedPandoc@(Pandoc resMeta resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown mdOption mdFile
-      >>= walkM processPostDocument
+      >>= walkM processPreDoc
       >>= walkM Markdown.includeMarkdown
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
@@ -72,7 +72,8 @@ main = do
         return l
     _ -> putStrLn "no linkDir available"
 
-  resPandoc@(Pandoc t2 p2 ) <- doThemAll mdIncludedPandoc
+  r2 <- doThemAll mdIncludedPandoc
+  let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
 
   (tFileName, tFile) <- setTemplate format
   resLatex <- runIO' $ do
@@ -82,7 +83,7 @@ main = do
       Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = TopLevelSection}) resPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
   putStrLn "==============================="
-  putStrLn $ show t2
+  putStrLn $ show t3
   compileLatex fileName
   where
     compileLatex fileName = do

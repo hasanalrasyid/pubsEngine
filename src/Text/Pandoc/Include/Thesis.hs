@@ -3,7 +3,8 @@
 
 module Text.Pandoc.Include.Thesis
   ( linkTex
-  , processPostDocument
+  , processPreDoc
+  , processPostDoc
   )
   where
 import Text.Pandoc.JSON
@@ -13,10 +14,12 @@ import System.Process (callCommand)
 import Data.Maybe
 import System.FilePath.Posix (takeFileName)
 import Text.Pandoc
+import Text.Pandoc.Walk
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Encoding as T
 import Text.Pandoc.Include.Common
+import Text.Pandoc.Include.Utils
 import qualified Text.Pandoc.Class as PIO
 import qualified Data.Map.Strict as M
 import Data.Map (Map)
@@ -69,46 +72,50 @@ linkTex p@(Pandoc mt blks) = do
 
 -- Start:
 -- convert meta appendix to div inside the pandoc [block]
-processPostDocument p@(Pandoc m l) = do
+processPreDoc p@(Pandoc m l) = do
   let facilities = case lookupMeta "facilities" m of
-                  Just (MetaInlines a) ->
-                    [ Div ("",["facilities"],[])
-                      [ LineBlock $ [ [ RawInline (Format "latex") $ T.unlines [ "%%%%%%%%%FACILITIES%%%%%%%%%"
-                                                                               ,  "\\vspace{5mm}"
-                                                                               , "\\facilities"
-                                                                               ]
-                                      , Span nullAttr a
-                                      ]
-                                    ]
-                      ]
-                    ]
+                  Just (MetaInlines a) -> [ Div ("",["facilities"],[]) [Plain a]]
                   _ -> []
   let software = case lookupMeta "software" m of
-                  Just (MetaInlines a) ->
-                    [ Div ("",["software"],[])
-                      [ LineBlock $ [ [ RawInline (Format "latex") $ T.unlines [ "%%%%%%%%%SOFTWARE%%%%%%%%%"
-                                                                               , "\\software"
-                                                                               ]
-                                      , Span nullAttr a
-                                      ]
-                                    ]
-                      ]
-                    ]
+                  Just (MetaInlines a) -> [ Div ("",["software"],[]) [Plain a]]
                   _ -> []
   let acknowledgements = case lookupMeta "acknowledgements" m of
-                  Just (MetaInlines a) -> [ Div ("",["acknowledgements"],[]) $
-                          [ RawBlock (Format "latex") "%%%%%%%%%ACKNOWLEDGEMENTS%%%%%%%%%"
-                          , RawBlock (Format "latex") "\\begin{acknowledgements}"
-                          ] <> [Plain a] <> [ RawBlock (Format "latex") "\\end{acknowledgements}"
-                          ]
-                        ]
+                  Just (MetaInlines a) -> [Div ("",["acknowledgements"],[]) [Plain a]]
                   _ -> []
   let appendix = case lookupMeta "appendix" m of
                   Just (MetaList a) -> [ Div ("",["appendix"],[])
                           [ RawBlock (Format "latex") "%%%%%%%%%APPENDIX%%%%%%%%%"
-                          , RawBlock (Format "latex") "\\appendix"
                           , CodeBlock ("",["include"],[]) $ T.unlines $ flip map (concat $ flip map a $ \(MetaInlines s) -> s) $ \(Str f) -> f
                           ]
                         ]
                   _ -> []
   return (Pandoc m $ l <> acknowledgements <> facilities <> software <> appendix)
+
+processPostDoc p@(Pandoc m b) =
+  let facilities = query getFacilities  b
+      software   = query getSoftware    b
+      appendix   = query getAppendix    b
+      acknowledgements = query getAck   b
+      m1 = updateMeta m "facilities" $ MetaBlocks facilities
+      m2 = updateMeta m1 "software" $ MetaBlocks software
+      m3 = updateMeta m2 "appendix" $ MetaBlocks appendix
+      newMeta = updateMeta m3 "acknowledgements" $ MetaBlocks acknowledgements
+      (Pandoc _ newBlocks) = foldl (flip walk) p [rmFacilities , rmSoftware , rmAppendix , rmAck]
+   in (Pandoc newMeta newBlocks)
+    where
+      rmFacilities (Div (_,["facilities"],_) _) = Null
+      rmFacilities a = a
+      rmSoftware   (Div (_,["software"],_) _) = Null
+      rmSoftware   a = a
+      rmAppendix   (Div (_,["appendix"],_) _) = Null
+      rmAppendix   a = a
+      rmAck (Div (_,["acknowledgements"],_) _) = Null
+      rmAck a = a
+      getFacilities a@(Div (_,["facilities"],_) _) = [a]
+      getFacilities _ = []
+      getSoftware   a@(Div (_,["software"],_) _) = [a]
+      getSoftware   _ = []
+      getAppendix   a@(Div (_,["appendix"],_) _) = [a]
+      getAppendix   _ = []
+      getAck a@(Div (_,["acknowledgements"],_) _) = [a]
+      getAck _ = []
