@@ -12,6 +12,7 @@ import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
+import qualified Text.Pandoc.Include.GoJS as GoJS
 import           Text.Pandoc.Include.Script
 import           Text.Pandoc.Include.Common.IO
 import           Text.Pandoc.JSON
@@ -19,7 +20,9 @@ import Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
 import qualified Text.Pandoc.Templates as PT
 
-import Data.Monoid ((<>))
+import Control.Monad
+
+import Data.Monoid
 
 import Data.Maybe
 import System.Environment (getArgs)
@@ -122,7 +125,12 @@ doThemAll (Pandoc mt blks0) = do
                     _ -> []
   putStrLn "imageDirs =============================="
   putStrLn $ show imageDirs
-  blks <- walkM includeScript blks0 >>= walkM doBlockIO >>= walkM doBlockIO >>= walkM (upgradeImageIO imageDirs)
+  blks <- flip walkM blks0
+            $ includeScript
+            >=> doBlockIO
+            >=> doBlockIO
+            >=> GoJS.includeGoJS
+            >=> upgradeImageIO imageDirs
   p <- doPandoc (Pandoc mt blks)
   return p
 

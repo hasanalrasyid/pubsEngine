@@ -76,7 +76,7 @@ writeScriptResult res (_, ["script",cmd,"md"], _) = do
   return $ Div nullAttr $ case r of
     Left e -> [Para [Str $ "ERROR: script."<> cmd <>".md: cannot parse the markdown output: " <> (T.pack $ show e)]]
     Right (Pandoc _ b) -> b
-writeScriptResult res (label, ["script",c,"img"], opts) = do
+writeScriptResult _ (label, ["script",c,"img"], opts) = do
   let fileName = fromMaybe "defaultImg" $ lookup "file" opts
   ltx <- runIO $ do
     let c = fromMaybe "" $ lookup "caption" opts
