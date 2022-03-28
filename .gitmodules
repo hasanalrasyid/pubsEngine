@@ -38,3 +38,7 @@
 	path = extern/monoid-extras
 	url = ssh://github/hasanalrasyid/monoid-extras
 	branch = hasan
+[submodule "extern/texrunner"]
+	path = extern/texrunner
+	url = ssh://git@github.com/hasanalrasyid/texrunner
+	branch = hasan
