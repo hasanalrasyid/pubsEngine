@@ -59,11 +59,12 @@ main = do
   (fileName:format:_) <- getArgs
 
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
-  mdIncludedPandoc@(Pandoc resMeta resP) <- runIO' $ do
+  mdIncludedPandoc@(Pandoc (Meta resMeta0) resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown mdOption mdFile
       >>= walkM processPreDoc
       >>= walkM Markdown.includeMarkdown
+  let resMeta = Meta $ M.alter (\_ -> Just (MetaString $ T.pack $ fileName <> ".bib")) "bibliography" resMeta0
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
@@ -74,6 +75,19 @@ main = do
           ]
         return l
     _ -> putStrLn "no linkDir available"
+
+  case lookupMeta "bibzotero" resMeta of
+    Just (MetaInlines [Str bibzotero]) -> do
+      statZotero <- readProcess "pgrep" ["zotero"] []
+      case statZotero of
+        [] -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
+                              , "                  but the standalone Zotero with better-bibtex addons is not running."
+                              ]
+        _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > _build/"<>T.pack fileName<>".bib"
+    b -> do
+      putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
+      putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
+      callCommand $ unwords ["ln -sf", fileName <> ".bib", "_build/" ]
 
   r2 <- doThemAll mdIncludedPandoc
   let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
@@ -103,21 +117,6 @@ main = do
     setTemplate "article" =  Article.templateLatex
     setTemplate "thesis" =  Thesis.templateLatex
     setTemplate _ = Article.templateLatex
-
-updateMeta (Meta mt0) (Pandoc (Meta mt) blks) mdFileName =
-  let mt' = M.update (\_ -> Just (MetaInlines [ Str mdFileName])) "bibliography" $ M.mapWithKey (updateMeta' mt) mt0
-   in Pandoc (Meta mt') blks
-
--- ("appendix",MetaBlocks [Plain [Str "appendix/app1",SoftBreak,Str "appendix/app2"]])
--- ("appendix",MetaString "")
-updateMeta' mt key x = case M.lookup key mt of
-                         Nothing -> x
-                         Just m@(MetaBlocks a) -> case key of
-                                                    "appendix" -> m
-                                                    "linkDir" -> m
-                                                    _ -> let (MetaBlocks xx) = x
-                                                          in MetaBlocks $ xx <> a
-                         Just a -> a
 
 doThemAll (Pandoc mt blks0) = do
   let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
