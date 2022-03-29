@@ -59,12 +59,12 @@ main = do
   (fileName:format:_) <- getArgs
 
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
-  mdIncludedPandoc@(Pandoc (Meta resMeta0) resP) <- runIO' $ do
+  (Pandoc (Meta resMeta0) resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown mdOption mdFile
       >>= walkM processPreDoc
       >>= walkM Markdown.includeMarkdown
-  let resMeta = Meta $ M.alter (\_ -> Just (MetaString $ T.pack $ fileName <> ".bib")) "bibliography" resMeta0
+  let resMeta = Meta $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName ])) "bibliography" resMeta0
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
@@ -87,9 +87,9 @@ main = do
     b -> do
       putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
       putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
-  callCommand $ unwords ["ln -sf", fileName <> ".bib", "_build/" ]
+  callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
-  r2 <- doThemAll mdIncludedPandoc
+  r2 <- doThemAll $ Pandoc resMeta resP
   let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
 
   (tFileName, tFile, topLevel) <- setTemplate format
