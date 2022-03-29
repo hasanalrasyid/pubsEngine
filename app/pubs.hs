@@ -83,11 +83,11 @@ main = do
         [] -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
                               , "                  but the standalone Zotero with better-bibtex addons is not running."
                               ]
-        _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > _build/"<>T.pack fileName<>".bib"
+        _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
     b -> do
       putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
       putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
-      callCommand $ unwords ["ln -sf", fileName <> ".bib", "_build/" ]
+  callCommand $ unwords ["ln -sf", fileName <> ".bib", "_build/" ]
 
   r2 <- doThemAll mdIncludedPandoc
   let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
