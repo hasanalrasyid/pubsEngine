@@ -42,3 +42,7 @@
 	path = extern/texrunner
 	url = ssh://git@github.com/hasanalrasyid/texrunner
 	branch = hasan
+[submodule "extern/pandoc-crossref"]
+	path = extern/pandoc-crossref
+	url = ssh://git@github.com/hasanalrasyid/pandoc-crossref
+	branch = hasan
