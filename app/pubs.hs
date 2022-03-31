@@ -16,6 +16,7 @@ import qualified Text.Pandoc.Include.GoJS as GoJS
 import           Text.Pandoc.Include.Script
 import           Text.Pandoc.Include.Common.IO
 import           Text.Pandoc.JSON
+import           Text.Pandoc.Definition
 import Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
 import qualified Text.Pandoc.Templates as PT
@@ -51,7 +52,8 @@ import Text.Pandoc.App
 import System.FilePath -- (replaceDirectory)
 import System.Directory -- (listDirectory)
 import Data.List -- (delete)
-
+import Text.Pandoc.Citeproc
+import Text.Pandoc.Shared
 
 
 main :: IO ()
@@ -64,7 +66,9 @@ main = do
     readMarkdown mdOption mdFile
       >>= walkM processPreDoc
       >>= walkM Markdown.includeMarkdown
-  let resMeta = Meta $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName ])) "bibliography" resMeta0
+  let resMeta = Meta $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
+        $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
+        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName <> ".bib" ])) "bibliography" resMeta0
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
       flip walkM_ linkDirs $ \l@(Str link) -> do
@@ -90,14 +94,19 @@ main = do
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
   r2 <- doThemAll $ Pandoc resMeta resP
-  let resPandoc@(Pandoc t3 p3 ) = processPostDoc r2
 
   (tFileName, tFile, topLevel) <- setTemplate format
+  let (Pandoc t3 p3 ) = processPostDoc r2
+  let (varMeta :: Meta) = Meta $ M.fromList $ catMaybes $ map getVars p3
+  putStrLn $ show varMeta
+  let p4 = walk cleanVariable $ walk (fillVariable varMeta) p3
   resLatex <- runIO' $ do
+
+    citedPandoc <- processCitations $ Pandoc t3 p4
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
       Left e -> error e
-      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) resPandoc
+      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
   putStrLn "==============================="
   putStrLn $ show t3
@@ -124,14 +133,32 @@ doThemAll (Pandoc mt blks0) = do
                     _ -> []
   putStrLn "imageDirs =============================="
   putStrLn $ show imageDirs
-  blks <- flip walkM blks0
+  blks1 <- flip walkM blks0
             $ includeScript
             >=> doBlockIO
             >=> doBlockIO
             >=> GoJS.includeGoJS
             >=> upgradeImageIO imageDirs
+  blks <- walkM doBlockIO blks1
   p <- doPandoc (Pandoc mt blks)
   return p
+
+cleanVariable :: Block -> Block
+cleanVariable (Div (_,["var",varName],_) _) = Null
+cleanVariable p = p
+
+fillVariable :: Meta -> Inline -> Inline
+fillVariable varMeta p@(Cite [c] _)
+  | T.isPrefixOf "var:" $ citationId c =
+      let filler = join $ fmap (flip lookupMeta varMeta) $ T.stripPrefix "var:" $ citationId c
+       in case filler of
+            Just (MetaBlocks s) -> Span nullAttr $ blocksToInlines s
+            _ -> Str ""
+  | otherwise = p
+fillVariable _ p = p
+
+getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
+getVars c = Nothing
 
 walkM_ a b = () <$ walkM a b
 
