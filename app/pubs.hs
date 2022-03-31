@@ -94,11 +94,9 @@ main = do
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
   r2 <- doThemAll $ Pandoc resMeta resP
-
   (tFileName, tFile, topLevel) <- setTemplate format
   let (Pandoc t3 p3 ) = processPostDoc r2
   let (varMeta :: Meta) = Meta $ M.fromList $ catMaybes $ map getVars p3
-  putStrLn $ show varMeta
   let p4 = walk cleanVariable $ walk (fillVariable varMeta) p3
   resLatex <- runIO' $ do
 
@@ -126,6 +124,7 @@ main = do
     setTemplate "article" =  Article.templateLatex
     setTemplate "thesis" =  Thesis.templateLatex
     setTemplate _ = Article.templateLatex
+
 
 doThemAll (Pandoc mt blks0) = do
   let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
