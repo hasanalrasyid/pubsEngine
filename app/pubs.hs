@@ -64,7 +64,6 @@ main = do
   (Pandoc (Meta resMeta0) resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown mdOption mdFile
-      >>= walkM processPreDoc
       >>= walkM Markdown.includeMarkdown
   let resMeta = Meta $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
@@ -95,12 +94,12 @@ main = do
 
   r2 <- doThemAll $ Pandoc resMeta resP
   (tFileName, tFile, topLevel) <- setTemplate format
-  let (Pandoc t3 p3 ) = processPostDoc r2
-  let (varMeta :: Meta) = Meta $ M.fromList $ catMaybes $ map getVars p3
-  let p4 = walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
+  let (Pandoc (Meta t3) p3 ) = r2
+  let (varMeta) = M.fromList $ catMaybes $ map getVars p3
+  let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
   resLatex <- runIO' $ do
 
-    citedPandoc <- processCitations $ Pandoc t3 p4
+    citedPandoc <- processCitations $ Pandoc (Meta $ M.union varMeta t3) p4
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
       Left e -> error e
@@ -142,13 +141,28 @@ doThemAll (Pandoc mt blks0) = do
   p <- doPandoc (Pandoc mt blks)
   return p
 
+processAcknowledgements :: Block -> Block
+processAcknowledgements (Div (_,["appendix","show"],_) b) =
+  Div nullAttr $ (RawBlock (Format "latex") "\\appendix") : b
+processAcknowledgements (Div (_,["facilities","show"],_) b) =
+  Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\facilities{"]) : b
+              <> [ RawBlock (Format "latex") "}" ]
+processAcknowledgements (Div (_,["software","show"],_) b) =
+  Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\software{"]) : b
+              <> [ RawBlock (Format "latex") "}" ]
+processAcknowledgements (Div (_,["acknowledgements","show"],_) b) =
+  Div nullAttr $ (RawBlock (Format "latex") "\\begin{acknowledgements}") : b
+              <> [ RawBlock (Format "latex") "\\end{acknowledgements}" ]
+processAcknowledgements (Div (_,["acknowledgements"],_) b) = Null
+processAcknowledgements a = a
+
 cleanVariable :: Block -> Block
 cleanVariable (Div (_,["var",varName],_) _) = Null
 cleanVariable p = p
 
 fillVariableB varMeta p@(Para [(Cite [c] _)])
   | T.isPrefixOf "var:" $ citationId c =
-      let filler = join $ fmap (flip lookupMeta varMeta) $ T.stripPrefix "var:" $ citationId c
+      let filler = join $ fmap (flip lookupMeta $ Meta varMeta) $ T.stripPrefix "var:" $ citationId c
        in case filler of
             Just (MetaBlocks s) -> Div nullAttr s
             _ -> Null
@@ -156,7 +170,7 @@ fillVariableB varMeta p@(Para [(Cite [c] _)])
 fillVariableB _ p = p
 fillVariableI varMeta p@(Cite [c] _)
   | T.isPrefixOf "var:" $ citationId c =
-      let filler = join $ fmap (flip lookupMeta varMeta) $ T.stripPrefix "var:" $ citationId c
+      let filler = join $ fmap (flip lookupMeta $ Meta varMeta) $ T.stripPrefix "var:" $ citationId c
        in case filler of
             Just (MetaBlocks s) -> Span nullAttr $ blocksToInlines s
             _ -> Str ""
@@ -164,6 +178,9 @@ fillVariableI varMeta p@(Cite [c] _)
 fillVariableI _ p = p
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
+getVars (Div (_,[v],_) bs)
+  | elem v ["acknowledgements","software","facilities","appendix"] = Just (v, MetaBlocks bs)
+  | otherwise = Nothing
 getVars c = Nothing
 
 walkM_ a b = () <$ walkM a b
