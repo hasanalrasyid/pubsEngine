@@ -97,7 +97,7 @@ main = do
   (tFileName, tFile, topLevel) <- setTemplate format
   let (Pandoc t3 p3 ) = processPostDoc r2
   let (varMeta :: Meta) = Meta $ M.fromList $ catMaybes $ map getVars p3
-  let p4 = walk cleanVariable $ walk (fillVariable varMeta) p3
+  let p4 = walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
   resLatex <- runIO' $ do
 
     citedPandoc <- processCitations $ Pandoc t3 p4
@@ -146,15 +146,22 @@ cleanVariable :: Block -> Block
 cleanVariable (Div (_,["var",varName],_) _) = Null
 cleanVariable p = p
 
-fillVariable :: Meta -> Inline -> Inline
-fillVariable varMeta p@(Cite [c] _)
+fillVariableB varMeta p@(Para [(Cite [c] _)])
+  | T.isPrefixOf "var:" $ citationId c =
+      let filler = join $ fmap (flip lookupMeta varMeta) $ T.stripPrefix "var:" $ citationId c
+       in case filler of
+            Just (MetaBlocks s) -> Div nullAttr s
+            _ -> Null
+  | otherwise = p
+fillVariableB _ p = p
+fillVariableI varMeta p@(Cite [c] _)
   | T.isPrefixOf "var:" $ citationId c =
       let filler = join $ fmap (flip lookupMeta varMeta) $ T.stripPrefix "var:" $ citationId c
        in case filler of
             Just (MetaBlocks s) -> Span nullAttr $ blocksToInlines s
             _ -> Str ""
   | otherwise = p
-fillVariable _ p = p
+fillVariableI _ p = p
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
 getVars c = Nothing
