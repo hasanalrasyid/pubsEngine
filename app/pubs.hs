@@ -142,8 +142,6 @@ doThemAll (Pandoc mt blks0) = do
   return p
 
 processAcknowledgements :: Block -> Block
-processAcknowledgements (Div (_,["appendix","show"],_) b) =
-  Div nullAttr $ (RawBlock (Format "latex") "\\appendix") : b
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\facilities{"]) : b
               <> [ RawBlock (Format "latex") "}" ]
@@ -153,6 +151,7 @@ processAcknowledgements (Div (_,["software","show"],_) b) =
 processAcknowledgements (Div (_,["acknowledgements","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") "\\begin{acknowledgements}") : b
               <> [ RawBlock (Format "latex") "\\end{acknowledgements}" ]
+processAcknowledgements (Div (_,["appendix"],_) b) = Null
 processAcknowledgements (Div (_,["acknowledgements"],_) b) = Null
 processAcknowledgements a = a
 
@@ -179,7 +178,7 @@ fillVariableI _ p = p
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
 getVars (Div (_,[v],_) bs)
-  | elem v ["acknowledgements","software","facilities","appendix"] = Just (v, MetaBlocks bs)
+  | elem v ["appendix","acknowledgements","software","facilities"] = Just (v, MetaBlocks bs)
   | otherwise = Nothing
 getVars c = Nothing
 

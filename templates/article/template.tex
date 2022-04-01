@@ -181,6 +181,31 @@ $endif$
 %% This is the end of the preamble.  Indicate the beginning of the
 %% manuscript itself with \begin{document}.
 
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
 \begin{document}
 
 $if(title)$
@@ -357,9 +382,6 @@ $body$
 %% thus been replaced with the acknowledgment environment. If you try to
 %% compile with \acknowledgment you will get an error print to the screen
 %%% and in the compiled pdf.
-$if(acknowledgements)$
-\begin{acknowledgments}
-  $acknowledgements$
 %%We thank all the people that have made this AASTeX what it is today.  This
 %%includes but not limited to Bob Hanisch, Chris Biemesderfer, Lee Brotzman,
 %%Pierre Landau, Arthur Ogawa, Maxim Markevitch, Alexey Vikhlinin and Amy
@@ -368,8 +390,6 @@ $if(acknowledgements)$
 %%reports and hacks from numerous people including Patricio Cubillos, Alex
 %%Drlica-Wagner, Sean Lake, Michele Bannister, Peter Williams, and Jonathan
 %%Gagne.
-\end{acknowledgments}
-$endif$
 %
 %%% To help institutions obtain information on the effectiveness of their
 %%% telescopes the AAS Journals has created a group of keywords for telescope
@@ -381,10 +401,6 @@ $endif$
 %%% list during copy editing.  Individual instruments can be provided in
 %%% parentheses, after the keyword, but they are not verified.
 %
-$if(facilities)$
-\vspace{5mm}
-\facilities{$facilities$}
-$endif$
 %%%\vspace{5mm}
 %%%%\facilities{HST(STIS), Swift(XRT and UVOT), AAVSO, CTIO:1.3m,
 %%%%CTIO:1.5m,CXO}
@@ -393,10 +409,6 @@ $endif$
 %%% the manuscript. Authors should list each code and include either a
 %%% citation or url to the code inside ()s when available.
 %
-$if(software)$
-\vspace{5mm}
-\software{$software$}
-$endif$
 %%%%\vspace{5mm}
 %%%%%\software{astropy \citep{2013A&A...558A..33A,2018AJ....156..123A},
 %%%%%          Cloudy \citep{2013RMxAA..49..137F},
@@ -407,10 +419,6 @@ $endif$
 %%% There should be a \section command for each appendix. Mark appendix
 %%% subsections with the same markup you use in the main body of the paper.
 
-$if(appendix)$
-\appendix
-$appendix$
-$endif$
 %%% Each Appendix (indicated with \section) will be lettered A, B, C, etc.
 %%% The equation counter will reset when it encounters the \appendix
 %%% command and will number appendix equations (A1), (A2), etc. The

@@ -16,7 +16,7 @@ import Data.Either
 doInclude :: Block -> IO Block
 doInclude (CodeBlock (label, ["mermaid"], opts) md) = do
   let fileName = fromMaybe "mermaid" $ lookup "file" opts
-      size = fromRight 0.8  $ fmap fst $ fromMaybe (Right (0.8,"")) $ T.double <$> lookup "size" opts
+      size = fromRight 0.6  $ fmap fst $ fromMaybe (Right (0.6,"")) $ T.double <$> lookup "size" opts
       width = floor $ 2480.0 * size
       height = floor $ (fromIntegral $ 600 * width) / 800.0
   T.writeFile (T.unpack $ "_build/temp/" <> fileName <> ".mmd") md

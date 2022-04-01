@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Text.Pandoc.Include.Script where
+module Text.Pandoc.Include.Variable where
 
 import qualified Text.Pandoc.Include.Table as InTable
 import Text.Pandoc.Include.Thesis (linkTex)
@@ -37,6 +37,7 @@ import Text.Pandoc.App
 import System.FilePath -- (replaceDirectory)
 import System.Directory -- (listDirectory)
 import Data.List -- (delete)
+
 
 saveLibrary :: [T.Text] -> FilePath -> String -> IO [Block]
 saveLibrary (_:lib:_) fileName script = do
@@ -108,3 +109,4 @@ includeScript cb@(CodeBlock (label, a@["script",c,outType], opts0) text) = do
 includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
   includeScript $ CodeBlock (a,["script","py","md"], opts) t
 includeScript cb = return cb
+

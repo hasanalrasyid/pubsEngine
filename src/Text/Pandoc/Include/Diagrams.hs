@@ -46,7 +46,7 @@ processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
   where
     capt = case lookup "caption" namevals of
              Just f -> f
-             Nothing -> "{\\color{red}====No Caption Provided, add caption on diagram statement in md file, i.e. \\{.diagram size=0.8 caption=\"any caption\"\\}}"
+             Nothing -> "{\\color{red}====No Caption Provided, add caption on diagram statement in md file, i.e. \\{.diagram size=0.6 caption=\"any caption\"\\}}"
     size = fromMaybe "1.0" $ lookup "size" namevals
     img = do
       d <- compileDiagram (T.unpack contents) 800.0

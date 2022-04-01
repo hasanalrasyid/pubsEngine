@@ -14,6 +14,8 @@ pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_raw_tex
                    , Ext_implicit_figures
                    , Ext_yaml_metadata_block
+                   , Ext_citations
+                   , Ext_multiline_tables
                    ]
 
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
