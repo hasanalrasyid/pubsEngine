@@ -1,8 +1,12 @@
-[ ] manuscript status, submitted, reviewed, accepted
+[r] manuscript status, submitted, reviewed, accepted
 [ ] advanced graphics {figure*}
-[ ] Cross-Reference
-[ ] APPENDIX
+[v] Cross-Reference
+[v] APPENDIX
 [v] include script with caption in text codeblock
+[ ] Quotation
+[ ] Abbreviation List
+[ ] Physical Constants
+[ ] List of Symbols
 
 v : DONE, -: not yet, r: running
 
