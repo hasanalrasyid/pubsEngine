@@ -65,8 +65,10 @@ main = do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     readMarkdown mdOption mdFile
       >>= walkM Markdown.includeMarkdown
-  let resMeta = Meta $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
+  let resMeta = Meta
+        $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
+        $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
         $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName <> ".bib" ])) "bibliography" resMeta0
   case lookupMeta "imageDir" resMeta of
     Just (MetaList linkDirs) -> do
