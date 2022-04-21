@@ -35,6 +35,7 @@ import qualified Data.Text.IO as TIO
 import qualified Template.Poster as P
 import qualified Template.Abstract as A
 import qualified Template.Thesis as Thesis
+import qualified Template.RevealJS as RevealJS
 import qualified Template.Report as R
 import qualified Template.Article as Article
 import qualified Template.Default as Default
@@ -55,6 +56,9 @@ import Data.List -- (delete)
 import Text.Pandoc.Citeproc
 import Text.Pandoc.Shared
 
+import Text.Pandoc.Process
+import qualified Data.ByteString.Lazy as BL
+import qualified Text.Pandoc.UTF8 as UTF8
 
 main :: IO ()
 main = do
@@ -70,45 +74,63 @@ main = do
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
         $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
         $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName <> ".bib" ])) "bibliography" resMeta0
-  case lookupMeta "imageDir" resMeta of
-    Just (MetaList linkDirs) -> do
-      flip walkM_ linkDirs $ \l@(Str link) -> do
-        TIO.putStrLn $ "Creating symbolink link to: " <> link
-        callCommand $ T.unpack $ T.unlines
-          [ "rm -f _build/" <> link
-          , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
-          ]
-        return l
+  case lookupMeta "link-directory" resMeta of
+    Just linkDirs -> flip walkM_ linkDirs $ \l@(Str link) -> do
+                      TIO.putStrLn $ "Creating symbolink link to: " <> link
+                      callCommand $ T.unpack $ T.unlines
+                        [ "rm -f _build/" <> link
+                        , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
+                        ]
+                      return l
     _ -> putStrLn "no linkDir available"
 
   case lookupMeta "bibzotero" resMeta of
-    Just (MetaInlines [Str bibzotero]) -> do
-      statZotero <- readProcess "pgrep" ["zotero"] []
-      case statZotero of
-        [] -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
-                              , "                  but the standalone Zotero with better-bibtex addons is not running."
-                              ]
-        _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
+    Just bib -> do
+      flip walkM_ bib $ \(Str bibzotero) -> do
+        statZotero <- readProcess "pgrep" ["zotero"] []
+        case statZotero of
+          [] -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
+                               , "                  but the standalone Zotero with better-bibtex addons is not running."
+                               ]
+          _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
+        return Space
     b -> do
       putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
       putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
-  r2 <- doThemAll $ Pandoc resMeta resP
-  (tFileName, tFile, topLevel) <- setTemplate format
-  let (Pandoc (Meta t3) p3 ) = r2
+  (Pandoc (Meta t3) p3 ) <- doThemAll $ Pandoc resMeta resP
+  template  <- setTemplate format
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
   let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
-  resLatex <- runIO' $ do
+  p5 <- walkM processPegonInline p4
+  citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
+  finishDoc format template fileName citedPandoc
+  where
+    --setTemplate "poster" = P.templateLatex
+    --setTemplate "abstract" = A.templateLatex
+    --setTemplate "report" = R.templateLatex
+    setTemplate "article" =  Article.templateLatex
+    setTemplate "thesis" =  Thesis.templateLatex
+    setTemplate "revealjs" =  RevealJS.templateLatex
+    setTemplate _ = Article.templateLatex
 
-    citedPandoc <- processCitations $ Pandoc (Meta $ M.union varMeta t3) p4
+
+finishDoc "revealjs" (tFileName, tFile, topLevel) fileName citedPandoc = do
+  resLatex <- runIO' $ do
+    template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
+    case template of
+      Left e -> error e
+      Right t -> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
+  TIO.writeFile ("_build/" <> fileName <> ".html") resLatex
+
+finishDoc _ (tFileName, tFile, topLevel) fileName citedPandoc = do
+  resLatex <- runIO' $ do
     template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
     case template of
       Left e -> error e
       Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
   TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
-  putStrLn "==============================="
-  putStrLn $ show t3
   compileLatex fileName
   where
     compileLatex fileName = do
@@ -119,12 +141,6 @@ main = do
                             , "xelatex " <> fileName <> ".tex"
                             , "popd" ]
       putStrLn "======================"
-    --setTemplate "poster" = P.templateLatex
-    --setTemplate "abstract" = A.templateLatex
-    --setTemplate "report" = R.templateLatex
-    setTemplate "article" =  Article.templateLatex
-    setTemplate "thesis" =  Thesis.templateLatex
-    setTemplate _ = Article.templateLatex
 
 
 doThemAll (Pandoc mt blks0) = do
@@ -139,10 +155,28 @@ doThemAll (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> GoJS.includeGoJS
             >=> upgradeImageIO imageDirs
+            >=> processPegon
   blks <- walkM doBlockIO blks1
   p <- doPandoc (Pandoc mt blks)
   return p
 
+processPegon :: Block -> IO Block
+processPegon cb@(CodeBlock (_, ["nusantara"], _) t) = do
+  TIO.writeFile "_build/temp/nusantara.text" t
+  (_,r) <- pipeProcess Nothing "txtconv" (words "-i _build/temp/nusantara.text -o /dev/stdout -t _build/arabtex-pegon-novoc.tec") ""
+  pure $ Div nullAttr [ Para [ Str $ UTF8.toText $ BL.toStrict r ]]
+processPegon b = pure b
+processPegonInline :: Inline -> IO Inline
+processPegonInline l@(Code _ t)
+  | T.isPrefixOf ".nu " t = do
+      TIO.writeFile "_build/temp/nusantara.text" $ fromMaybe "inna lillahi" $ T.stripPrefix ".nu " t
+      (_,r) <- pipeProcess Nothing "txtconv" (words "-i _build/temp/nusantara.text -o /dev/stdout -t _build/arabtex-pegon-novoc.tec") ""
+      putStrLn "============processPegonInline"
+      TIO.putStrLn t
+      return $ Str $ UTF8.toText $ BL.toStrict r
+    -- [Cite [Citation {citationId = "nu:BASMALA", citationPrefix = [], citationSuffix = [Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah"], citationMode = NormalCitation, citationNoteNum = 1, citationHash = 0}] [Str "[@nu:BASMALA",Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah]"]]
+  | otherwise = return l
+processPegonInline l = return l
 processAcknowledgements :: Block -> Block
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\facilities{"]) : b
