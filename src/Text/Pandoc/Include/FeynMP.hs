@@ -13,6 +13,9 @@ import System.FilePath
 import Data.Hashable
 import Diagrams.Builder
 import qualified Data.Text as T
+import Text.Pandoc.Process
+import Text.Pandoc.UTF8 as UTF8
+import qualified Data.ByteString.Lazy as BL
 
 withDir :: FilePath -> IO a -> IO a
 withDir path f = do
@@ -33,7 +36,7 @@ doInclude (CodeBlock (label, classes, opts) mp)
       let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
           mpHash = hashToHexStr mpHas'
           caption = lookup "caption" opts
-      let tex = unlines [ "\\documentclass{article}"
+      let tex = BL.fromStrict $ UTF8.fromString $ unlines [ "\\documentclass{article}"
                         , "\\usepackage{amsmath}"
                         , "\\usepackage{feynmp-auto}"
                         , "\\begin{document}"
@@ -48,13 +51,14 @@ doInclude (CodeBlock (label, classes, opts) mp)
       if isCompiled then return ()
                     else inDir ("_build/temp" </> mpHash) $
                             \f -> do
-                                    _ <- readProcess "xelatex" [] tex
-                                    _ <- readProcess "mpost" [f] []
-                                    _ <- readProcess "xelatex" [] tex
-                                    _ <- readProcess "pdfcrop" ["texput.pdf"] []
-                                    _ <- readProcess "mv" [ "texput-crop.pdf"
-                                                          , "../auto" </> mpHash <.> "pdf"
-                                                          ] []
+                                    _ <- pipeProcess Nothing "xelatex" [] tex
+                                    _ <- pipeProcess Nothing "mpost" [f] ""
+                                    _ <- pipeProcess Nothing "xelatex" [] tex
+                                    _ <- pipeProcess Nothing "pdfcrop" ["texput.pdf"] ""
+                                    _ <- pipeProcess Nothing "mv"
+                                          [ "texput-crop.pdf"
+                                          , "../auto" </> mpHash <.> "pdf"
+                                          ] ""
                                     return ()
       return $ Div nullAttr
                 $ [Para

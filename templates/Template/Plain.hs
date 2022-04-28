@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Template.Article where
+module Template.Plain where
 
 import Data.Tuple
 import Text.RawString.QQ
@@ -14,16 +14,16 @@ import Text.Pandoc.Options
 
 templateLatex :: IO (String, String, TopLevelDivision)
 templateLatex = do
-  BS.writeFile "_build/extra.7z" extraZip
+  BS.writeFile "_build/extra.tbz" extraZip
   writeFile "_build/default.tpl" mainTemplate
   callCommand $ unlines [ "pushd _build"
-                        , "7za x extra.7z"
+                        , "tar -xf extra.tbz"
                         , "popd"
                         ]
   return ("_build/default.tpl", mainTemplate, TopLevelSection)
 
 mainTemplate :: String
-mainTemplate = $(embedStringFile "templates/article/template.tex")
+mainTemplate = $(embedStringFile "templates/plain/template.tex")
 
 extraZip :: BS.ByteString
-extraZip = $(embedFile "templates/article/extra.7z")
+extraZip = $(embedFile "templates/plain/extra.tbz")

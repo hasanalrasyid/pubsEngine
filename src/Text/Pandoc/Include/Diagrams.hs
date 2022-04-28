@@ -32,11 +32,10 @@ import Data.Maybe
 
 --addPackagePGF :: Pandoc -> IO Pandoc
 addPackagePGF (Pandoc mt@(Meta mtn) blks) = do
-  blks' <- blks''
-  return $ Pandoc mt' blks'
+  blks' <- walkM processDiagram blks
+  return $ Pandoc mt blks'
   where
-    mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") $ T.unlines ["","\\usepackage{tikz}","\\usepackage{tabulary}"]]) mt
-    blks'' = walkM processDiagram blks
+    --mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") $ T.unlines ["","\\usepackage{tikz}","\\usepackage{tabulary}"]]) mt
 
 processDiagram :: Block -> IO Block
 processDiagram cb@(CodeBlock (ident,classes,namevals) contents)

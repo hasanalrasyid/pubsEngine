@@ -8,6 +8,9 @@
 [ ] Abbreviation List
 [ ] Physical Constants
 [ ] List of Symbols
+[ ] processPegon untuk paragraf perlu di pisah antara revealjs dan latex (tambahi RawBlock)
+[ ] buat template yang lebih sederhana, jadikan satu saja...
+[ ] buat yaml file optional saja
 
 v : DONE, -: not yet, r: running
 

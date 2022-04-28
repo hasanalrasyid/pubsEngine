@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage{sectsty}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{calc}
+\usepackage{etoolbox}
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\usepackage{tikz} %% needed for Diagrams
+\usepackage{tabulary} %% needed for Diagrams
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+
+$if(title)$
+  \title{$title$}
+$endif$
+$if(author)$
+  $for(author)$
+    \author$if(author.orcid)$[$author.orcid$]$endif${$author.name$}
+    $if(author.affiliation)$\affiliation{$author.affiliation$}$endif$
+  $endfor$
+$endif$
+
+
+\date{ $if(date)$ \today $endif$ }
+
+\date{}
+
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
+
+
+$if(header-includes)$
+$header-includes$
+$endif$
+\begin{document}
+\maketitle
+%--/Paper--
+$body$
+
+
+$if(bibliography)$
+\bibliography{sample631}{}
+\bibliographystyle{$bibliography$}
+$endif$
+
+\end{document}

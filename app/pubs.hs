@@ -38,10 +38,12 @@ import qualified Template.Thesis as Thesis
 import qualified Template.RevealJS as RevealJS
 import qualified Template.Report as R
 import qualified Template.Article as Article
+import qualified Template.Plain as Plain
 import qualified Template.Default as Default
 
 import Text.Pandoc.Include.Common
-import Text.Pandoc.Include.Thesis (processPreDoc, processPostDoc)
+import qualified Text.Pandoc.Include.Nusantara as NU
+import Text.Pandoc.Include.Thesis (processPostDoc)
 import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
 
@@ -55,10 +57,13 @@ import System.Directory -- (listDirectory)
 import Data.List -- (delete)
 import Text.Pandoc.Citeproc
 import Text.Pandoc.Shared
+import Text.Pandoc.Readers.Markdown
 
 import Text.Pandoc.Process
 import qualified Data.ByteString.Lazy as BL
 import qualified Text.Pandoc.UTF8 as UTF8
+
+import System.Exit(ExitCode(..))
 
 main :: IO ()
 main = do
@@ -67,8 +72,13 @@ main = do
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
   (Pandoc (Meta resMeta0) resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
-    readMarkdown mdOption mdFile
+    yamlFile <- fmap BL.fromStrict $ PIO.readFileStrict $ fileName <> ".yaml"
+    (Pandoc (Meta m1) p1) <- readMarkdown mdOption mdFile
       >>= walkM Markdown.includeMarkdown
+    (Meta mYaml) <- yamlToMeta mdOption Nothing yamlFile
+    -- update mYaml, use the values from yaml in .md
+    let mRes = Meta $ M.foldlWithKey (\a k v -> M.alter (\_ -> Just v) k a) mYaml m1
+    return $ Pandoc mRes p1
   let resMeta = Meta
         $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
@@ -87,23 +97,23 @@ main = do
   case lookupMeta "bibzotero" resMeta of
     Just bib -> do
       flip walkM_ bib $ \(Str bibzotero) -> do
-        statZotero <- readProcess "pgrep" ["zotero"] []
-        case statZotero of
-          [] -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
+        (ex,statZotero) <- pipeProcess Nothing "pgrep" ["zotero"] ""
+        case ex of
+          ExitSuccess -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
+          _ -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
                                , "                  but the standalone Zotero with better-bibtex addons is not running."
                                ]
-          _ -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
         return Space
     b -> do
       putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
       putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
-  (Pandoc (Meta t3) p3 ) <- doThemAll $ Pandoc resMeta resP
+  (Pandoc (Meta t3) p3 ) <- doThemAll format $ Pandoc resMeta resP
   template  <- setTemplate format
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
   let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
-  p5 <- walkM processPegonInline p4
+  p5 <- walkM (NU.processPegonInline format) p4
   citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
   finishDoc format template fileName citedPandoc
   where
@@ -111,6 +121,7 @@ main = do
     --setTemplate "abstract" = A.templateLatex
     --setTemplate "report" = R.templateLatex
     setTemplate "article" =  Article.templateLatex
+    setTemplate "plain" =  Plain.templateLatex
     setTemplate "thesis" =  Thesis.templateLatex
     setTemplate "revealjs" =  RevealJS.templateLatex
     setTemplate _ = Article.templateLatex
@@ -143,7 +154,7 @@ finishDoc _ (tFileName, tFile, topLevel) fileName citedPandoc = do
       putStrLn "======================"
 
 
-doThemAll (Pandoc mt blks0) = do
+doThemAll format (Pandoc mt blks0) = do
   let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
                     Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
                     _ -> []
@@ -155,28 +166,11 @@ doThemAll (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> GoJS.includeGoJS
             >=> upgradeImageIO imageDirs
-            >=> processPegon
+            >=> NU.processPegon format
   blks <- walkM doBlockIO blks1
   p <- doPandoc (Pandoc mt blks)
   return p
 
-processPegon :: Block -> IO Block
-processPegon cb@(CodeBlock (_, ["nusantara"], _) t) = do
-  TIO.writeFile "_build/temp/nusantara.text" t
-  (_,r) <- pipeProcess Nothing "txtconv" (words "-i _build/temp/nusantara.text -o /dev/stdout -t _build/arabtex-pegon-novoc.tec") ""
-  pure $ Div nullAttr [ Para [ Str $ UTF8.toText $ BL.toStrict r ]]
-processPegon b = pure b
-processPegonInline :: Inline -> IO Inline
-processPegonInline l@(Code _ t)
-  | T.isPrefixOf ".nu " t = do
-      TIO.writeFile "_build/temp/nusantara.text" $ fromMaybe "inna lillahi" $ T.stripPrefix ".nu " t
-      (_,r) <- pipeProcess Nothing "txtconv" (words "-i _build/temp/nusantara.text -o /dev/stdout -t _build/arabtex-pegon-novoc.tec") ""
-      putStrLn "============processPegonInline"
-      TIO.putStrLn t
-      return $ Str $ UTF8.toText $ BL.toStrict r
-    -- [Cite [Citation {citationId = "nu:BASMALA", citationPrefix = [], citationSuffix = [Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah"], citationMode = NormalCitation, citationNoteNum = 1, citationHash = 0}] [Str "[@nu:BASMALA",Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah]"]]
-  | otherwise = return l
-processPegonInline l = return l
 processAcknowledgements :: Block -> Block
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\facilities{"]) : b
@@ -189,6 +183,7 @@ processAcknowledgements (Div (_,["acknowledgements","show"],_) b) =
               <> [ RawBlock (Format "latex") "\\end{acknowledgements}" ]
 processAcknowledgements (Div (_,["appendix"],_) b) = Null
 processAcknowledgements (Div (_,["acknowledgements"],_) b) = Null
+processAcknowledgements (Div (_,"abstract":_,_) b) = Null
 processAcknowledgements a = a
 
 cleanVariable :: Block -> Block
@@ -213,8 +208,17 @@ fillVariableI varMeta p@(Cite [c] _)
 fillVariableI _ p = p
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
-getVars (Div (_,[v],_) bs)
+getVars (Div (_,v:a,_) bs)
   | elem v ["appendix","acknowledgements","software","facilities"] = Just (v, MetaBlocks bs)
+  | v == "abstract" =
+      let genLatexArgs :: Block -> Block
+          genLatexArgs (Div a s) = Div a $ [RawBlock (Format "latex") "{"] ++ s ++ [RawBlock (Format "latex") "}"]
+          genLatexArgs a = a
+          val = case a of
+                  -- \abstract{Context}{Aim}{Method}{Result}{Conclusion}
+                  "fiveParts":_ -> [RawBlock (Format "latex") "\\abstract"] ++ (map genLatexArgs bs)
+                  _ -> [RawBlock (Format "latex") "\\begin{abstract}"] ++ bs ++ [RawBlock (Format "latex") "\\end{abstract}"]
+       in Just (v, MetaBlocks val)
   | otherwise = Nothing
 getVars c = Nothing
 
