@@ -1,3 +1,5 @@
+*.tec
+*.7z
 extern/*
 !extern/*.tbz
 .commit.status

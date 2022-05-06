@@ -32,11 +32,26 @@ singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespac
 %liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
 %toctotoc, % Uncomment to add the main table of contents to the table of contents
 %parskip, % Uncomment to add space between paragraphs
-%nohyperref, % Uncomment to not load the hyperref package
+nohyperref, % Uncomment to not load the hyperref package
 headsepline, % Uncomment to get a line under the header
 %chapterinoneline, % Uncomment to place the chapter title next to the number on one line
 %consistentlayout, % Uncomment to change the layout of the declaration, abstract and acknowledgements pages to match the default layout
 ]{MastersDoctoralThesis} % The class file specifying the document structure
+
+% hyperref setup by default is on due to compatibility with arabxetex
+\usepackage{hyperref}
+\hypersetup{pdfpagemode={UseOutlines},
+bookmarksopen=true,
+bookmarksopenlevel=0,
+hypertexnames=false,
+colorlinks=true,% Set to false to disable coloring links
+citecolor=magenta,% The color of citations
+linkcolor=red,% The color of references to document elements (sections, figures, etc)
+urlcolor=mdtRed,% The color of hyperlinks (URLs)
+pdfstartview={FitV},
+unicode,
+breaklinks=true,
+}
 
 \usepackage[utf8]{inputenc} % Required for inputting international characters
 \usepackage[T1]{fontenc} % Output font encoding for international characters
@@ -130,6 +145,9 @@ $if(csl-refs)$
 \newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 $endif$
+
+\usepackage{arabxetex}
+\newfontfamily\arabicfont[Script=Arabic]{Amiri}
 
 \begin{document}
 
