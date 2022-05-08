@@ -1,12 +1,15 @@
 \documentclass[fleqn,10pt]{wlscirep}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-
-\usepackage[backend=bibtex,style=authoryear,natbib=true]{biblatex} % Use the bibtex backend with the authoryear citation style (which resembles APA)
+\usepackage{longtable}
 
 $if(header-includes)$
 $header-includes$
 $endif$
+
+\usepackage{graphicx}
+\graphicspath{{./}{figures/}{auto}$for(graphicspath)${$graphicspath$}$endfor$}%
+%\graphicspath{{./}{Figure/}}
 
 \usepackage{arabxetex} % default option is "novoc"
 %                       % other options are "voc", "fullvoc", "utf" and "trans"

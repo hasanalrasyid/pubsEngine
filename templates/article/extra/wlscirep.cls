@@ -40,7 +40,7 @@
                 bottom=2.25cm,%
                 headheight=12pt,%
                 letterpaper]{geometry}%
-                
+
 \RequirePackage[labelfont={bf,sf},%
                 labelsep=period,%
                 justification=raggedright]{caption}
@@ -50,10 +50,10 @@
 % Set up of the bibliography style
 
 % \RequirePackage[numbers]{natbib}
-\RequirePackage[superscript,biblabel,nomove]{cite}
+%\RequirePackage[superscript,biblabel,nomove]{cite}
 %% Nov 3, 2016: Support DOI
 \bibliographystyle{naturemag-doi}
-              
+
 %
 % headers and footers
 %
@@ -86,7 +86,7 @@
   {}
   {0em}
   {#1}
-  []  
+  []
 \titleformat{\subsection}
   {\sffamily\bfseries}
   {\thesubsection}
@@ -98,12 +98,12 @@
   {\thesubsubsection}
   {0.5em}
   {#1}
-  []    
+  []
 \titleformat{\paragraph}[runin]
   {\sffamily\small\bfseries}
   {}
   {0em}
-  {#1} 
+  {#1}
 \titlespacing*{\section}{0pc}{3ex \@plus4pt \@minus3pt}{5pt}
 \titlespacing*{\subsection}{0pc}{2.5ex \@plus3pt \@minus2pt}{0pt}
 \titlespacing*{\subsubsection}{0pc}{2ex \@plus2.5pt \@minus1.5pt}{0pt}
@@ -131,8 +131,8 @@
   {}
   {}
   {}
-  [\ \textbullet\ ]  
-  
+  [\ \textbullet\ ]
+
 \RequirePackage{enumitem}
 %\setlist{nolistsep} % Uncomment to remove spacing between items in lists (enumerate, itemize)
 
@@ -145,7 +145,7 @@
 \newcommand{\keywords}[1]{\def\@keywords{#1}}
 
 \def\xabstract{abstract}
-\long\def\abstract#1\end#2{\def\two{#2}\ifx\two\xabstract 
+\long\def\abstract#1\end#2{\def\two{#2}\ifx\two\xabstract
 \long\gdef\theabstract{\ignorespaces#1}
 \def\go{\end{abstract}}\else
 \typeout{^^J^^J PLEASE DO NOT USE ANY \string\begin\space \string\end^^J
@@ -156,7 +156,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \go}
 
 %
-% custom title page 
+% custom title page
 %
 \renewcommand{\@maketitle}{%
 {%
@@ -188,14 +188,14 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 }%
 }%
 %-----------------------------------------------
-\setlength{\columnsep}{0.55cm} % Distance between the two columns of text 
+\setlength{\columnsep}{0.55cm} % Distance between the two columns of text
 \setlength{\fboxrule}{0.75pt} % Width of the border around the abstract
 
 \definecolor{color1}{RGB}{0,0,0} % Color of section headings
 \definecolor{color2}{gray}{1} % Color of the box behind the abstract
 \newcommand{\keywordname}{Keywords:} % Defines the keywords heading name
 
-\newlength{\tocsep} 
+\newlength{\tocsep}
 \setlength\tocsep{1.5pc} % Sets the indentation of the sections in the table of contents
 \setcounter{tocdepth}{3} % Show only three levels in the table of contents section: sections, subsections and subsubsections
 
