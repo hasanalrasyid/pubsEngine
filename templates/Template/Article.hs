@@ -17,7 +17,7 @@ templateLatex = do
   BS.writeFile "_build/extra.7z" extraZip
   writeFile "_build/default.tpl" mainTemplate
   callCommand $ unlines [ "pushd _build"
-                        , "7za x extra.7z"
+                        , "7za x -aoa extra.7z"
                         , "popd"
                         ]
   return ("_build/default.tpl", mainTemplate, TopLevelSection)

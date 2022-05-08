@@ -2,6 +2,7 @@ EXTs := $(shell ls extern/*tbz)
 Extracted := $(lastword $(shell find extern -maxdepth 1 -type d))
 
 install:
+	./preMake.sh article
 	teckit_compile templates/common/fontmap/nusantara-trans-novoc.map
 	stack build pubsEngine:pubsEngine
 
