@@ -1,0 +1,897 @@
+%%%% -*- mode: latex; mode: folding -*-
+%%%% $Id: sciamvs.sty,v 1.8 2001/03/18 10:29:27 kashino Exp $ %%%%
+%% Search hits %% %%% {{{%
+%DOC%  description of macro code
+%IMPR% needs improvement
+%NYI%  definitely required feature, but no yet implemented.
+%TODO% useful feature, implement later.
+%WISH% may or may not be useful, mostly TK's suggestion.
+%%% }}}%
+%DOC% package declaration. sciamvs.cls has been abandoned. %%% {{{%
+%DOC% We need smaller, more flexible style.
+%\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{sciamvs}[2001/03/07 v$Revision: 1.8 $ sciamvs document style]
+%%% }}}%
+%DOC% beta code `apparatus' %%% {{{%
+%DOC% this part of code should come before arabtex!!!
+\let\@saved@footnotetext\@footnotetext
+\let\@saved@makecol\@makecol
+%DOC% SCIAMVS has special style for \@makefntext!! see below
+\let\@saved@makefntext\@makefntext
+%%% }}}%
+%DOC% control variables of global use %%% {{{%
+%DOC% \if@editor == true [editorial board's options]
+%DOC% \if@editor == false [author's (i.e., contributor's) option]
+\newif\if@editor \@editorfalse
+\newif\if@nonarticles \@nonarticlesfalse
+\newif\if@RequireAstroSymbol \@RequireAstroSymbolfalse
+%%% }}}%
+%DOC% volume number %%% {{{%
+\newcounter{curvolume}
+\renewcommand{\thecurvolume}{\arabic{curvolume}}
+\def\volume#1{\setcounter{curvolume}{#1}}
+\def\@check@volume{%
+  \ifnum\c@curvolume=0%
+    \typeout{^^J^^J
+      !!! Volume Number unspecifid !!!^^J
+      !!! Use \protect\volume{1} in the preamble !!!%
+      ^^J^^J}%
+    \setcounter{curvolume}{0}
+  \fi%
+  }
+%%% }}}%
+%DOC% received date %%% {{{%
+\def\@received{\space}
+\def\received#1{\def\@received{#1}}
+\def\@check@received{%
+  \if\@received\space%
+  \def\@received{\texttt{!!!~Not Specified by the Editor !!!}}
+  \typeout{^^J^^J
+    !!! No date of receipt specified by the editor !!!^^J
+    !!! Use \protect\received{month date, year} in the preamble !!!
+    ^^J^^J
+  }
+  \fi
+}
+%%% }}}%
+%% Addition by Ken Saito %%
+\def\@revised{\space}
+\def\revised#1{\def\@revised{#1}}
+
+
+%DOC% package options %%% {{{%
+%DOC% option: a4paper: only papersize currently supported
+%DOC% option: editor: for editor's final version
+%DOC% option: author: for contributor's drafts
+%DOC% option: draft: draft
+%DOC% option: final: final
+%DOC% option: 11pt: 11pt is constant, but placed here for historical reasons
+\newif\if@SCI@apparatus \@SCI@apparatusfalse
+\DeclareOption{a4paper}
+   {\setlength\paperheight {297mm}%
+     \setlength\paperwidth {210mm}}
+\DeclareOption{editor}{\@editortrue}
+\DeclareOption{author}{\@editorfalse}
+\DeclareOption{nonarticles}{\@nonarticlestrue}
+\DeclareOption{11pt}{\relax}
+\DeclareOption{draft}{\setlength\overfullrule{3pt}}
+\DeclareOption{final}{\setlength\overfullrule{0pt}}
+\DeclareOption{astronomical}{\@RequireAstroSymboltrue}
+\DeclareOption{apparatus}{%
+  \@SCI@apparatustrue
+   }
+\ExecuteOptions{a4paper,author,11pt,draft}
+\ProcessOptions
+%%% }}}%
+%DOC% font size definitions %%% {{{%
+\normalbaselineskip=12pt
+\renewcommand\normalsize{%
+   \@ifstar{%
+     \@setfontsize\normalsize\@xipt{13.6}%
+     \abovedisplayskip 11\p@ \@plus3\p@ \@minus6\p@%
+     \abovedisplayshortskip \z@ \@plus3\p@%
+     \belowdisplayshortskip 6.5\p@ \@plus3.5\p@ \@minus3\p@%
+     \belowdisplayskip \abovedisplayskip%
+     \let\@listi\@listI%
+   }{%
+     \@setfontsize\normalsize{10.95pt}{15pt}%
+     \abovedisplayskip 13\p@\@plus3\p@\@minus7\p@%
+     \abovedisplayshortskip \z@ \@plus3\p@%
+     \belowdisplayshortskip 7\p@ \@plus3\p@\@minus3\p@
+     \belowdisplayskip\abovedisplayskip%
+     \def\@listi{%
+        \leftmargin\leftmargini
+        \topsep 15pt
+        \parsep 0pt
+        \itemsep 0pt}%
+   }%
+}
+\normalsize
+\renewcommand\small{%
+   \@ifstar{%
+     \@setfontsize\small\@xpt\@xiipt%
+     \abovedisplayskip 10\p@ \@plus2\p@ \@minus5\p@%
+     \abovedisplayshortskip \z@ \@plus3\p@%
+     \belowdisplayshortskip 6\p@ \@plus3\p@ \@minus3\p@%
+     \def\@listi{\leftmargin\leftmargini%
+                 \topsep 6\p@ \@plus2\p@ \@minus2\p@%
+                 \parsep 3\p@ \@plus2\p@ \@minus\p@%
+                 \itemsep \parsep}%
+     \belowdisplayskip \abovedisplayskip%
+   }{%
+     \@setfontsize\small{9pt}{15pt}%
+     \def\@listi{%
+        \leftmargin\leftmargini%
+        \topsep 15pt%
+        \parsep 0pt%
+        \itemsep 0pt}%
+   }%
+}
+\renewcommand\footnotesize{%
+   \@ifstar{%
+     \@setfontsize\footnotesize\@ixpt{11}%
+     \abovedisplayskip 8\p@ \@plus2\p@ \@minus4\p@%
+     \abovedisplayshortskip \z@ \@plus\p@%
+     \belowdisplayshortskip 4\p@ \@plus2\p@ \@minus2\p@%
+     \def\@listi{\leftmargin\leftmargini%
+                 \topsep 4\p@ \@plus2\p@ \@minus2\p@%
+                 \parsep 2\p@ \@plus\p@ \@minus\p@%
+                 \itemsep \parsep}%
+     \belowdisplayskip \abovedisplayskip%
+   }{%
+     \@setfontsize\footnotesize{9pt}{15pt}%
+     \abovedisplayskip 12\p@ \@plus3\p@ \@minus7\p@%
+     \abovedisplayshortskip \z@ \@plus\p@%
+     \belowdisplayshortskip 7\p@ \@plus3\p@\@minus3\p@
+     \def\@listi{\leftmargin\leftmargini%
+                 \topsep 4\p@ \@plus2\p@ \@minus2\p@%
+                 \parsep 2\p@ \@plus\p@ \@minus\p@%
+                 \itemsep \parsep}%
+     \belowdisplayskip \abovedisplayskip%
+   }%
+}
+\renewcommand\large{%
+  \@ifstar{\@setfontsize\large\@xiipt{14}}%
+          {\@setfontsize\large{12pt}{15pt}%
+  }%
+}
+\renewcommand\Large{%
+  \@ifstar{\@setfontsize\Large\@xivpt{18}}%
+          {\@setfontsize\Large{14.4pt}{15pt}%
+  }%
+}
+\renewcommand\LARGE{%
+  \@ifstar{\@setfontsize\LARGE\@xviipt{22}}%
+          {\@setfontsize\LARGE{17.28pt}{22pt}%
+  }%
+}
+%TODO%
+\renewcommand\scriptsize{%
+  \@ifstar{\@setfontsize\scriptsize\@viiipt{9.5}}%
+          {\@setfontsize\scriptsize{8pt}{9.5pt}%
+  }%
+}
+\renewcommand\tiny{%
+  \@ifstar{\@setfontsize\tiny\@vipt\@viipt}%
+          {\@setfontsize\tiny{6pt}{7pt}%
+  }%
+}
+\renewcommand\huge{%
+  \@ifstar{\@setfontsize\huge\@xxpt{25}}%
+          {\@setfontsize\huge{20.74pt}{25pt}%
+  }%
+}
+\renewcommand\Huge{%
+  \@ifstar{\@setfontsize\Huge\@xxvpt{30}}%
+          {\@setfontsize\Huge{24.88pt}{30pt}%
+  }%
+}
+\newcommand\headerfont{\footnotesize*}
+\newcommand\figurefont{\fontsize{7pt}{9pt}\selectfont}
+\newcommand\titlefont{\bfseries\LARGE}
+\newcommand\authorfont{\normalfont\large}
+\newcommand\affiliationfont{\normalfont\itshape\footnotesize}
+\newcommand\@captionfont{\fontsize{9pt}{11pt}\selectfont}%
+%%% }}}%
+%DOC% page layout %%% {{{%
+\setlength\parindent{5mm} % fixed
+\setlength\baselineskip{15pt}
+% header height
+\setlength\headheight{12pt}
+\setlength\headsep   {6mm}
+\@tempdima=4cm \advance\@tempdima-1in
+\advance\@tempdima-\headheight
+\advance\@tempdima-\headsep
+\setlength\topmargin {\@tempdima}
+\setlength\footskip  {30pt}
+% textheight
+\setlength\@tempdima    {\paperheight}
+\addtolength\@tempdima{-80mm}
+\divide\@tempdima\baselineskip
+\@tempcnta\@tempdima
+\setlength\textheight{\@tempcnta\baselineskip}
+% textwidth
+\setlength\@tempdima  {\paperwidth}
+\addtolength\@tempdima{-7cm}
+\setlength\textwidth  {\@tempdima}
+% margin
+\setlength\marginparwidth{20mm}
+\setlength\marginparsep{5pt}
+\setlength\oddsidemargin  {35mm}
+\addtolength\oddsidemargin{-1in}
+\setlength\evensidemargin{\oddsidemargin}
+\setlength\marginparsep{.7em}
+%DOC% footnote
+\setlength\footnotesep{11pt}
+\setlength\@tempdima{\paperheight}
+\addtolength\@tempdima{-2in}
+\addtolength\@tempdima{-\topmargin}
+\addtolength\@tempdima{-\headheight}
+\addtolength\@tempdima{-\headsep}
+\addtolength\@tempdima{-\textheight}
+\addtolength\@tempdima{-\footskip}
+\setlength{\skip\footins}{\@tempdima \@plus 2pt \@minus 1pt}
+%%% }}}%
+%DOC% various skips %%% {{{%
+\setlength\smallskipamount{4.5\p@ \@plus 1.5\p@ \@minus 1.5\p@}
+\setlength\medskipamount{9\p@ \@plus 3\p@ \@minus 3\p@}
+\setlength\bigskipamount{18\p@ \@plus 6\p@ \@minus 6\p@}
+\providecommand{\smallskip}{\vspace\smallskipamount}
+\providecommand{\medskip}{\vspace\medskipamount}
+\providecommand{\bigskip}{\vspace\bigskipamount}
+%%% }}}%
+%% end size11.clo
+%% back to article.cls
+%DOC% pagestyles %%% {{{%
+\def\ps@sciamvsheadings{%
+  \@twosidetrue%
+  \let\@oddfoot\@empty%
+  \let\@evenfoot\@oddfoot%
+  \def\@oddhead{%
+    \headerfont%
+    \rlap{SCIAMVS \thecurvolume}%
+    \hfill\@shorttitle\hfill%
+    \thepage}%
+  \def\@evenhead{%
+    \headerfont%
+    \thepage%
+    \hfill\@shortauthor\hfill%
+    \llap{SCIAMVS \thecurvolume}%
+  }%
+}
+\def\ps@firstpageheadings{%
+  \@twosidetrue%
+  \let\@oddfoot\@empty%
+  \let\@evenfoot\@oddfoot%
+  \def\@oddhead{%
+    \headerfont%
+    \@ifundefined{r@@@last@page}
+      {SCIAMVS \thecurvolume~(2001), \thepage--\pageref{@last@page}}%
+      {SCIAMVS \thecurvolume~(2001), \thepage--\pageref{@@last@page}}%
+
+    \hfill}%
+  \def\@evenhead{\@empty}%
+}
+%%% }}}%
+%DOC% author %%% {{{%
+\newcounter{author}
+\def\author{%
+  \@ifnextchar[{\@author}{\@author[\@empty]}%
+}
+\def\@author[#1]#2{%
+  \stepcounter{author}%
+  \ifx#1\@empty%
+    \gdef\sauthor{#2}%
+  \else%
+    \gdef\sauthor{#1}%
+  \fi%
+  \gdef\lauthor{#2}%
+  \makeauthors%
+  \let\sauthor\relax%
+  \let\lauthor\relax%
+}%
+\def\makeauthors{%
+  \renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+  \ifcase\c@author%
+    % if no author is given,
+    % \maketitle and \makeheader will invoke warning
+    \or% author1
+      \newbox\authori%
+      \setbox\authori\hbox{\authorfont\lauthor}%
+      \newbox\sauthori%
+      \bgroup%
+        \let\thanks\@gobble%
+        \global\setbox\sauthori\hbox{\headerfont\sauthor}%
+      \egroup%
+    \or% author2
+      \newbox\authorii%
+      \setbox\authorii\hbox{\authorfont\lauthor}%
+      \newbox\sauthorii%
+      \bgroup%
+        \let\thanks\@gobble%
+        \global\setbox\sauthorii\hbox{\headerfont\sauthor}%
+      \egroup%
+    \or% author3
+      \newbox\authoriii%
+      \setbox\authoriii\hbox{\authorfont\lauthor}%
+      \newbox\sauthoriii%
+      \bgroup%
+        \let\thanks\@gobble%
+        \global\setbox\sauthoriii\hbox{\headerfont\sauthor}%
+      \egroup%
+    \or% author4
+      \newbox\authoriii%
+      \setbox\authoriv\hbox{\authorfont\lauthor}%
+      \newbox\sauthoriv%
+      \bgroup%
+        \let\thanks\@gobble%
+        \global\setbox\sauthoriv\hbox{\headerfont\sauthor}%
+      \egroup%
+  \fi%
+  \renewcommand{\thefootnote}{\arabic{footnote}}%
+}%
+%%% }}}%
+%DOC% affiliation %%% {{{%
+\newcounter{affiliation}
+\def\affiliation#1{%
+  \stepcounter{affiliation}%
+  \ifcase\c@affiliation%
+      % if no affiliation is given,
+      % \maketitle will invoke warning!
+    \or% affiliation 1
+      \gdef\affiliationi{%
+        \affiliationfont%
+        \renewcommand{\arraystretch}{.7}%
+        \tabcolsep0pt%
+          \begin{tabular}[t]{c}%
+            #1%
+          \end{tabular}%
+      }%
+    \or% affiliation 2
+      \gdef\affiliationii{%
+        \affiliationfont%
+        \renewcommand{\arraystretch}{.7}%
+        \tabcolsep0pt%
+          \begin{tabular}[t]{c}%
+            #1%
+          \end{tabular}%
+      }%
+    \or% affiliation 3
+      \gdef\affiliationiii{%
+        \affiliationfont%
+        \renewcommand{\arraystretch}{.7}%
+        \tabcolsep0pt%
+          \begin{tabular}[t]{c}%
+            #1%
+          \end{tabular}%
+      }%
+    \or% affiliation 4
+      \gdef\affiliationiii{%
+        \affiliationfont%
+        \renewcommand{\arraystretch}{.7}%
+        \tabcolsep0pt%
+          \begin{tabular}[t]{c}%
+            #1%
+          \end{tabular}%
+      }%
+  \fi%
+}%
+%%% }}}%
+%DOC% title %%% {{{%
+\def\title{\@ifnextchar[{\@title}{\@title[]}}
+\def\@title[#1]#2{%
+  \gdef\@shorttitle{#1}%
+  \gdef\@longtitle{#2}%
+  \setbox\@tempboxa\hbox{#1}%
+    \ifdim\wd\@tempboxa=0pt \gdef\@shorttitle{#2}\fi%
+  }%
+%%% }}}%
+%DOC% loop %%% {{{%
+\def\getcolumn{%
+  \def\columnspec{c}
+  \@tempcnta\csname c@author\endcsname%
+  \@tempcntb2%
+  \advance\@tempcnta\@ne%
+  \@whilenum\@tempcnta>\@tempcntb\do{%
+    \xdef\columnspec{c@{\extracolsep{30pt}}\columnspec}%
+    \advance\@tempcntb\@ne%
+  }%
+}%
+%%% }}}%
+%DOC% maketitle %%% {{{%
+\def\maketitle{%
+  \thispagestyle{firstpageheadings}%
+  \begin{center}%
+    \titlefont\@longtitle%
+    \vskip23pt%
+    \ifcase\c@author%
+      % no author given
+      \or% author x1
+        \tabcolsep0pt%
+        \begin{tabular}[t]{c}%
+            \box\authori\\%
+            \affiliationi%
+        \end{tabular}%
+      \or% author x2
+        \tabcolsep0pt%
+        \begin{tabular}[t]{c@{\extracolsep{.18\textwidth}}c}%
+            \box\authori & \box\authorii\\%
+            \affiliationi & \affiliationii%
+        \end{tabular}%
+      \or% author x3
+        \tabcolsep0pt%
+%        \begin{tabular}[t]{c@{\extracolsep{.15\textwidth}}c@{\extracolsep{.15\textwidth}}c}
+        \begin{tabular}[t]{c@{\extracolsep{.1\textwidth}}c@{\extracolsep{.1\textwidth}}c}
+          \box\authori&\box\authorii&\box\authoriii\\%
+          \affiliationi&\affiliationii&\affiliationiii%
+        \end{tabular}
+    \fi%
+  \vskip19pt%
+  \end{center}%
+  \makeheader%
+  \bgroup
+    \renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+    \@thanks%
+  \egroup%
+}
+%%% }}}%
+%DOC% makeheader %%% {{{%
+\def\makeheader{%
+  \let\thanks\@gobble%
+  \ifcase\c@author%
+    % no author given
+    \or% author x1
+      \gdef\@shortauthor{\unhcopy\sauthori}%
+    \or% author x2
+      \gdef\@shortauthor{\unhcopy\sauthori\quad and\quad\unhcopy\sauthorii}%
+    \or% author x3
+      \gdef\@shortauthor{\unhcopy\sauthori,\quad\unhcopy\sauthorii\quad
+      and\quad\unhcopy\sauthoriii}
+  \fi%
+}%
+%%% }}}%
+%DOC% lastpage %%% {{{%
+\def\lastpage#1{%
+  \AtEndDocument{%
+    \@bsphack%
+    \protected@write\@auxout{}%
+      {\string\newlabel{@@last@page}{{\@currentlabel}{#1}}}%
+    \@esphack}%
+}
+%%% }}}%
+%DOC% Sectioning %%% {{{%
+\setcounter{secnumdepth}{4}
+\newcounter{appendix}
+\renewcommand{\thesection}{\@Roman\c@section}
+\renewcommand{\thesubsection}{\thesection.\@arabic\c@subsection}
+\renewcommand{\thesubsubsection}{\thesubsection.\@arabic\c@subsubsection}
+\renewcommand{\theappendix}{\appendixname\hspace*{.7em}\@Alph\c@appendix:}
+\renewcommand{\theparagraph}{\thesubsubsection.\@arabic\c@paragraph}
+\newcommand{\sectionname}{Section}
+\newcommand{\subsectionname}{Subsection}
+\newcommand{\subsubsectionname}{Subsubsection}
+\renewcommand{\appendixname}{Appendix}
+\renewcommand{\figurename}{Figure}
+\renewcommand{\section}{%
+  \@startsection{section}{1}{0pt}{-15pt}{15pt}{\centering\normalfont\Large\bfseries}}
+\renewcommand{\subsection}{%
+  \@startsection{subsection}{2}{0pt}{-10pt}{10pt}{\normalfont\large\bfseries}}
+\renewcommand{\subsubsection}{%
+  \@startsection{subsubsection}{3}{0pt}{-10pt}{10pt}{\normalfont\large\itshape}}
+\renewcommand{\appendix}{%
+  \@startsection{appendix}{1}{0pt}{-15pt}{15pt}{\centering\normalfont\large\bfseries}}
+\renewcommand{\paragraph}{%
+  \@startsection{paragraph}{4}{0pt}{5pt}{-.5em}{\normalfont\bfseries}}
+%%% }}}%
+%DOC% prevent nasty behavior of *mark!!! \let\*mark for other
+%DOC% sections are defined in latex.ltx!?
+\let\appendixmark\@gobble
+%DOC% quotation %%% {{{%
+\renewenvironment{quotation}
+               {\list{}{\topsep        15pt%
+		        \leftmargin    8mm
+			\rightmargin   \leftmargin
+		        \listparindent 5mm%
+                        \parsep        \z@%
+			\small}%
+                \item\relax}
+               {\endlist}
+\newenvironment{quotation*}% normalsize version
+               {\list{}{\topsep        15pt%
+		        \leftmargin    8mm
+			\rightmargin   \leftmargin
+		        \listparindent 5mm%
+                        \parsep        \z@}%
+                \item\relax}
+               {\endlist}
+\renewenvironment{quote}
+               {\list{}{\topsep        15pt%
+		        \leftmargin    8mm
+			\rightmargin   \leftmargin
+		        \listparindent \z@%
+                        \parsep        \z@%
+			\small}%
+                \item\relax}
+               {\endlist}
+\newenvironment{quote*}% normalsize version
+               {\list{}{\topsep        15pt%
+		        \leftmargin    8mm
+			\rightmargin   \leftmargin
+		        \listparindent \z@%
+                        \parsep        \z@}%
+                \item\relax}
+               {\endlist}
+%%% }}}%
+%DOC% array
+\setlength\arraycolsep{.14em}
+%DOC% subfigure support, (captions only) %%% {{{%
+%DOC% \centerlast is usefull when you want last line of the
+%DOC% paragraph to be centered
+\def\centerlast{%
+  \addtolength{\leftskip}{0pt plus1fil}%
+  \addtolength{\rightskip}{0pt plus -1fil}%
+  \setlength{\parfillskip}{0pt plus 2fil}%
+}
+\newcounter{subfigure}[figure]
+\renewcommand\thesubfigure{\@arabic\c@figure\@alph\c@subfigure}
+\def\fnum@subfigure{\textbf{\figurename~\thesubfigure}}
+\setlength\abovecaptionskip{5\p@}
+\setlength\belowcaptionskip{0\p@}
+%%% }}}%
+%DOC% caption hack ,,, %%% {{{%
+\def\fnum@figure{\textbf{\figurename~\thefigure}}
+\def\caption{%
+  \@ifstar{\@sci@noheadcaption}{\@sci@headcaption}%
+}
+\def\@sci@noheadcaption{%
+  \@ifnextchar [{\@nofloat@noheadcaption}{\@float@noheadcaption}%
+  }
+\def\@sci@headcaption{%
+  \@ifnextchar [{\@nofloatcaption}{\@floatcaption}%
+}
+\long\def\@nofloat@noheadcaption[#1]{% #1 := figure, table, subfigure,
+  \def\@captype{#1}%
+  \refstepcounter{#1}%
+  \vskip\abovecaptionskip%
+  \hb@xt@\hsize{\hfill\@captionfont\csname fnum@\@captype\endcsname\hfill}%
+  \vskip\belowcaptionskip%
+  }
+\def\@float@noheadcaption{%
+  \refstepcounter{\@captype}%
+  \vskip\abovecaptionskip%
+  \hb@xt@\hsize{\hfill\@captionfont\csname fnum@\@captype\endcsname\hfill}%
+  \vskip\belowcaptionskip%
+  }
+\def\@nofloatcaption[#1]#2{%
+  \def\@captype{#1}%
+  \refstepcounter{\@captype}%
+  \vskip\abovecaptionskip%
+  \sbox\@tempboxa{\@captionfont\csname fnum@\@captype\endcsname: #2}%
+    \ifdim\wd\@tempboxa>.7\hsize% for factor .7, check below also.
+      \sbox\@tempboxa{\@captionfont\csname fnum@\@captype\endcsname:
+	\parbox[t]{.5\textwidth}{#2}}%
+    \fi%
+  \hb@xt@\hsize{\hfill\unhbox\@tempboxa\hfill}%
+  \vskip\belowcaptionskip%
+  }
+\def\@floatcaption#1{%
+  \refstepcounter{\@captype}%
+  \vskip\abovecaptionskip%
+  \sbox\@tempboxa{\@captionfont\csname fnum@\@captype\endcsname: #1}%
+    \ifdim\wd\@tempboxa>.7\hsize% for factor .7, check above also.
+      \sbox\@tempboxa{\@captionfont\csname fnum@\@captype\endcsname:
+	\parbox[t]{.5\textwidth}{#1}}%
+    \fi%
+  \hb@xt@\hsize{\hfill\unhbox\@tempboxa\hfill}%
+  \vskip\belowcaptionskip%
+  }
+%%% }}}%
+%DOC% footnote stuff %%% {{{%
+\renewcommand\@makefntext[1]{%
+    \parindent 5mm%
+    \noindent
+    \@makefnmark #1}
+\let\@saved@makefntext\@makefntext
+%%% }}}%
+%DOC% apparatus (beta code) %%% {{{%
+%DOC% N.B. \@makefntext is modified above.
+\if@SCI@apparatus
+  \let\apparatussize\footnotesize
+  \def\apparatus{%
+    \clearpage%
+    \let\@footnotetext\@apparatus@footnotetext
+    \let\@makecol\@apparatus@makecol
+    \let\@makefntext\@apparatus@makefntext
+    }%
+  \def\noapparatus{%
+    \clearpage%
+    \let\@footnotetext\@saved@footnotetext
+    \let\@makecol\@saved@makecol
+    \let\@makefntext\@saved@makefntext
+    }%
+  %DOC% subfunctions for apparatus %%% {{{%
+  \def\FN@unhbox@par#1{\unhbox#1\par}
+  \let\FN@tempboxa\@tempboxa
+  \newbox\FN@tempboxb
+  \newbox\FN@tempboxc
+  \newskip\apparatusglue \apparatusglue=1em plus.3em minus.3em
+  \long\def\@apparatus@makefntext#1{%
+    \@makefnmark\nobreak\hskip.1em\relax#1%
+  }% lesser space after fnmark. TK
+  {\apparatussize \newdimen\apparatusbaselineskip
+    \global\apparatusbaselineskip=\normalbaselineskip}%
+  \@tempdima=\apparatusbaselineskip \multiply\@tempdima by 1024
+  \divide \@tempdima by \columnwidth \multiply\@tempdima by 64
+  \xdef\fudgefactor{\strip@pt\@tempdima }
+  \def\makefootnoteparagraph{% %%% {{{%
+    \unvbox\footins \makehboxofhboxes%
+    \setbox\FN@tempboxa=\hbox{\unhbox\FN@tempboxa \removehboxes}%
+    \hsize\columnwidth%
+    \@parboxrestore%
+    \baselineskip=\apparatusbaselineskip%
+    \noindent%
+    \rule{\z@}{\footnotesep}%
+    \FN@unhbox@par{\FN@tempboxa}
+  }%
+  %%% }}}%
+  \def\makehboxofhboxes{% %%% {{{%
+    \setbox\FN@tempboxa=\hbox{}%
+    \loop\setbox\FN@tempboxb=\lastbox%
+      \ifhbox\FN@tempboxb%
+        \setbox\FN@tempboxa=\hbox{%
+          \box\FN@tempboxb\unhbox\FN@tempboxa%
+        }%
+    \repeat%
+  }%
+  %%% }}}%
+  \def\removehboxes{% %%% {{{%
+    \setbox\FN@tempboxa=\lastbox%
+    \ifhbox\FN@tempboxa{\removehboxes}%
+      \unhbox\FN@tempboxa%
+    \fi%
+  }%
+  %%% }}}%
+  \gdef\@apparatus@makecol{% %%% {{{%
+     \ifvoid\footins
+       \setbox\@outputbox \box\@cclv
+     \else
+       \setbox\@outputbox \vbox {%
+         \boxmaxdepth \@maxdepth
+         \@tempdima\dp\@cclv
+         \unvbox \@cclv
+         \vskip \skip\footins
+         \color@begingroup
+           \normalcolor
+           \footnoterule
+           \global\setbox\FN@tempboxc\vbox{%
+             \makefootnoteparagraph}%
+           \unvbox\FN@tempboxc%
+         \color@endgroup
+         }%
+     \fi
+     \xdef\@freelist{\@freelist\@midlist}%
+     \global \let \@midlist \@empty
+     \@combinefloats
+     \ifvbox\@kludgeins
+       \@makespecialcolbox
+     \else
+       \setbox\@outputbox \vbox to\@colht {%
+         \@texttop
+         \dimen@ \dp\@outputbox
+         \unvbox \@outputbox
+         \vskip -\dimen@
+         \@textbottom
+         }%
+     \fi
+     \global \maxdepth \@maxdepth
+  }% \@apparatus@makecol
+  %%% }}}%
+  \long\def\@apparatus@footnotetext#1{% %%% {{{%
+    \insert\footins{%
+      \reset@font\apparatussize
+      \interlinepenalty\interfootnotelinepenalty
+      \splittopskip\footnotesep
+      \splitmaxdepth\dp\strutbox 
+      \floatingpenalty\@MM
+      \hsize\columnwidth \@parboxrestore
+      \protected@edef\@currentlabel{%
+         \csname p@footnote\endcsname\@thefnmark
+      }%
+      \color@begingroup%
+        \setbox\FN@tempboxa=\hbox{%
+          \@apparatus@makefntext{%
+            \ignorespaces#1\strut%
+            \penalty-10\relax%
+            \hskip\apparatusglue%
+          }%
+        }%
+      \dp\FN@tempboxa=0pt%
+      \ht\FN@tempboxa=\fudgefactor\wd\FN@tempboxa%
+      \box\FN@tempboxa%
+      \color@endgroup%
+    }%
+  }% \@apparatus@footnotetext
+  %%% }}}%
+  %DOC% end subfunctions for apparatus
+  %%% }}}%
+\fi
+  %DOC% end apparatus
+%%% }}}%
+%DOC% header only pages %%% {{{%
+%DOC% use this for non-TeX paper
+\newcounter{sctempcnt}
+\def\headeronly#1#2{%
+  \ifnum\c@sctempcnt=0\setcounter{sctempcnt}{#1}%
+    \addtocounter{sctempcnt}{\c@page}%
+    \addtocounter{sctempcnt}{-2}%
+    \fi%
+  \@whilenum \c@page<\c@sctempcnt%
+    \do {%
+      \phantom{1}\clearpage%
+      }%
+  \phantom{1}\clearpage\vspace*{#2}%
+  \vspace*{-2\baselineskip}
+}
+%%% }}}%
+%DOC% some input convention
+\providecommand{\figref}[1]{\figurename~#1}
+\providecommand{\tabref}[1]{\tablename~#1}
+%DOC% math stuff %%% {{{%
+%\providecommand\Sin{\mathop{\operator@font Sin}\nolimits}
+%\providecommand\Cos{\mathop{\operator@font Cos}\nolimits}
+%\providecommand\Tan{\mathop{\operator@font Tan}\nolimits}
+%\providecommand\Vers{\mathop{\operator@font Vers}\nolimits}
+%\providecommand{\Dg}{\ensuremath{^{\circ}}}
+%\providecommand\Crd{\mathop{\operator@font Crd}\nolimits}
+%\DeclareRobustCommand\sfrac[1]{\@ifnextchar/{\@sfrac{#1}}%
+%                                            {\@sfrac{#1}/}}
+%\def\@sfrac#1/#2{\leavevmode\kern.1em\raise.5ex
+%         \hbox{$\m@th\mbox{\fontsize\sf@size\z@
+%                           \selectfont#1}$}\kern-.1em
+%         /\kern-.15em\lower.25ex
+%          \hbox{$\m@th\mbox{\fontsize\sf@size\z@
+%                            \selectfont#2}$}}
+%\providecommand{\dfrac}[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+%%% }}}%
+%DOC% latin1 stuff %%% {{{%
+%\RequirePackage[T1,OT1]{fontenc}
+%\newcommand{\gml}{\fontencoding{T1}\selectfont\guillemotleft}
+%\newcommand{\gmr}{\fontencoding{T1}\selectfont\guillemotright}
+%%% }}}%
+%DOC% Arabic stuff %%% {{{%
+%\gdef\SCI@boldseries{bx}%
+%\gdef\SCI@itshape{it}%
+%\newdimen\lraise \lraise=.4ex% lower case raise amount
+%\newdimen\uraise \uraise=.7ex% upper case raise amount
+%\providecommand{\@ayn}{\raisebox{\lraise}{\(\lhook\)}}
+%\providecommand{\@hamza}{\raisebox{\lraise}{\(\rhook\)}}
+%\providecommand{\@itayn}{\kern.1em\raisebox{\lraise}{\(\lhook\)}\kern-.1em}
+%\providecommand{\@ithamza}{\kern.1em\raisebox{\lraise}{\(\rhook\)}\kern-.1em}
+%\providecommand{\@Ayn}{\raisebox{\uraise}{\(\lhook\)}}
+%\providecommand{\@Hamza}{\raisebox{\uraise}{\(\rhook\)}}
+%\providecommand{\@itAyn}{\kern.15em\raisebox{\uraise}{\(\lhook\)}\kern-.15em}
+%\providecommand{\@itHamza}{\kern.15em\raisebox{\uraise}{\(\rhook\)}\kern-.15em}
+%\providecommand{\ayn}{%
+%  \ifx\f@series\SCI@boldseries%    bold true
+%    \ifx\f@shape\SCI@itshape%   bold true, italic true
+%      {\boldmath\@itayn}%  bold-italic ayn
+%    \else%                 italic false
+%      {\boldmath\@ayn}%    bold-roman ayn
+%    \fi% 
+%  \else%                   bold false
+%    \ifx\f@shape\SCI@itshape%   bold falise, italic true
+%      {\@itayn}%           md-italic ayn
+%    \else%
+%      {\@ayn}%
+%    \fi%
+%  \fi%
+%}
+%\providecommand{\Ayn}{%
+%  \ifx\f@series\SCI@boldseries%    bold true
+%    \ifx\f@shape\SCI@itshape%   bold true, italic true
+%      {\boldmath\@itAyn}%  bold-italic ayn
+%    \else%                 italic false
+%      {\boldmath\@Ayn}%    bold-roman ayn
+%    \fi% 
+%  \else%                   bold false
+%    \ifx\f@shape\SCI@itshape%   bold falise, italic true
+%      {\@itAyn}%           md-italic ayn
+%    \else%
+%      {\@Ayn}%
+%    \fi%
+%  \fi%
+%}
+%\providecommand{\hamza}{%
+%  \ifx\f@series\SCI@boldseries%    bold true
+%    \ifx\f@shape\SCI@itshape%   bold true, italic true
+%      {\boldmath\@ithamza}%  bold-italic ayn
+%    \else%                 italic false
+%      {\boldmath\@hamza}%    bold-roman ayn
+%    \fi% 
+%  \else%                   bold false
+%    \ifx\f@shape\SCI@itshape%   bold falise, italic true
+%      {\@ithamza}%           md-italic ayn
+%    \else%
+%      {\@hamza}%
+%    \fi%
+%  \fi%
+%}
+%\providecommand{\Hamza}{%
+%  \ifx\f@series\SCI@boldseries%    bold true
+%    \ifx\f@shape\SCI@itshape%   bold true, italic true
+%      {\boldmath\@itHamza}%  bold-italic ayn
+%    \else%                 italic false
+%      {\boldmath\@Hamza}%    bold-roman ayn
+%    \fi% 
+%  \else%                   bold false
+%    \ifx\f@shape\SCI@itshape%   bold falise, italic true
+%      {\@itHamza}%           md-italic ayn
+%    \else%
+%      {\@Hamza}%
+%    \fi%
+%  \fi%
+%}
+%%% }}}%
+%DOC% Astronomical stuff %%% {{{%
+\if@RequireAstroSymbol
+  \RequirePackage{wasysym}
+\fi
+%%% }}}%
+%DOC% miscellaneous %%% {{{%
+\DeclareRobustCommand*\textsubscript[1]{%
+  \@textsubscript{\selectfont#1}}
+\def\@textsubscript#1{%
+  {\m@th\ensuremath{_{\mbox{\fontsize\sf@size\z@#1}}}}}
+%%% }}}%
+%DOC% final setup %%% {{{%
+\pagenumbering{arabic}
+%DOC% This label (@last@page) is used to produce n of m page style.
+%DOC% See firstpageheadings above
+\if@editor
+ \if@nonarticles\else
+  \AtBeginDocument{%
+    \@check@received%
+    \@check@volume%
+  }%
+ \fi
+\fi
+\AtEndDocument{%
+  \if@editor%
+  \if@nonarticles\else%
+    \rule{0pt}{1pt}\par\vspace*{2\baselineskip}%
+    \centerline{{\small(Received: \@received)}}%
+    \if\@revised\space\else%
+      \centerline{{\small(Revised: \@revised)}}%
+    \fi
+  \fi
+  \fi
+    \label{@last@page}%
+}
+%%% }}}%
+%%%%%
+\raggedbottom
+\sloppy
+\pagestyle{sciamvsheadings}
+%\endinput
+
+
+%%%%%%%%%%  Addition by Ken Saito %%%%%%%%%%%
+\typeout{additional macros by Ken Saito, March 29, 2005}
+\newcounter{curyear}
+\renewcommand{\thecuryear}{\arabic{curyear}}
+\def\currentyear#1{\setcounter{curyear}{#1}}
+\def\ps@firstpageheadings{%
+  \@twosidetrue%
+  \let\@oddfoot\@empty%
+  \let\@evenfoot\@oddfoot%
+  \def\@oddhead{%
+    \headerfont%
+    \@ifundefined{r@@@last@page}
+      {SCIAMVS \thecurvolume~(\thecuryear), \thepage--\pageref{@last@page}}%
+      {SCIAMVS \thecurvolume~(\thecuryear), \thepage--\pageref{@@last@page}}%
+
+    \hfill}%
+  \def\@evenhead{\@empty}%
+}
+
+\endinput
