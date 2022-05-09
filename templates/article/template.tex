@@ -11,11 +11,22 @@ $endif$
 \graphicspath{{./}{figures/}{auto}$for(graphicspath)${$graphicspath$}$endfor$}%
 %\graphicspath{{./}{Figure/}}
 
-\usepackage{arabxetex} % default option is "novoc"
-%                       % other options are "voc", "fullvoc", "utf" and "trans"
-%% arabxetex loads bidi.sty and fontspec.sty
-%
-\newfontfamily\arabicfont[Script=Arabic]{Amiri}
+\usepackage{arabxetex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
+\let\abspage\veryundefinedcommand
+% arabxetex loads bidi.sty and fontspec.sty
+\newfontfamily\arabicfont[Script=Arabic,Scale=1.3,WordSpace=1.3]{Amiri}
+%% To deal with issues involving ArabTex and Unicode
+\newcommand{\A}{\textarabic[novoc]}
+\newcommand{\AU}{\textarabic[voc]}
+% To make language switching faster:
+% For some reason, \textroman was not working out-of-the-box...
+\newcommand{\textroman}[1]{\LR{\rmfamily #1}}
+%% And we make some short-hands
+\newcommand{\R}{\textroman}
+%% To deal with equation numbers % We don't need this from TeXLive 2018.
+%\makeatletter
+%\@Latintrue
+%\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -48,23 +59,23 @@ $if(csl-refs)$
 $endif$
 
 
-$if(title)$
-  \title{$title$}
-$endif$
-%\title{Scientific Reports Title to see here}
 
 $if(author)$
   $for(author)$
-    \author$if(author.orcid)$[$author.orcid$]$endif${$author.name$}
-    \author$if(author.descriptionIndex)$[$author.descriptionIndex$]$endif${$author.name$}
+    \author$if(author.id)$[$author.id$]$endif${$author.name$}
   $endfor$
 $endif$
 
 $if(affiliation)$
   $for(affiliation)$
-    \affil[$affiliation.sign$]{$affiliation.description$}
+    \affil[$affiliation.id$]{$affiliation.description$}
   $endfor$
 $endif$
+
+$if(title)$
+  \title{$title$}
+$endif$
+%\title{Scientific Reports Title to see here}
 %\author[1,*]{Alice Author}
 %\author[2]{Bob Author}
 %\author[1,2,+]{Christine Author}
