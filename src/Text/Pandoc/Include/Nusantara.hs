@@ -22,9 +22,9 @@ processPegon engine cb@(CodeBlock (_, ["nusantara"], _) t) = do
   putStrLn "============processPegon"
   return $ case engine of
             "revealjs" -> Div nullAttr [ Para [ Str $ UTF8.toText $ BL.toStrict r ]]
-            _ -> Div nullAttr [ RawBlock (Format "latex") $ T.unlines [ "\\begin{arab}[utf]"
+            _ -> Div nullAttr [ RawBlock (Format "latex") $ T.unlines [ "\\begin{txarab}"
                                                                       , UTF8.toText $ BL.toStrict r
-                                                                      , "\\end{arab}"
+                                                                      , "\\end{txarab}"
                                                                       ]
                               ]
 processPegon _ b = pure b
@@ -38,7 +38,7 @@ processPegonInline engine l@(Code _ t)
       TIO.putStrLn t
       return $ case engine of
                 "revealjs" -> Str $ UTF8.toText $ BL.toStrict r
-                _ -> RawInline (Format "latex") $ "\\textarab[utf]{" <> (UTF8.toText $ BL.toStrict r) <> "}"
+                _ -> RawInline (Format "latex") $ "\\txarb{" <> (UTF8.toText $ BL.toStrict r) <> "}"
     -- [Cite [Citation {citationId = "nu:BASMALA", citationPrefix = [], citationSuffix = [Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah"], citationMode = NormalCitation, citationNoteNum = 1, citationHash = 0}] [Str "[@nu:BASMALA",Space,Str "laa",Space,Str "ilaaha",Space,Str "illa-llah]"]]
   | otherwise = return l
 processPegonInline _ l = return l

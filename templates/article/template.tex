@@ -1,32 +1,193 @@
-\documentclass[fleqn,10pt]{wlscirep}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{longtable}
+%% Beginning of file 'sample631.tex'
+%%
+%% Modified 2021 March
+%%
+%% This is a sample manuscript marked up using the
+%% AASTeX v6.31 LaTeX 2e macros.
+%%
+%% AASTeX is now based on Alexey Vikhlinin's emulateapj.cls
+%% (Copyright 2000-2015).  See the classfile for details.
+
+%% AASTeX requires revtex4-1.cls and other external packages such as
+%% latexsym, graphicx, amssymb, longtable, and epsf.  Note that as of
+%% Oct 2020, APS now uses revtex4.2e for its journals but remember that
+%% AASTeX v6+ still uses v4.1. All of these external packages should
+%% already be present in the modern TeX distributions but not always.
+%% For example, revtex4.1 seems to be missing in the linux version of
+%% TexLive 2020. One should be able to get all packages from www.ctan.org.
+%% In particular, revtex v4.1 can be found at
+%% https://www.ctan.org/pkg/revtex4-1.
+
+%% The first piece of markup in an AASTeX v6.x document is the \documentclass
+%% command. LaTeX will ignore any data that comes before this command. The
+%% documentclass can take an optional argument to modify the output style.
+%% The command below calls the preprint style which will produce a tightly
+%% typeset, one-column, single-spaced document.  It is the default and thus
+%% does not need to be explicitly stated.
+%%
+%% using aastex version 6.3
+\documentclass[linenumbers]{aastex631}
+
+%% The default is a single spaced, 10 point font, single spaced article.
+%% There are 5 other style options available via an optional argument. They
+%% can be invoked like this:
+%%
+%% \documentclass[arguments]{aastex631}
+%%
+%% where the layout options are:
+%%
+%%  twocolumn   : two text columns, 10 point font, single spaced article.
+%%                This is the most compact and represent the final published
+%%                derived PDF copy of the accepted manuscript from the publisher
+%%  manuscript  : one text column, 12 point font, double spaced article.
+%%  preprint    : one text column, 12 point font, single spaced article.
+%%  preprint2   : two text columns, 12 point font, single spaced article.
+%%  modern      : a stylish, single text column, 12 point font, article with
+%% 		  wider left and right margins. This uses the Daniel
+%% 		  Foreman-Mackey and David Hogg design.
+%%  RNAAS       : Supresses an abstract. Originally for RNAAS manuscripts
+%%                but now that abstracts are required this is obsolete for
+%%                AAS Journals. Authors might need it for other reasons. DO NOT
+%%                use \begin{abstract} and \end{abstract} with this style.
+%%
+%% Note that you can submit to the AAS Journals in any of these 6 styles.
+%%
+%% There are other optional arguments one can invoke to allow other stylistic
+%% actions. The available options are:
+%%
+%%   astrosymb    : Loads Astrosymb font and define \astrocommands.
+%%   tighten      : Makes baselineskip slightly smaller, only works with
+%%                  the twocolumn substyle.
+%%   times        : uses times font instead of the default
+%%   linenumbers  : turn on lineno package.
+%%   trackchanges : required to see the revision mark up and print its output
+%%   longauthor   : Do not use the more compressed footnote style (default) for
+%%                  the author/collaboration/affiliations. Instead print all
+%%                  affiliation information after each name. Creates a much
+%%                  longer author list but may be desirable for short
+%%                  author papers.
+%% twocolappendix : make 2 column appendix.
+%%   anonymous    : Do not show the authors, affiliations and acknowledgments
+%%                  for dual anonymous review.
+%%
+%% these can be used in any combination, e.g.
+%%
+%% \documentclass[twocolumn,linenumbers,trackchanges]{aastex631}
+%%
+%% AASTeX v6.* now includes \hyperref support. While we have built in specific
+%% defaults into the classfile you can manually override them with the
+%% \hypersetup command. For example,
+%%
+%% \hypersetup{linkcolor=red,citecolor=green,filecolor=cyan,urlcolor=magenta}
+%%
+%% will change the color of the internal links to red, the links to the
+%% bibliography to green, the file links to cyan, and the external links to
+%% magenta. Additional information on \hyperref options can be found here:
+%% https://www.tug.org/applications/hyperref/manual.html#x1-40003
+%%
+%% Note that in v6.3 "bookmarks" has been changed to "true" in hyperref
+%% to improve the accessibility of the compiled pdf file.
+%%
+%% If you want to create your own macros, you can do so
+%% using \newcommand. Your macros should appear before
+%% the \begin{document} command.
+%%
+\usepackage{amsmath}
+\usepackage{booktabs}
 
 $if(header-includes)$
 $header-includes$
 $endif$
 
-\usepackage{graphicx}
+%% Reintroduced the \received and \accepted commands from AASTeX v5.2
+%\received{March 1, 2021}
+%\revised{April 1, 2021}
+%\accepted{\today}
+
+%% Command to document which AAS Journal the manuscript was submitted to.
+%% Adds "Submitted to " the argument.
+%\submitjournal{PSJ}
+
+%% For manuscript that include authors in collaborations, AASTeX v6.31
+%% builds on the \collaboration command to allow greater freedom to
+%% keep the traditional author+affiliation information but only show
+%% subsets. The \collaboration command now must appear AFTER the group
+%% of authors in the collaboration and it takes TWO arguments. The last
+%% is still the collaboration identifier. The text given in this
+%% argument is what will be shown in the manuscript. The first argument
+%% is the number of author above the \collaboration command to show with
+%% the collaboration text. If there are authors that are not part of any
+%% collaboration the \nocollaboration command is used. This command takes
+%% one argument which is also the number of authors above to show. A
+%% dashed line is shown to indicate no collaboration. This example manuscript
+%% shows how these commands work to display specific set of authors
+%% on the front page.
+%%
+%% For manuscript without any need to use \collaboration the
+%% \AuthorCollaborationLimit command from v6.2 can still be used to
+%% show a subset of authors.
+%
+%\AuthorCollaborationLimit=2
+%
+%% will only show Schwarz & Muench on the front page of the manuscript
+%% (assuming the \collaboration and \nocollaboration commands are
+%% commented out).
+%%
+%% Note that all of the author will be shown in the published article.
+%% This feature is meant to be used prior to acceptance to make the
+%% front end of a long author article more manageable. Please do not use
+%% this functionality for manuscripts with less than 20 authors. Conversely,
+%% please do use this when the number of authors exceeds 40.
+%%
+%% Use \allauthors at the manuscript end to show the full author list.
+%% This command should only be used with \AuthorCollaborationLimit is used.
+
+%% The following command can be used to set the latex table counters.  It
+%% is needed in this document because it uses a mix of latex tabular and
+%% AASTeX deluxetables.  In general it should not be needed.
+%\setcounter{table}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% The following section outlines numerous optional output that
+%% can be displayed in the front matter or as running meta-data.
+%%
+%% If you wish, you may supply running head information, although
+%% this information may be modified by the editorial offices.
+$if(shorttitle)$
+  \shorttitle{$shorttitle$}
+$endif$
+%\shorttitle{AASTeX v6.31 Sample article}
+$if(shortauthors)$
+  \shortauthors{$shortauthors$}
+$endif$
+%\shortauthors{Schwarz et al.}
+
+%\shorttitle{AASTeX v6.3.1 Sample article}
+%\shortauthors{Schwarz et al.}
+%%
+%% You can add a light gray and diagonal water-mark to the first page
+%% with this command:
+%% \watermark{text}
+%% where "text", e.g. DRAFT, is the text to appear.  If the text is
+%% long you can control the water-mark size with:
+%% \setwatermarkfontsize{dimension}
+%% where dimension is any recognized LaTeX dimension, e.g. pt, in, etc.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\graphicspath{{./}{figures/}}
+%% This is the end of the preamble.  Indicate the beginning of the
+%% manuscript itself with \begin{document}.
+\usepackage{longtable}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
 \graphicspath{{./}{figures/}{auto}$for(graphicspath)${$graphicspath$}$endfor$}%
 %\graphicspath{{./}{Figure/}}
 
-\usepackage{arabxetex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
-\let\abspage\veryundefinedcommand
+\usepackage[novoc]{arabluatex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
 % arabxetex loads bidi.sty and fontspec.sty
 \newfontfamily\arabicfont[Script=Arabic,Scale=1.3,WordSpace=1.3]{Amiri}
-%% To deal with issues involving ArabTex and Unicode
-\newcommand{\A}{\textarabic[novoc]}
-\newcommand{\AU}{\textarabic[voc]}
-% To make language switching faster:
-% For some reason, \textroman was not working out-of-the-box...
-\newcommand{\textroman}[1]{\LR{\rmfamily #1}}
-%% And we make some short-hands
-\newcommand{\R}{\textroman}
-%% To deal with equation numbers % We don't need this from TeXLive 2018.
-%\makeatletter
-%\@Latintrue
-%\makeatother
 
 
 \providecommand{\tightlist}{%
@@ -58,60 +219,170 @@ $if(csl-refs)$
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 $endif$
 
-
-
-$if(author)$
-  $for(author)$
-    \author$if(author.id)$[$author.id$]$endif${$author.name$}
-  $endfor$
-$endif$
-
-$if(affiliation)$
-  $for(affiliation)$
-    \affil[$affiliation.id$]{$affiliation.description$}
-  $endfor$
-$endif$
+\begin{document}
 
 $if(title)$
   \title{$title$}
 $endif$
-%\title{Scientific Reports Title to see here}
-%\author[1,*]{Alice Author}
-%\author[2]{Bob Author}
-%\author[1,2,+]{Christine Author}
-%\author[2,+]{Derek Author}
-%\affil[1]{Affiliation, department, city, postcode, country}
-%\affil[2]{Affiliation, department, city, postcode, country}
-%
-%\affil[*]{corresponding.author@email.example}
-%
-%\affil[+]{these authors contributed equally to this work}
 
-$if(keywords)$
-  \keywords{$for(keywords)$$keywords$$sep$, $endfor$}
+%\title{Template \aastex Article with Examples:
+%v6.3.1\footnote{Released on March, 1st, 2021}}
+
+%% LaTeX will automatically break titles if they run longer than
+%% one line. However, you may use \\ to force a line break if
+%% you desire. In v6.31 you can include a footnote in the title.
+
+%% A significant change from earlier AASTEX versions is in the structure for
+%% calling author and affiliations. The change was necessary to implement
+%% auto-indexing of affiliations which prior was a manual process that could
+%% easily be tedious in large author manuscripts.
+%%
+%% The \author command is the same as before except it now takes an optional
+%% argument which is the 16 digit ORCID. The syntax is:
+%% \author[xxxx-xxxx-xxxx-xxxx]{Author Name}
+%%
+%% This will hyperlink the author name to the author's ORCID page. Note that
+%% during compilation, LaTeX will do some limited checking of the format of
+%% the ID to make sure it is valid. If the "orcid-ID.png" image file is
+%% present or in the LaTeX pathway, the OrcID icon will appear next to
+%% the authors name.
+%%
+%% Use \affiliation for affiliation information. The old \affil is now aliased
+%% to \affiliation. AASTeX v6.31 will automatically index these in the header.
+%% When a duplicate is found its index will be the same as its previous entry.
+%%
+%% Note that \altaffilmark and \altaffiltext have been removed and thus
+%% can not be used to document secondary affiliations. If they are used latex
+%% will issue a specific error message and quit. Please use multiple
+%% \affiliation calls for to document more than one affiliation.
+%%
+%% The new \altaffiliation can be used to indicate some secondary information
+%% such as fellowships. This command produces a non-numeric footnote that is
+%% set away from the numeric \affiliation footnotes.  NOTE that if an
+%% \altaffiliation command is used it must come BEFORE the \affiliation call,
+%% right after the \author command, in order to place the footnotes in
+%% the proper location.
+%%
+%% Use \email to set provide email addresses. Each \email will appear on its
+%% own line so you can put multiple email address in one \email call. A new
+%% \correspondingauthor command is available in V6.31 to identify the
+%% corresponding author of the manuscript. It is the author's responsibility
+%% to make sure this name is also in the author list.
+%%
+%% While authors can be grouped inside the same \author and \affiliation
+%% commands it is better to have a single author for each. This allows for
+%% one to exploit all the new benefits and should make book-keeping easier.
+%%
+%% If done correctly the peer review system will be able to
+%% automatically put the author and affiliation information from the manuscript
+%% and save the corresponding author the trouble of entering it by hand.
+
+%\correspondingauthor{August Muench}
+%\email{greg.schwarz@aas.org, gus.muench@aas.org}
+
+$if(author)$
+  $for(author)$
+    \author$if(author.orcid)$[$author.orcid$]$endif${$author.name$}
+    $if(author.affiliation)$\affiliation{$author.affiliation$}$endif$
+  $endfor$
 $endif$
-%\keywords{Keyword1, Keyword2, Keyword3}
+
+%\author[0000-0002-0786-7307]{Greg J. Schwarz}
+%\affiliation{American Astronomical Society \\
+%1667 K Street NW, Suite 800 \\
+%Washington, DC 20006, USA}
+%
+%\author{August Muench}
+%\affiliation{American Astronomical Society \\
+%1667 K Street NW, Suite 800 \\
+%Washington, DC 20006, USA}
+%
+%\collaboration{6}{(AAS Journals Data Editors)}
+%
+%\author{Butler Burton}
+%\affiliation{Leiden University}
+%\affiliation{AAS Journals Associate Editor-in-Chief}
+%
+%\author{Amy Hendrickson}
+%\altaffiliation{AASTeX v6+ programmer}
+%\affiliation{TeXnology Inc.}
+%
+%\author{Julie Steffen}
+%\affiliation{AAS Director of Publishing}
+%\affiliation{American Astronomical Society \\
+%1667 K Street NW, Suite 800 \\
+%Washington, DC 20006, USA}
+%
+%\author{Magaret Donnelly}
+%\affiliation{IOP Publishing, Washington, DC 20005}
+%
+$if(collaborator)$
+  \collaboration{6}{$collaborator.theme$}
+%\collaboration{6}{(AAS Journals Data Editors)}
+
+  $for(collaborator.author)$
+    \author{$collaborator.author.name$}
+    $for(collaborator.author.affiliation)$
+      \affiliation{$collaborator.author.affiliation$}
+    $endfor$
+    $if(collaborator.author.altaffiliation)$
+      \altaffiliation{$collaborator.author.altaffiliation$}
+    $endif$
+    %\affiliation{AAS Journals Associate Editor-in-Chief}
+  $endfor$
+$endif$
+
+%% Note that the \and command from previous versions of AASTeX is now
+%% depreciated in this version as it is no longer necessary. AASTeX
+%% automatically takes care of all commas and "and"s between authors names.
+
+%% AASTeX 6.31 has the new \collaboration and \nocollaboration commands to
+%% provide the collaboration status of a group of authors. These commands
+%% can be used either before or after the list of corresponding authors. The
+%% argument for \collaboration is the collaboration identifier. Authors are
+%% encouraged to surround collaboration identifiers with ()s. The
+%% \nocollaboration command takes no argument and exists to indicate that
+%% the nearby authors are not part of surrounding collaborations.
+
+%% Mark off the abstract in the ``abstract'' environment.
 
 $if(abstract)$
 $abstract$
 $endif$
-%\begin{abstract}
-%Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations. Example Abstract. Abstract must not include subheadings or citations.
-%\end{abstract}
 
-\begin{document}
-
-\flushbottom
-\maketitle
-% * <john.hammersley@gmail.com> 2015-02-09T12:07:31.197Z:
-%
-%  Click the title above to edit the author information and abstract
-%
-\thispagestyle{empty}
+%% Keywords should appear after the \end{abstract} command.
+%% The AAS Journals now uses Unified Astronomy Thesaurus concepts:
+%% https://astrothesaurus.org
+%% You will be asked to selected these concepts during the submission process
+%% but this old "keyword" functionality is maintained in case authors want
+%% to include these concepts in their preprints.
+$if(keywords)$
+  \keywords{$for(keywords)$$keywords$$sep$, $endfor$}
+$endif$
 
 $body$
+%% For this sample we use BibTeX plus aasjournals.bst to generate the
+%% the bibliography. The sample631.bib file was populated from ADS. To
+%% get the citations to show in the compiled file do the following:
+%%
+%% pdflatex sample631.tex
+%% bibtext sample631
+%% pdflatex sample631.tex
+%% pdflatex sample631.tex
 
-% bibliography is automated from body and pandoc
-%\bibliography{$bibliography$}
+%Taken over by pandoc
+%\bibliography{sample631}{}
+%\bibliographystyle{aasjournal}
+
+%% This command is needed to show the entire author+affiliation list when
+%% the collaboration and author truncation commands are used.  It has to
+%% go at the end of the manuscript.
+%\allauthors
+
+%% Include this line if you are using the \added, \replaced, \deleted
+%% commands to see a summary list of all changes at the end of the article.
+%\listofchanges
 
 \end{document}
+
+% End of file `sample631.tex'.

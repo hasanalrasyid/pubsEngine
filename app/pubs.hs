@@ -146,10 +146,10 @@ finishDoc _ (tFileName, tFile, topLevel) fileName citedPandoc = do
   where
     compileLatex fileName = do
       callCommand $ unlines [ "pushd _build"
-                            , "xelatex " <> fileName <> ".tex"
-                            , "bibtex  " <> fileName
-                            , "xelatex " <> fileName <> ".tex"
-                            , "xelatex " <> fileName <> ".tex"
+                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
+                            , "bibtex   -interaction=nonstopmode " <> fileName
+                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
+                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "popd" ]
       putStrLn "======================"
 
