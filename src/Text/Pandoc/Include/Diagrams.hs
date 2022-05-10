@@ -1,5 +1,6 @@
 module Text.Pandoc.Include.Diagrams (addPackagePGF)
   where
+import System.Environment (lookupEnv)
 import Diagrams.Prelude
 import Diagrams.Backend.PGF.CmdLine
 
@@ -28,19 +29,20 @@ import qualified Data.Text as T
 import qualified Data.Text.Read as T
 import Data.Maybe
 
---addPackagePGF pd = addPackagePGF' processDiagram pd
-
 --addPackagePGF :: Pandoc -> IO Pandoc
 addPackagePGF (Pandoc mt@(Meta mtn) blks) = do
   blks' <- walkM processDiagram blks
   return $ Pandoc mt blks'
-  where
-    --mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") $ T.unlines ["","\\usepackage{tikz}","\\usepackage{tabulary}"]]) mt
+--where
+--  --mt' = addMetaField "header-includes" (fromList [RawInline (Format "tex") $ T.unlines ["","\\usepackage{tikz}","\\usepackage{tabulary}"]]) mt
 
 processDiagram :: Block -> IO Block
 processDiagram cb@(CodeBlock (ident,classes,namevals) contents)
   | elem "diagram" classes = do
-    i <- img
+    pubsEngineRoot <- lookupEnv "PUBSENGINE_ROOT"
+    i <- case pubsEngineRoot of
+          Nothing -> pure $ CodeBlock (ident,[],[]) $ T.unlines [ "Figure " <> ident, "ERROR: Full installation of pubsEngine package from compilation is needed for this feature (Diagrams)", contents ]
+          _ -> img
     return i
   where
     capt = case lookup "caption" namevals of

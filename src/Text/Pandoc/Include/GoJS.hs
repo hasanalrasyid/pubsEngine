@@ -4,40 +4,13 @@
 
 module Text.Pandoc.Include.GoJS where
 
-import qualified Text.Pandoc.Include.Table as InTable
-import Text.Pandoc.Include.Thesis (linkTex)
-import qualified Text.Pandoc.Include.Markdown as Markdown
-import qualified Text.Pandoc.Include.MultiMarkdown as MultiMarkdown
-import qualified Text.Pandoc.Include.Diagrams as Diagrams
-import qualified Text.Pandoc.Include.Delegate as Delegate
-import qualified Text.Pandoc.Include.FeynMP as FeynMP
-import qualified Text.Pandoc.Include.Mermaid as Mermaid
-import           Text.Pandoc.JSON
-import Text.Pandoc.Walk
-import qualified Text.Pandoc.Class as PIO
-import qualified Text.Pandoc.Templates as PT
-
-import Data.Monoid ((<>))
 
 import Data.Maybe
-import System.Environment (getArgs)
 
 import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-
-import Text.Pandoc.Include.Common
-import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
-
-import qualified Control.Exception as E
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
-import Text.Pandoc.App
-import System.FilePath -- (replaceDirectory)
-import System.Directory -- (listDirectory)
-import Data.List -- (delete)
 import Text.Pandoc.Include.Script (writeScriptResult,extractSource)
 
 import Text.RawString.QQ

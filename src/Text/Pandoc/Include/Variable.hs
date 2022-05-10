@@ -7,7 +7,6 @@ import qualified Text.Pandoc.Include.Table as InTable
 import Text.Pandoc.Include.Thesis (linkTex)
 import qualified Text.Pandoc.Include.Markdown as Markdown
 import qualified Text.Pandoc.Include.MultiMarkdown as MultiMarkdown
-import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
