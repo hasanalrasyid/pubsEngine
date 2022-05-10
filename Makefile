@@ -4,6 +4,9 @@ Extracted := $(lastword $(shell find extern -maxdepth 1 -type d))
 
 install:
 	./preMake.sh article
+	./preMake.sh thesis
+	./preMake.sh revealjs
+	./preMake.sh plain
 	teckit_compile templates/common/fontmap/nusantara-trans-novoc.map
 	stack build pubsEngine:pubsEngine
 

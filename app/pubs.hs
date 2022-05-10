@@ -32,14 +32,7 @@ import Text.Pandoc
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
-import qualified Template.Poster as P
-import qualified Template.Abstract as A
-import qualified Template.Thesis as Thesis
-import qualified Template.RevealJS as RevealJS
-import qualified Template.Report as R
-import qualified Template.Article as Article
-import qualified Template.Plain as Plain
-import qualified Template.Default as Default
+import qualified Text.Pandoc.Include.Template as Template
 
 import Text.Pandoc.Include.Common
 import qualified Text.Pandoc.Include.Nusantara as NU
@@ -118,21 +111,12 @@ main = do
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
   (Pandoc (Meta t3) p3 ) <- doThemAll format $ Pandoc resMeta resP
-  template  <- setTemplate format
+  template  <- Template.setTemplate format
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
   let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
   p5 <- walkM (NU.processPegonInline format) p4
   citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
   finishDoc format template fileName citedPandoc
-  where
-    --setTemplate "poster" = P.templateLatex
-    --setTemplate "abstract" = A.templateLatex
-    --setTemplate "report" = R.templateLatex
-    setTemplate "article" =  Article.templateLatex
-    setTemplate "plain" =  Plain.templateLatex
-    setTemplate "thesis" =  Thesis.templateLatex
-    setTemplate "revealjs" =  RevealJS.templateLatex
-    setTemplate _ = Article.templateLatex
 
 processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
   where
