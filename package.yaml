@@ -119,6 +119,7 @@ executables:
       - templates
     dependencies:
       - pandoc
+      - pandoc-crossref
       - file-embed
       - pubsEngine
     ghc-options:

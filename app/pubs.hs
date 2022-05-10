@@ -65,6 +65,10 @@ import qualified Text.Pandoc.UTF8 as UTF8
 
 import System.Exit(ExitCode(..))
 
+import Text.Pandoc.CrossRef
+
+import Text.Pandoc.Builder (str,header,text,displayMath)
+
 main :: IO ()
 main = do
   (fileName:format:_) <- getArgs
@@ -72,10 +76,14 @@ main = do
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
   (Pandoc (Meta resMeta0) resP) <- runIO' $ do
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
-    yamlFile <- fmap BL.fromStrict $ PIO.readFileStrict $ fileName <> ".yaml"
     (Pandoc (Meta m1) p1) <- readMarkdown mdOption mdFile
       >>= walkM Markdown.includeMarkdown
-    (Meta mYaml) <- yamlToMeta mdOption Nothing yamlFile
+    (Meta mYaml) <- do
+      yamlExist <- fileExists $ fileName <> ".yaml"
+      if yamlExist then do
+                    yamlFile <- fmap BL.fromStrict $ PIO.readFileStrict $ fileName <> ".yaml"
+                    yamlToMeta mdOption Nothing yamlFile
+                   else pure defaultMeta
     -- update mYaml, use the values from yaml in .md
     let mRes = Meta $ M.foldlWithKey (\a k v -> M.alter (\_ -> Just v) k a) mYaml m1
     return $ Pandoc mRes p1
@@ -126,6 +134,13 @@ main = do
     setTemplate "revealjs" =  RevealJS.templateLatex
     setTemplate _ = Article.templateLatex
 
+processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
+  where
+    action (Pandoc _ bs) = do
+      meta' <- crossRefMeta
+      bs' <- crossRefBlocks bs
+      return $ Pandoc meta' bs'
+
 
 finishDoc "revealjs" (tFileName, tFile, topLevel) fileName citedPandoc = do
   resLatex <- runIO' $ do
@@ -165,10 +180,12 @@ doThemAll format (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> doBlockIO
             >=> GoJS.includeGoJS
-            >=> upgradeImageIO imageDirs
             >=> NU.processPegon format
-  blks <- walkM doBlockIO blks1
-  p <- doPandoc (Pandoc mt blks)
+  (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
+  blks <- flip walkM blks2 $
+            upgradeImageIO imageDirs >=> doBlockIO
+  putStrLn $ show mt2
+  p <- doPandoc (Pandoc mt2 blks)
   return p
 
 processAcknowledgements :: Block -> Block

@@ -1,15 +1,16 @@
-[r] Work on default.csl
+[v] Work on default.csl
 [ ] manuscript status, submitted, reviewed, accepted
 [ ] advanced graphics {figure*}
-[v] Cross-Reference
+[v] Citation Reference
+[v] Cross reference
 [v] APPENDIX
 [v] include script with caption in text codeblock
 [ ] Quotation
 [ ] Abbreviation List
 [ ] Physical Constants
 [ ] List of Symbols
-[ ] processPegon untuk paragraf perlu di pisah antara revealjs dan latex (tambahi RawBlock)
-[ ] buat template yang lebih sederhana, jadikan satu saja...
+[v] processPegon untuk paragraf perlu di pisah antara revealjs dan latex (tambahi RawBlock)
+[r] buat template yang lebih sederhana, jadikan satu saja...
 [ ] buat yaml file optional saja
 
 v : DONE, -: not yet, r: running
