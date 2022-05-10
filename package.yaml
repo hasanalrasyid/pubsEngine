@@ -89,6 +89,7 @@ dependencies:
 - split
 - base-orphans
 - hint
+- file-embed
 
 library:
   source-dirs:
@@ -120,7 +121,6 @@ executables:
     dependencies:
       - pandoc
       - pandoc-crossref
-      - file-embed
       - pubsEngine
     ghc-options:
     - -threaded
