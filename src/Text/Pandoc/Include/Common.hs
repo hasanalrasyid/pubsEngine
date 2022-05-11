@@ -16,6 +16,10 @@ pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_yaml_metadata_block
                    , Ext_citations
                    , Ext_multiline_tables
+                   , Ext_strikeout
+                   , Ext_intraword_underscores
+                   , Ext_footnotes
+                   , Ext_ascii_identifiers
                    ]
 
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})

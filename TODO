@@ -10,8 +10,9 @@
 [ ] Physical Constants
 [ ] List of Symbols
 [v] processPegon untuk paragraf perlu di pisah antara revealjs dan latex (tambahi RawBlock)
-[r] buat template yang lebih sederhana, jadikan satu saja...
-[ ] buat yaml file optional saja
+[v] buat template yang lebih sederhana, jadikan satu saja...
+[v] buat yaml file optional saja
+[ ] DEBUG: delegated table failed to be referenced
 
 v : DONE, -: not yet, r: running
 

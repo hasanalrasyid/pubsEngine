@@ -20,7 +20,10 @@ setTemplate nameTemplate = do
                         , "7za x -aoa extra.7z"
                         , "popd"
                         ]
-  return ("_build/default.tpl", mainTemplate nameTemplate, TopLevelSection)
+  let topLevel = case nameTemplate of
+                  "article" -> TopLevelSection
+                  _ -> TopLevelChapter
+  return ("_build/default.tpl", mainTemplate nameTemplate, topLevel)
 
 mainTemplate :: String -> String
 mainTemplate "article" = $(embedStringFile $ "templates/article/template.tex")
