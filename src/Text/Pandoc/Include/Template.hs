@@ -22,6 +22,7 @@ setTemplate nameTemplate = do
                         ]
   let topLevel = case nameTemplate of
                   "article" -> TopLevelSection
+                  "plain" -> TopLevelSection
                   _ -> TopLevelChapter
   return ("_build/default.tpl", mainTemplate nameTemplate, topLevel)
 
