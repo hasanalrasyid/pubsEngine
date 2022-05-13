@@ -65,9 +65,31 @@ breaklinks=true,
 
 \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
 
+$if(chapterTitle)$
+\AtBeginDocument{%
+  \renewcommand*\chaptername{$chapterTitle$}
+}
+$endif$
+
+$if(appendixTitle)$
+\AtBeginDocument{%
+  \renewcommand*\appendixname{$appendixTitle$}
+}
+$endif$
+
+$if(tocTitle)$
+\AtBeginDocument{%
+  \renewcommand*\contentsname{$tocTitle$}
+}
+$endif$
+
 $if(header-includes)$
 $header-includes$
 $endif$
+
+\usepackage[normalem]{ulem}
+\usepackage[htt]{hyphenat}
+\usepackage{microtype}
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
