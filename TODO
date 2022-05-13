@@ -13,6 +13,8 @@
 [v] buat template yang lebih sederhana, jadikan satu saja...
 [v] buat yaml file optional saja
 [ ] DEBUG: delegated table failed to be referenced
+[ ] DEBUG: multiparagraph footnote failed to register
+[r] FEATURE: book template
 
 v : DONE, -: not yet, r: running
 
