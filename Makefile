@@ -7,6 +7,7 @@ install:
 	./preMake.sh thesis
 	./preMake.sh revealjs
 	./preMake.sh plain
+	./preMake.sh book
 	teckit_compile templates/common/fontmap/nusantara-trans-novoc.map
 	stack build pubsEngine:pubsEngine
 

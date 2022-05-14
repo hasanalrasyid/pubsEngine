@@ -4,6 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+import Control.Monad.IO.Class (liftIO)
 import qualified Text.Pandoc.Include.Table as InTable
 import Text.Pandoc.Include.Thesis (linkTex)
 import qualified Text.Pandoc.Include.Markdown as Markdown
@@ -33,6 +34,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 
 import qualified Text.Pandoc.Include.Template as Template
+import           Text.Pandoc.Include.Template.Book
 
 import Text.Pandoc.Include.Common
 import qualified Text.Pandoc.Include.Nusantara as NU
@@ -64,10 +66,12 @@ import Text.Pandoc.Builder (str,header,text,displayMath)
 
 main :: IO ()
 main = do
-  (fileName:format:_) <- getArgs
+  (fileName:nameTemplate:_) <- getArgs
 
   callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
-  (Pandoc (Meta resMeta0) resP) <- runIO' $ do
+  (template,Pandoc (Meta resMeta0) resP) <- runIO' $ do
+    resT <- genTemplate nameTemplate fileName
+    liftIO $ putStrLn $ show resT
     mdFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".md"
     (Pandoc (Meta m1) p1) <- readMarkdown mdOption mdFile
       >>= walkM Markdown.includeMarkdown
@@ -79,7 +83,7 @@ main = do
                    else pure defaultMeta
     -- update mYaml, use the values from yaml in .md
     let mRes = Meta $ M.foldlWithKey (\a k v -> M.alter (\_ -> Just v) k a) mYaml m1
-    return $ Pandoc mRes p1
+    return $ (resT, Pandoc mRes p1)
   let resMeta = Meta
         $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
@@ -110,13 +114,13 @@ main = do
       putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
-  (Pandoc (Meta t3) p3 ) <- doThemAll format $ Pandoc resMeta resP
-  template  <- Template.setTemplate format
+  (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
+  templateParams  <- Template.setTemplate nameTemplate fileName
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
   let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
-  p5 <- walkM (NU.processPegonInline format) p4
+  p5 <- walkM (NU.processPegonInline nameTemplate) p4
   citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
-  finishDoc format template fileName citedPandoc
+  finishDoc template nameTemplate templateParams fileName citedPandoc
 
 processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
   where
@@ -125,25 +129,29 @@ processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
       bs' <- crossRefBlocks bs
       return $ Pandoc meta' bs'
 
+genTemplate nameTemplate fileName = do
+    let tFileName = "_build/current.tpl"
+    templateExist <- fileExists $ fileName <> ".tpl"
+    mainTemplateString <- if templateExist
+      then getTemplate $ fileName <> ".tpl"
+      else pure $ T.pack $ Template.mainTemplate nameTemplate
+    let templateString =
+          T.replace "$commonTemplate$" Template.commonTemplate mainTemplateString
+    liftIO $ TIO.writeFile tFileName templateString
+    runWithPartials $ PT.compileTemplate tFileName templateString
 
-finishDoc "revealjs" (tFileName, tFile, topLevel) fileName citedPandoc = do
-  resLatex <- runIO' $ do
-    template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
-    case template of
+finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
+  runIO' $ do
+    (outExt,res) :: (String,T.Text)<- case template of
+      Right t -> case nameTemplate of
+                   "revealjs" -> (,) ".html" <$> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
+                   _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
       Left e -> error e
-      Right t -> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
-  TIO.writeFile ("_build/" <> fileName <> ".html") resLatex
-
-finishDoc _ (tFileName, tFile, topLevel) fileName citedPandoc = do
-  resLatex <- runIO' $ do
-    template <- runWithPartials $ PT.compileTemplate tFileName $ T.pack tFile
-    case template of
-      Left e -> error e
-      Right t -> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
-  TIO.writeFile ("_build/" <> fileName <> ".tex") resLatex
-  compileLatex fileName
+    liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
+  compileLatex nameTemplate fileName
   where
-    compileLatex fileName = do
+    compileLatex "revealjs" fileName = pure ()
+    compileLatex _ fileName = do
       callCommand $ unlines [ "pushd _build"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "bibtex   -interaction=nonstopmode " <> fileName
@@ -153,7 +161,7 @@ finishDoc _ (tFileName, tFile, topLevel) fileName citedPandoc = do
       putStrLn "======================"
 
 
-doThemAll format (Pandoc mt blks0) = do
+doThemAll nameTemplate (Pandoc mt blks0) = do
   let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
                     Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
                     _ -> []
@@ -164,11 +172,10 @@ doThemAll format (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> doBlockIO
             >=> GoJS.includeGoJS
-            >=> NU.processPegon format
+            >=> NU.processPegon nameTemplate
   (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
   blks <- flip walkM blks2 $
-            upgradeImageIO imageDirs >=> doBlockIO
-  putStrLn $ show mt2
+            upgradeImageIO imageDirs >=> doBlockIO >=> doHeaderPreamble nameTemplate
   p <- doPandoc (Pandoc mt2 blks)
   return p
 
