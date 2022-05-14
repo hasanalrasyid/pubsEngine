@@ -117,7 +117,7 @@ main = do
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   templateParams  <- Template.setTemplate nameTemplate fileName
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
-  let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
+  let p4 = doBook nameTemplate $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
   p5 <- walkM (NU.processPegonInline nameTemplate) p4
   citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
   finishDoc template nameTemplate templateParams fileName citedPandoc
@@ -175,7 +175,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> NU.processPegon nameTemplate
   (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
   blks <- flip walkM blks2 $
-            upgradeImageIO imageDirs >=> doBlockIO >=> doHeaderPreamble nameTemplate
+            upgradeImageIO imageDirs >=> doBlockIO
   p <- doPandoc (Pandoc mt2 blks)
   return p
 

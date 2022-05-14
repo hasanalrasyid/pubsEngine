@@ -5,7 +5,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Text.Pandoc.Include.Template.Book
-  ( doHeaderPreamble
+  ( doBook
   ) where
 
 import qualified Data.Text.IO as TIO
@@ -13,19 +13,38 @@ import qualified Data.Text as T
 import Data.Maybe
 
 import Text.Pandoc
+import Text.Pandoc.Walk
 import Text.Pandoc.Process
 import qualified Data.ByteString.Lazy as BL
 import qualified Text.Pandoc.UTF8 as UTF8
 
-doBook :: String -> Block -> IO Block
-doBook "book" a = doHeaderPreamble "book" a
-doBook _ a = pure a
+doBook :: String -> [Block]-> [Block]
+doBook template a = walk (doSideNote template)
+                $ walk (doHeader template) a
 
-doHeaderPreamble :: String -> Block -> IO Block
-doHeaderPreamble "book" h@(Header 1 (_,[],_) _) =
+doHeader :: String -> Block -> Block
+doHeader "book" (Header 1 (_,["partition"],_) s) =
+  Div nullAttr $ [ RawBlock (Format "latex") "\\pagelayout{wide}"
+                 , Plain $ [ RawInline (Format "latex") "\\addpart{" ]
+                           <> s <>
+                           [ RawInline (Format "latex") "}"]
+                 , RawBlock (Format "latex") "\\pagelayout{margin}"
+                 ]
+doHeader "book" h@(Header 1 (_,[],_) _) =
   let preamble = RawBlock (Format "latex") "\\setchapterpreamble[u]{\\margintoc}"
-   in pure $ Div nullAttr [preamble, h]
-doHeaderPreamble _ h = pure h
+   in Div nullAttr [preamble, h]
+doHeader _ h = h
+
+doSideNote :: String -> Inline -> Inline
+doSideNote template b@(Cite [c] _)
+  | citationId c == "sidenote" =
+      case template of
+        "book" -> Span nullAttr $ [RawInline (Format "latex") "\\sidenote[][-2mm]{"]
+                  <> citationSuffix c
+                  <> [RawInline (Format "latex") "}"]
+        _ -> Note [ Para $ citationSuffix c ]
+  | otherwise = b
+doSideNote _ b = b
 
 processPegon :: String -> Block -> IO Block
 processPegon engine cb@(CodeBlock (_, ["nusantara"], _) t) = do
