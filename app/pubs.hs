@@ -238,14 +238,21 @@ doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
 upgradeImageIO :: [String] -> Block -> IO Block
 -----------------------------------------UpgradeImage----------------------------------------
-upgradeImageIO dirList cb@(Para [Image (l1,[],opts) caption (fileName, l2)]) = do
+upgradeImageIO dirList cb@(Para [Image (l1,c,opts) caption (fileName, l2)]) = do
   latex <- runIO $ writeLaTeX def $ Pandoc nullMeta [cb]
+  let fullwidth = if elem "fullwidth" c then "*"
+                                        else ""
+      figureHead = "figure"<> fullwidth
   case latex of
     Left _ -> return cb
     Right a -> do
       TIO.writeFile "_build/temp/upgradeImageIO.tmp" a
       let width = fromMaybe "1.0" $ lookup "size" opts
-      r <- readProcess "zsh" [] $ "sed -e 's/\\(includegraphics\\){\\|\\[\\([^]]*\\)\\]{/\\1[keepaspectratio=true,width="<> T.unpack width <>"\\\\linewidth]{/g' _build/temp/upgradeImageIO.tmp"
+      r <- readProcess "zsh" []
+            $ unwords [ "sed -e 's/\\(includegraphics\\){\\|\\[\\([^]]*\\)\\]{/\\1[keepaspectratio=true,width="<> T.unpack width <>"\\\\linewidth]{/g'"
+                      , "-e 's/begin.figure/begin{"<>figureHead<>"/g' -e 's/end.figure/end{"<>figureHead<>"/g'"
+                      , "_build/temp/upgradeImageIO.tmp"
+                      ]
       callCommand "rm -f _build/temp/upgradeImageIO.tmp"
       return $ RawBlock (Format "latex") $ T.pack r
 upgradeImageIO _ c = return c
