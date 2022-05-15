@@ -17,31 +17,45 @@ import Text.Pandoc.Walk
 import Text.Pandoc.Process
 import qualified Data.ByteString.Lazy as BL
 import qualified Text.Pandoc.UTF8 as UTF8
+import qualified Data.List as L
+import qualified Data.Map as M
 
-doBook :: String -> [Block]-> [Block]
-doBook template a = walk (doSideNote template)
+doBook :: String -> Pandoc -> Pandoc
+doBook template (Pandoc m a) =
+  doPreface "book" m $ walk (doSideNote template)
                 $ walk (doKaoBox template)
                 $ walk (doMath template)
                 $ walk (doSideNoteBlock template)
                 $ walk (doHeader template) a
 
-doMarginNoteBlock :: String -> Block -> Block
-doMarginNote "book" (Div (a,["marginnote"], opts) s) =
-  let title = "[" <> (fromMaybe "" $ lookup "title" opts) <> "]"
-   in Div (a,[],opts) $ [ RawBlock (Format "latex") "\\marginnote{" ]
-                      <> s <>
-                      [ RawBlock (Format "latex") "}" ]
-doMarginNote _ (Div (a,["marginnote"], opts) s) = Plain [ Note s ]
-doMarginNoteBlock _ h = h
-
 doMath :: String -> Block -> Block
 doMath "book" (Div (a,("math":[c]), opts) s) =
-  let title = "[" <> (fromMaybe "" $ lookup "title" opts) <> "]"
+  let title = if c == "corollary" then "[" <> (fromMaybe "" $ lookup "title" opts) <> "]"
+                                  else ""
    in Div (a,[],opts) $ [ RawBlock (Format "latex") $ "\\begin{" <> c <> "}" <> title ]
                       <> s <>
                       [ RawBlock (Format "latex") $ "\\end{" <> c <> "}" ]
 doMath "book" (Div (a,("math":_),o) s) = doMath "book" $ Div (a,["math","definition"],o) s
 doMath _ h = h
+
+doPreface "book" (Meta oldMeta) p =
+  let prefaceMeta = query getPreface p
+      newMeta = Meta $ M.union prefaceMeta oldMeta
+      newBlocks = walk removePreface p
+   in Pandoc newMeta newBlocks
+doPreface _ m p = Pandoc m p
+
+getPreface (Div (a,["preface"],opts) s) =
+  let title = case lookup "title" opts of
+                Nothing -> "Preface"
+                Just s -> s
+   in M.fromList [ ("preface-title", MetaString title)
+                 , ("preface", MetaBlocks s)
+                 ]
+getPreface _ = M.empty
+
+removePreface (Div (_,["preface"],_) _) = Null
+removePreface a = a
 
 doKaoBox :: String -> Block -> Block
 doKaoBox "book" (Div (a,["kaobox"], opts) s) =
@@ -62,8 +76,21 @@ doHeader "book" (Header 1 (_,["partition"],_) s) =
                            [ RawInline (Format "latex") "}"]
                  , RawBlock (Format "latex") "\\pagelayout{margin}"
                  ]
-doHeader "book" h@(Header 1 (_,[],_) _) =
-  let preamble = RawBlock (Format "latex") "\\setchapterpreamble[u]{\\margintoc}"
+doHeader "book" h@(Header 1 (_,[],opts) _) =
+  let chapterImage = case lookup "image" opts of
+                Nothing -> ""
+                Just s -> let imageHeight = case lookup "height" opts of
+                                              Nothing -> "7.5cm"
+                                              Just h -> h
+                           in "\\setchapterimage["<> imageHeight <>"]{"<>s<>"}"
+      margintoc = "\\setchapterpreamble[u]{\\margintoc}"
+      chapterStyle = let cStyle = case lookup "style" opts of
+                                    Nothing -> "kao"
+                                    Just s -> s
+                      in "\\setchapterstyle{" <> cStyle <> "}"
+      preamble = RawBlock (Format "latex") $ T.unlines [ chapterStyle
+                                                       , chapterImage
+                                                       , margintoc ]
    in Div nullAttr [preamble, h]
 doHeader _ h = h
 
@@ -81,13 +108,17 @@ doSideNoteBlock template b@(Div (a,[c],opts) s)
                       "marginnote" -> cMargin
                       _ -> (\_ -> "")
           genNote "book" =
-              Div (a,[],opts) $ [ Plain [ RawInline (Format "latex") $ command offset <> "{" ]]
-                <> s
-                <> [RawBlock (Format "latex") "}"]
+              LineBlock $ [ [ RawInline (Format "latex") $ command offset <> "{" ]
+                          <> (L.intercalate [Space] $ map blocksToinlines s)
+                          <> [RawInline (Format "latex") "}"]
+                          ]
           genNote _ = Plain [ simpleNote ]
        in genNote template
   | otherwise = b
 doSideNoteBlock _ b = b
+
+blocksToinlines (Para s) = s
+blocksToinlines _ = []
 
 doSideNote :: String -> Inline -> Inline
 doSideNote template b@(Cite [c] _)

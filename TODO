@@ -5,7 +5,7 @@
 [v] Cross reference
 [v] APPENDIX
 [v] include script with caption in text codeblock
-[ ] Quotation
+[ ] Quotation / Dedicatory
 [ ] Abbreviation List
 [ ] Physical Constants
 [ ] List of Symbols
@@ -14,7 +14,7 @@
 [v] buat yaml file optional saja
 [ ] DEBUG: delegated table failed to be referenced
 [ ] DEBUG: multiparagraph footnote failed to register
-[r] FEATURE: book template
+[v] FEATURE: book template
 
 v : DONE, -: not yet, r: running
 

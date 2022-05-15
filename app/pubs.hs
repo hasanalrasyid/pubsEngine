@@ -117,9 +117,11 @@ main = do
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   templateParams  <- Template.setTemplate nameTemplate fileName
   let (varMeta) = M.fromList $ catMaybes $ map getVars p3
-  let p4 = doBook nameTemplate $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
+  let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
   p5 <- walkM (NU.processPegonInline nameTemplate) p4
-  citedPandoc <- runIO' $ processCitations $ Pandoc (Meta $ M.union varMeta t3) p5
+  let m6 = Meta $ M.union varMeta t3
+  let p6 = doBook nameTemplate $ Pandoc m6 p5
+  citedPandoc <- runIO' $ processCitations p6
   finishDoc template nameTemplate templateParams fileName citedPandoc
 
 processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p

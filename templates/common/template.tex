@@ -1,12 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%% templates/common/template.tex %%%%%%%%%%%%%%%%%%%%
 \usepackage{microtype}
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+% \usepackage[T1]{fontenc} removed due to wrong font encoding
 
-\ifpackageloaded{graphicx}{%
-  }%else
-  {\usepackage{graphicx}}
-\graphicspath{{./}{figures/}{auto}$for(graphicspath)${$graphicspath$}$endfor$}%
+\makeatletter
+\@ifpackageloaded{graphicx}{}{\usepackage{graphicx}}
+  \graphicspath{{./}{figures/}{auto}{Figure}{examples/documentation/images}{images}}%
+\AtBeginDocument{
+\usepackage[normalem]{ulem}
+}
+\makeatother
 
 \usepackage[novoc]{arabluatex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
 % arabxetex loads bidi.sty and fontspec.sty
@@ -39,6 +42,7 @@ $if(csl-refs)$
 \newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
 \newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
 
 $if(header-includes)$
 $header-includes$
