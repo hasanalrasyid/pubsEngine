@@ -20,7 +20,39 @@ import qualified Text.Pandoc.UTF8 as UTF8
 
 doBook :: String -> [Block]-> [Block]
 doBook template a = walk (doSideNote template)
+                $ walk (doKaoBox template)
+                $ walk (doMath template)
+                $ walk (doSideNoteBlock template)
                 $ walk (doHeader template) a
+
+doMarginNoteBlock :: String -> Block -> Block
+doMarginNote "book" (Div (a,["marginnote"], opts) s) =
+  let title = "[" <> (fromMaybe "" $ lookup "title" opts) <> "]"
+   in Div (a,[],opts) $ [ RawBlock (Format "latex") "\\marginnote{" ]
+                      <> s <>
+                      [ RawBlock (Format "latex") "}" ]
+doMarginNote _ (Div (a,["marginnote"], opts) s) = Plain [ Note s ]
+doMarginNoteBlock _ h = h
+
+doMath :: String -> Block -> Block
+doMath "book" (Div (a,("math":[c]), opts) s) =
+  let title = "[" <> (fromMaybe "" $ lookup "title" opts) <> "]"
+   in Div (a,[],opts) $ [ RawBlock (Format "latex") $ "\\begin{" <> c <> "}" <> title ]
+                      <> s <>
+                      [ RawBlock (Format "latex") $ "\\end{" <> c <> "}" ]
+doMath "book" (Div (a,("math":_),o) s) = doMath "book" $ Div (a,["math","definition"],o) s
+doMath _ h = h
+
+doKaoBox :: String -> Block -> Block
+doKaoBox "book" (Div (a,["kaobox"], opts) s) =
+  let frametitle = lookup "title" opts
+   in Div (a,[],opts) $ [ Plain [ RawInline (Format "latex") "\\begin{kaobox}[frametitle="
+                                , Str $ fromMaybe "" frametitle
+                                , RawInline (Format "latex") "]"
+                                ]
+                        ] <> s <>
+                        [ RawBlock (Format "latex") "\\end{kaobox}"]
+doKaoBox _ h = h
 
 doHeader :: String -> Block -> Block
 doHeader "book" (Header 1 (_,["partition"],_) s) =
@@ -35,14 +67,47 @@ doHeader "book" h@(Header 1 (_,[],_) _) =
    in Div nullAttr [preamble, h]
 doHeader _ h = h
 
+doSideNoteBlock :: String -> Block -> Block
+doSideNoteBlock template b@(Div (a,[c],opts) s)
+  | c == "sidenote" || c == "marginnote" =
+      let simpleNote = Note s
+          offset = case lookup "offset" opts of
+                    Just o -> "*" <> o
+                    _ -> ""
+          cSide a = "\\sidenote[][" <> a <> "]"
+          cMargin a = "\\marginnote[" <> a <> "]"
+          command = case c of
+                      "sidenote" -> cSide
+                      "marginnote" -> cMargin
+                      _ -> (\_ -> "")
+          genNote "book" =
+              Div (a,[],opts) $ [ Plain [ RawInline (Format "latex") $ command offset <> "{" ]]
+                <> s
+                <> [RawBlock (Format "latex") "}"]
+          genNote _ = Plain [ simpleNote ]
+       in genNote template
+  | otherwise = b
+doSideNoteBlock _ b = b
+
 doSideNote :: String -> Inline -> Inline
 doSideNote template b@(Cite [c] _)
-  | citationId c == "sidenote" =
-      case template of
-        "book" -> Span nullAttr $ [RawInline (Format "latex") "\\sidenote[][-2mm]{"]
-                  <> citationSuffix c
-                  <> [RawInline (Format "latex") "}"]
-        _ -> Note [ Para $ citationSuffix c ]
+  | citationId c == "sidenote" || citationId c == "marginnote" =
+      let simpleNote = Note [ Para $ citationSuffix c ]
+          offset = case citationPrefix c of
+                    [Str o] -> "*" <> o
+                    _ -> ""
+          cSide a = "\\sidenote[][" <> a <> "]"
+          cMargin a = "\\marginnote[" <> a <> "]"
+          command = case citationId c of
+                      "sidenote" -> cSide
+                      "marginnote" -> cMargin
+                      _ -> (\_ -> "")
+          genNote "book" =
+              Span nullAttr $ [RawInline (Format "latex") $ command offset <> "{"]
+                <> citationSuffix c
+                <> [RawInline (Format "latex") "}"]
+          genNote _ = simpleNote
+       in genNote template
   | otherwise = b
 doSideNote _ b = b
 
