@@ -1,11 +1,11 @@
 [v] Work on default.csl
 [ ] manuscript status, submitted, reviewed, accepted
-[ ] advanced graphics {figure*}
+[v] advanced graphics {figure*}
 [v] Citation Reference
 [v] Cross reference
 [v] APPENDIX
 [v] include script with caption in text codeblock
-[r] Quotation / Dedicatory (thesis,book)
+[v] Quotation / Dedicatory (thesis,book)
 [ ] Abbreviation List
 [ ] Physical Constants
 [ ] List of Symbols

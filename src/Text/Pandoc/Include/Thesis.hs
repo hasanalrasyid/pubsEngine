@@ -95,22 +95,30 @@ processPostDoc p@(Pandoc m b) =
   let facilities = query getFacilities  b
       software   = query getSoftware    b
       appendix   = query getAppendix    b
+      dedicatory = query getDedicatory  b
       acknowledgements = query getAck   b
-      m1 = updateMeta m "facilities" $ MetaBlocks facilities
-      m2 = updateMeta m1 "software" $ MetaBlocks software
-      m3 = updateMeta m2 "appendix" $ MetaBlocks appendix
-      newMeta = updateMeta m3 "acknowledgements" $ MetaBlocks acknowledgements
-      (Pandoc _ newBlocks) = foldl (flip walk) p [rmFacilities , rmSoftware , rmAppendix , rmAck]
+      newMeta = updateMeta' "appendix" (MetaBlocks appendix)
+          $ updateMeta' "acknowledgements" (MetaBlocks acknowledgements)
+          $ updateMeta' "dedicatory" (MetaBlocks dedicatory)
+          $ updateMeta' "facilities" (MetaBlocks facilities)
+          $ updateMeta' "software" (MetaBlocks software) m
+
+      (Pandoc _ newBlocks) = foldl (flip walk) p [rmFacilities , rmSoftware , rmAppendix , rmAck, rmDedicatory]
    in (Pandoc newMeta newBlocks)
     where
+      updateMeta' s b m = updateMeta m s b
       rmFacilities (Div (_,["facilities"],_) _) = Null
       rmFacilities a = a
       rmSoftware   (Div (_,["software"],_) _) = Null
       rmSoftware   a = a
       rmAppendix   (Div (_,["appendix"],_) _) = Null
       rmAppendix   a = a
+      rmDedicatory (Div (_,["acknowledgements"],_) _) = Null
+      rmDedicatory a = a
       rmAck (Div (_,["acknowledgements"],_) _) = Null
       rmAck a = a
+      getDedicatory a@(Div (_,["dedicatory"],_) _) = [a]
+      getDedicatory _ = []
       getFacilities a@(Div (_,["facilities"],_) _) = [a]
       getFacilities _ = []
       getSoftware   a@(Div (_,["software"],_) _) = [a]
