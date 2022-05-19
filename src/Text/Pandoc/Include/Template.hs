@@ -19,9 +19,9 @@ import Text.Pandoc.Options
 setTemplate :: String -> String -> IO (String, TopLevelDivision)
 setTemplate nameTemplate fileName = do
   BS.writeFile "_build/extra.7z" $ extraZip nameTemplate
-  callCommand $ unlines [ "pushd _build"
+  callCommand $ unlines [ "cd _build"
                         , "7za x -aoa extra.7z"
-                        , "popd"
+                        , "cd .."
                         ]
   let topLevel = case nameTemplate of
                   "article" -> TopLevelSection

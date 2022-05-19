@@ -15,6 +15,7 @@
 [ ] DEBUG: delegated table failed to be referenced
 [ ] DEBUG: multiparagraph footnote failed to register
 [v] FEATURE: book template
+[v] FEATURE: PlantUML
 
 v : DONE, -: not yet, r: running
 

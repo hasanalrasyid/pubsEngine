@@ -14,6 +14,7 @@ import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import qualified Text.Pandoc.Include.GoJS as GoJS
+import qualified Text.Pandoc.Include.PlantUML as PlantUML
 import           Text.Pandoc.Include.Script
 import           Text.Pandoc.Include.Common.IO
 import           Text.Pandoc.JSON
@@ -38,7 +39,6 @@ import           Text.Pandoc.Include.Template.Book
 
 import Text.Pandoc.Include.Common
 import qualified Text.Pandoc.Include.Nusantara as NU
-import Text.Pandoc.Include.Thesis (processPostDoc)
 import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
 
@@ -68,7 +68,7 @@ main :: IO ()
 main = do
   (fileName:nameTemplate:_) <- getArgs
 
-  callCommand "mkdir -p _build/{auto,temp/lib/py,temp/lib/sh,temp/lib/gnuplot}"
+  mapM callCommand $ map ("mkdir -p _build/"<>) $ ["auto","temp/lib/py","temp/lib/sh","temp/lib/gnuplot"]
   (template,Pandoc (Meta resMeta0) resP) <- runIO' $ do
     resT <- genTemplate nameTemplate fileName
     liftIO $ putStrLn $ show resT
@@ -105,9 +105,12 @@ main = do
         (ex,statZotero) <- pipeProcess Nothing "pgrep" ["zotero"] ""
         case ex of
           ExitSuccess -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
-          _ -> error $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
-                               , "                  but the standalone Zotero with better-bibtex addons is not running."
+          _ -> do
+                putStrLn $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
+                                   , "                  but the standalone Zotero with better-bibtex addons is not running."
+                                   , "                  Fallback into simple mode"
                                ]
+                pure ()
         return Space
     b -> do
       putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
@@ -115,12 +118,11 @@ main = do
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
+  p4 <- walkM (NU.processPegonInline nameTemplate) p3
   templateParams  <- Template.setTemplate nameTemplate fileName
-  let (varMeta) = M.fromList $ catMaybes $ map getVars p3
-  let p4 = walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p3
-  p5 <- walkM (NU.processPegonInline nameTemplate) p4
-  let m6 = Meta $ M.union varMeta t3
-  let p6 = doBook nameTemplate $ Pandoc m6 p5
+  let (varMeta) = M.fromList $ catMaybes $ map getVars p4
+  let m6 = Meta $ flip M.union t3 varMeta
+  let p6 = doBook nameTemplate $ Pandoc m6 $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p4
   citedPandoc <- runIO' $ processCitations p6
   finishDoc template nameTemplate templateParams fileName citedPandoc
 
@@ -154,12 +156,12 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
   where
     compileLatex "revealjs" fileName = pure ()
     compileLatex _ fileName = do
-      callCommand $ unlines [ "pushd _build"
+      callCommand $ unlines [ "cd _build"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "bibtex   -interaction=nonstopmode " <> fileName
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
-                            , "popd" ]
+                            , "cd .." ]
       putStrLn "======================"
 
 
@@ -174,6 +176,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> doBlockIO
             >=> GoJS.includeGoJS
+            >=> PlantUML.includePlantUML
             >=> NU.processPegon nameTemplate
   (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
   blks <- flip walkM blks2 $
@@ -192,6 +195,7 @@ processAcknowledgements (Div (_,["acknowledgements","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") "\\begin{acknowledgements}") : b
               <> [ RawBlock (Format "latex") "\\end{acknowledgements}" ]
 processAcknowledgements (Div (_,["appendix"],_) b) = Null
+processAcknowledgements (Div (_,["dedicatory"],_) b) = Null
 processAcknowledgements (Div (_,["acknowledgements"],_) b) = Null
 processAcknowledgements (Div (_,"abstract":_,_) b) = Null
 processAcknowledgements a = a
@@ -219,7 +223,7 @@ fillVariableI _ p = p
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
 getVars (Div (_,v:a,_) bs)
-  | elem v ["appendix","acknowledgements","software","facilities"] = Just (v, MetaBlocks bs)
+  | elem v ["dedicatory","appendix","acknowledgements","software","facilities"] = Just (v, MetaBlocks bs)
   | v == "abstract" =
       let genLatexArgs :: Block -> Block
           genLatexArgs (Div a s) = Div a $ [RawBlock (Format "latex") "{"] ++ s ++ [RawBlock (Format "latex") "}"]
