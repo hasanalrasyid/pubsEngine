@@ -104,7 +104,7 @@ main = do
       flip walkM_ bib $ \(Str bibzotero) -> do
         (ex,statZotero) <- pipeProcess Nothing "pgrep" ["zotero"] ""
         case ex of
-          ExitSuccess -> callCommand $ T.unpack $ "curl http://127.0.0.1:23119/better-bibtex/export/collection\\?/1/"<>bibzotero<>".bibtex > "<>T.pack fileName<>".bib"
+          ExitSuccess -> callCommand $ T.unpack $ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection?/1/"<>bibzotero<>".bibtex&exportNotes=true' > "<>T.pack fileName<>".bib"
           _ -> do
                 putStrLn $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
                                    , "                  but the standalone Zotero with better-bibtex addons is not running."
@@ -123,8 +123,40 @@ main = do
   let (varMeta) = M.fromList $ catMaybes $ map getVars p4
   let m6 = Meta $ flip M.union t3 varMeta
   let p6 = doBook nameTemplate $ Pandoc m6 $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p4
-  citedPandoc <- runIO' $ processCitations p6
+  citedPandoc <- runIO' $ processShowCitations fileName p6 >>= processCitations
   finishDoc template nameTemplate templateParams fileName citedPandoc
+
+processShowCitations fileName p@(Pandoc m _) = do
+  bibFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".bib"
+  (Pandoc bib _) <- readBibTeX def bibFile
+  let notes = lookupMeta "references" bib
+  pure $ walk (genNotes notes) p
+    where
+      eqCitationId c (MetaMap n) =
+        (Just $ MetaString $ citationId c) == M.lookup "id" n
+      eqCitationId _ _ = False
+      getNote notes a@(Cite [c] _) =
+        case find (eqCitationId c) notes of
+          Just (MetaMap n) ->
+            let note =  case M.lookup "note" n of
+                          Just (MetaInlines l) -> l
+                          _ -> []
+             in Just ([Str $ "@" <> citationId c],[[Para note]])
+          _ -> Nothing
+      genNotes :: Maybe MetaValue -> Block -> Block
+      genNotes (Just (MetaList notes)) b = Div nullAttr $ [ b
+        , case query checkNote b of
+            [] -> Null
+            s -> DefinitionList $ catMaybes $ map (getNote notes) s ]
+      genNotes _ b = b
+      checkShow a [Str ".show"] = [a]
+      checkShow _ _ = []
+      checkNote a@(Cite [c] _) =
+        let checkShow [] = []
+            checkShow s = if last s == Str ".show" then [a]
+                                                   else []
+         in checkShow $ citationSuffix c
+      checkNote _ = []
 
 processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
   where
