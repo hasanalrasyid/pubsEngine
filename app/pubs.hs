@@ -99,22 +99,22 @@ main = do
                       return l
     _ -> putStrLn "no linkDir available"
 
-  case lookupMeta "bibzotero" resMeta of
+  case lookupMeta "zotero-collection" resMeta of
     Just bib -> do
-      flip walkM_ bib $ \(Str bibzotero) -> do
+      flip walkM_ bib $ \(Str zoteroCollection) -> do
         (ex,statZotero) <- pipeProcess Nothing "pgrep" ["zotero"] ""
         case ex of
-          ExitSuccess -> callCommand $ T.unpack $ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection?/1/"<>bibzotero<>".bibtex&exportNotes=true' > "<>T.pack fileName<>".bib"
+          ExitSuccess -> callCommand $ T.unpack $ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection?/1/"<>zoteroCollection<>".bibtex&exportNotes=true' > "<>T.pack fileName<>".bib"
           _ -> do
-                putStrLn $ unlines [ "ERROR: bibzotero: markdown option for zotero connection is set as " <> T.unpack bibzotero
-                                   , "                  but the standalone Zotero with better-bibtex addons is not running."
-                                   , "                  Fallback into simple mode"
+                putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> T.unpack zoteroCollection
+                                   , "                          but the standalone Zotero with better-bibtex addons is not running."
+                                   , "                          Fallback into simple mode"
                                ]
                 pure ()
         return Space
     b -> do
-      putStrLn $ "WARNING: bibzotero: no connection to zotero bibliography is provided in markdown option of " <> show b
-      putStrLn $ "                    Fallback to using " <> fileName <> ".bib in the current directory"
+      putStrLn $ "WARNING: zotero-collection: no connection to zotero bibliography is provided in markdown option of " <> show b
+      putStrLn $ "                            Fallback to using " <> fileName <> ".bib in the current directory"
   callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
@@ -153,8 +153,9 @@ processShowCitations fileName p@(Pandoc m _) = do
       checkShow _ _ = []
       checkNote a@(Cite [c] _) =
         let checkShow [] = []
-            checkShow s = if last s == Str ".show" then [a]
-                                                   else []
+            checkShow s
+              | last s == Str ".show" = [a]
+              | otherwise = []
          in checkShow $ citationSuffix c
       checkNote _ = []
 
