@@ -10,6 +10,8 @@ install:
 	./preMake.sh book
 	teckit_compile templates/common/fontmap/nusantara-trans-novoc.map
 	stack build pubsEngine:pubsEngine
+##tar -cjf pubsEngine.tbz /home/aku/Documents/kerja/devKit/pubsEngine/.stack-work/install/x86_64-linux-tinfo6/140824c1d005ba1b38413892db457f57b054423f097e02376f2d07b509752b33/8.10.7/bin/pubsEngine
+##scp pubsEngine.tbz gitmki:~/
 
 installdeep:
 	mkdir -p $(HOME)/.local/bin

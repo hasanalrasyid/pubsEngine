@@ -64,6 +64,8 @@ import Text.Pandoc.CrossRef
 
 import Text.Pandoc.Builder (str,header,text,displayMath)
 
+cpOS = "rsync -avr"
+
 main :: IO ()
 main = do
   (fileName:nameTemplate:_) <- getArgs
@@ -84,38 +86,47 @@ main = do
     -- update mYaml, use the values from yaml in .md
     let mRes = Meta $ M.foldlWithKey (\a k v -> M.alter (\_ -> Just v) k a) mYaml m1
     return $ (resT, Pandoc mRes p1)
-  let resMeta = Meta
-        $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
-        $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
-        $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
-        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName <> ".bib" ])) "bibliography" resMeta0
-  case lookupMeta "link-directory" resMeta of
+  case lookupMeta "link-directory" $ Meta resMeta0 of
     Just linkDirs -> flip walkM_ linkDirs $ \l@(Str link) -> do
                       TIO.putStrLn $ "Creating symbolink link to: " <> link
                       callCommand $ T.unpack $ T.unlines
-                        [ "rm -f _build/" <> link
-                        , T.unwords [ "ln -s -f",("../" <> link), "_build/" <> link ]
+                        [ "rm -fr _build/" <> link
+                        , T.unwords [ T.pack cpOS, link, "_build/" ]
                         ]
                       return l
     _ -> putStrLn "no linkDir available"
 
-  case lookupMeta "zotero-collection" resMeta of
+  bibliographyFile <- case lookupMeta "zotero-collection" $ Meta resMeta0 of
     Just bib -> do
-      flip walkM_ bib $ \(Str zoteroCollection) -> do
+      flip query bib $ \(Str zoteroCollection0) -> do
+        let zoteroCollection = T.unpack zoteroCollection0
         (ex,statZotero) <- pipeProcess Nothing "pgrep" ["zotero"] ""
         case ex of
-          ExitSuccess -> callCommand $ T.unpack $ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection?/1/"<>zoteroCollection<>".bibtex&exportNotes=true' > "<>T.pack fileName<>".bib"
+          ExitSuccess -> do
+            mapM_ callCommand
+              [ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection-archive?/1/"<>zoteroCollection<>".biblatex&exportNotes=true'  --output _build/temp/"<>zoteroCollection<>".zip.base64"
+              , "base64 -d _build/temp/"<>zoteroCollection<>".zip.base64 > _build/temp/"<>fileName<>".zip"
+              , "unzip -o _build/temp/"<>fileName<>".zip -d _build/"
+              , "rm -rf _build/bibliography"
+              , "mv _build/"<>zoteroCollection<>" _build/bibliography"
+              , unwords[cpOS, "_build/bibliography/"<>zoteroCollection<>".bib", "_build" ]
+              ]
           _ -> do
-                putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> T.unpack zoteroCollection
-                                   , "                          but the standalone Zotero with better-bibtex addons is not running."
-                                   , "                          Fallback into simple mode"
+            putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> zoteroCollection
+                               , "                          but the standalone Zotero with better-bibtex addons is not running."
+                               , "                          Fallback into simple mode"
                                ]
-                pure ()
-        return Space
+        return zoteroCollection0
     b -> do
       putStrLn $ "WARNING: zotero-collection: no connection to zotero bibliography is provided in markdown option of " <> show b
       putStrLn $ "                            Fallback to using " <> fileName <> ".bib in the current directory"
-  callCommand $ unwords ["ln -sf", "../" <>fileName <> ".bib", "_build/" <> fileName <> ".bib" ]
+      callCommand $ unwords [ cpOS, fileName <> ".bib", "_build/" ]
+      return $ T.pack fileName
+  let resMeta = Meta
+        $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
+        $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
+        $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl" resMeta0
+        -- $ M.alter (\_ -> Just (MetaInlines [Str $ bibliographyFile <> ".bib"])) "bibliography" resMeta0
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   p4 <- walkM (NU.processPegonInline nameTemplate) p3
@@ -123,14 +134,14 @@ main = do
   let (varMeta) = M.fromList $ catMaybes $ map getVars p4
   let m6 = Meta $ flip M.union t3 varMeta
   let p6 = doBook nameTemplate $ Pandoc m6 $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p4
-  citedPandoc <- runIO' $ processShowCitations fileName p6 >>= processCitations
+  citedPandoc <- runIO' $ processShowCitations bibliographyFile fileName p6 >>= processCitations
   finishDoc template nameTemplate templateParams fileName citedPandoc
 
-processShowCitations fileName p@(Pandoc m _) = do
+processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
   bibFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".bib"
   (Pandoc bib _) <- readBibTeX def bibFile
   let notes = lookupMeta "references" bib
-  pure $ walk (genNotes notes) p
+  walkM (genNotes notes) p
     where
       eqCitationId c (MetaMap n) =
         (Just $ MetaString $ citationId c) == M.lookup "id" n
@@ -143,12 +154,40 @@ processShowCitations fileName p@(Pandoc m _) = do
                           _ -> []
              in Just ([Str $ "@" <> citationId c],[[Para note]])
           _ -> Nothing
-      genNotes :: Maybe MetaValue -> Block -> Block
-      genNotes (Just (MetaList notes)) b = Div nullAttr $ [ b
-        , case query checkNote b of
-            [] -> Null
-            s -> DefinitionList $ catMaybes $ map (getNote notes) s ]
-      genNotes _ b = b
+      formatNote bibliographyFile (Image a@(_,_,v) i (_,u)) =
+        let target = fromMaybe "." $ lookup "data-attachment-key" v
+         in Image nullAttr i ("bibliography/" <> target <> "/image.png/"<>(T.pack $ show v),u)
+      formatNote _ i = i
+      formatNoteBlock (Header i a l) = Header (i+1) a l
+      formatNoteBlock i = i
+      getNotes _ _ [] [] = pure Null
+      getNotes _ _ res [] = pure $ DefinitionList $ catMaybes res
+      getNotes bibliographyFile notes res ((Cite [c] _):ns) = do
+        r <- case find (eqCitationId c) notes of
+              Just (MetaMap n) -> do
+                let cId = citationId c
+                note <- do
+                  -- jq -r '.items|map ({citationKey: .citationKey,notes:(.notes|map(.note))})' pubsEngine/pubsEngine.json
+                  (ex, noteHTML0) <- liftIO $ pipeProcess Nothing "jq"
+                    [ "-r", "--arg", "citationId", T.unpack cId
+                    , ".items|.[]|select(.citationKey == $citationId)|.notes|map(.note)|.[]"
+                    , "_build/bibliography/" <> T.unpack bibliographyFile <> ".json"
+                    ] ""
+                  case ex of
+                    ExitSuccess -> pure ()
+                    err -> error $ "getNotes: jq: bibliography: " <> show err
+                  Pandoc _ noteHTML <- do
+                    h <- readHtml def $ T.replace "<img" "<img src='dummy.jpg'" $ UTF8.toText $ BL.toStrict noteHTML0
+                    pure $ walk formatNoteBlock $ walk (formatNote bibliographyFile) h
+                  pure noteHTML
+                pure $ Just ([Str $ "@" <> cId],[note])
+              _ -> pure Nothing
+        getNotes bibliographyFile notes (r:res) ns
+      genNotes (Just (MetaList notes)) b = do
+        notes <- getNotes bibliographyFile notes [] $ query checkNote b
+        pure $ Div nullAttr $ [ b, notes ]
+            -- s -> DefinitionList $ catMaybes $ map (getNote notes) s ]
+      genNotes _ b = pure b
       checkShow a [Str ".show"] = [a]
       checkShow _ _ = []
       checkNote a@(Cite [c] _) =

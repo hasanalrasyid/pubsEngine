@@ -21,6 +21,7 @@
       lalu anotasi tadi secara otomatis diconvert ke dalam notes di zotero,
       lalu notes tersebut secara otomatis didownload pubsEngine bersama bibliography bibtex,
       lalu notes dalam bibtex tersebut diload pubsEngine sebagai citation dan quotes dalam manuscript melalui [@citeId .show]
+[r] FEATURE: include images from citation notes
 
 
 v : DONE, -: not yet, r: running
