@@ -80,7 +80,7 @@ main = do
     (Meta mYaml) <- do
       yamlExist <- fileExists $ fileName <> ".yaml"
       if yamlExist then do
-                    yamlFile <- fmap BL.fromStrict $ PIO.readFileStrict $ fileName <> ".yaml"
+                    yamlFile <- PIO.readFileStrict $ fileName <> ".yaml"
                     yamlToMeta mdOption Nothing yamlFile
                    else pure defaultMeta
     -- update mYaml, use the values from yaml in .md
@@ -155,10 +155,10 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
              in Just ([Str $ "@" <> citationId c],[[Para note]])
           _ -> Nothing
       formatNote bibliographyFile (Image a@(_,_,v) i (_,u)) =
-        let target = fromMaybe "." $ lookup "data-attachment-key" v
-         in Image nullAttr i ("bibliography/" <> target <> "/image.png/"<>(T.pack $ show v),u)
+        let target = fromMaybe "." $ lookup "attachment-key" v
+         in Image nullAttr i ("bibliography/" <> target <> "/image.png",u)
       formatNote _ i = i
-      formatNoteBlock (Header i a l) = Header (i+1) a l
+      formatNoteBlock (Header _ _ l) = Para [Strong l]
       formatNoteBlock i = i
       getNotes _ _ [] [] = pure Null
       getNotes _ _ res [] = pure $ DefinitionList $ catMaybes res
@@ -177,7 +177,7 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
                     ExitSuccess -> pure ()
                     err -> error $ "getNotes: jq: bibliography: " <> show err
                   Pandoc _ noteHTML <- do
-                    h <- readHtml def $ T.replace "<img" "<img src='dummy.jpg'" $ UTF8.toText $ BL.toStrict noteHTML0
+                    h <- readHtml mdOption $ T.replace "<img" "<img src='dummy.jpg'" $ UTF8.toText $ BL.toStrict noteHTML0
                     pure $ walk formatNoteBlock $ walk (formatNote bibliographyFile) h
                   pure noteHTML
                 pure $ Just ([Str $ "@" <> cId],[note])
