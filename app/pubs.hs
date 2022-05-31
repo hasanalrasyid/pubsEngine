@@ -248,7 +248,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> doBlockIO
             >=> GoJS.includeGoJS
-            >=> PlantUML.includePlantUML
+            >=> PlantUML.includePlantUMLBlock
             >=> NU.processPegon nameTemplate
   (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
   blks <- flip walkM blks2 $
