@@ -12,6 +12,7 @@ import qualified Text.Pandoc.Include.MultiMarkdown as MultiMarkdown
 import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
+import qualified Text.Pandoc.Include.Chem as Chem
 import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import qualified Text.Pandoc.Include.GoJS as GoJS
 import qualified Text.Pandoc.Include.PlantUML as PlantUML
@@ -250,9 +251,11 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> GoJS.includeGoJS
             >=> PlantUML.includePlantUMLBlock
             >=> NU.processPegon nameTemplate
-  (Pandoc mt2 blks2) <- processCrossRef $ Pandoc mt blks1
-  blks <- flip walkM blks2 $
+  blks12 <- walkM includeScriptImage blks1
+  (Pandoc mt2 blks123) <- processCrossRef $ Pandoc mt blks12
+  blks1234 <- flip walkM blks123 $
             upgradeImageIO imageDirs >=> doBlockIO
+  blks <- walkM upgradeImageInline blks1234
   p <- doPandoc (Pandoc mt2 blks)
   return p
 
@@ -312,8 +315,53 @@ walkM_ a b = () <$ walkM a b
 
 doPandoc p = Diagrams.addPackagePGF =<< linkTex p
 
-upgradeImageIO :: [String] -> Block -> IO Block
 -----------------------------------------UpgradeImage----------------------------------------
+upgradeImageInline :: Inline -> IO Inline
+upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
+  res <- runIO $ do
+    latex0 <- writeLaTeX def $ Pandoc nullMeta [Plain [cb]]
+    latex <- case T.lines latex0 of
+              [] -> error $ "upgradeImageInline: writeLaTeX: latex0: " <> show cb
+              [s] -> pure $ if elem "subfigure" c
+                              then T.unlines [ "\\begin{figure}"
+                                , "\\centering"
+                                , s
+                                , "\\caption{"
+                                , "xxxCaptionxxx"
+                                , "}"
+                                , T.concat ["\\label{",l1,"}"]
+                                , "\\end{figure}"
+                                ]
+                              else latex0
+              _ -> pure latex0
+    let width = fromMaybe "1.0" $ lookup "size" opts
+        includeSize = "includegraphics[keepaspectratio=true,width=" <> width <> "\\linewidth]{"
+    let latex' = updateSize includeSize $ foldr (\fu fl -> fu c fl) latex [updateBegin, updateEnd, updateFullwidth]
+    pure $ if elem "subfigure" c
+              then
+                let (upperLatex,(_:lowerLatex)) = break (== "xxxCaptionxxx") $ T.lines latex'
+                 in Span nullAttr
+                    $ concat [ [RawInline (Format "latex") $ T.unlines upperLatex]
+                             , caption
+                             , [RawInline (Format "latex") $ T.unlines lowerLatex]
+                             ]
+              else RawInline (Format "latex") latex'
+  case res of
+    Left e -> error $ show e
+    Right r -> pure r
+  where
+    updateEnd c l
+      | elem "subfigure" c = T.replace "end{figure}" "end{subfigure}" l
+      | otherwise = l
+    updateBegin c l
+      | elem "subfigure" c = T.replace "begin{figure}" "begin{subfigure}{.5\\textwidth}" l
+      | otherwise = l
+    updateFullwidth c l
+      | elem "fullwidth" c = T.replace "figure}" "figure*}" l
+      | otherwise = l
+    updateSize i l = T.replace "includegraphics{" i l
+upgradeImageInline c = return c
+upgradeImageIO :: [String] -> Block -> IO Block
 upgradeImageIO dirList cb@(Para [Image (l1,c,opts) caption (fileName, l2)]) = do
   latex <- runIO $ writeLaTeX def $ Pandoc nullMeta [cb]
   let fullwidth = if elem "fullwidth" c then "*"
@@ -335,6 +383,7 @@ upgradeImageIO _ c = return c
 
 doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = MultiMarkdown.doInclude cb
+  | "chemfig" `elem` classes = Chem.doInclude cb
   | "feynmp" `elem` classes = FeynMP.doInclude cb
   | "mermaid" `elem` classes = Mermaid.doInclude cb
   | "delegate" `elem` classes = Delegate.doInclude cb

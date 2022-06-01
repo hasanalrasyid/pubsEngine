@@ -1,6 +1,9 @@
 BUILDPATH:=$(shell find ./.stack-work/install|grep pkgdb$$|sed -e 's/^.*install.//g' -e 's/.pkgdb//g')
-EXTs := $(shell ls extern/*tbz)
+#EXTs := $(shell ls extern/*tbz)
 Extracted := $(lastword $(shell find extern -maxdepth 1 -type d))
+
+installfast:
+	stack build pubsEngine:pubsEngine
 
 install:
 	./preMake.sh article

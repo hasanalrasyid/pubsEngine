@@ -15,7 +15,6 @@ import qualified Data.Text.IO as TIO
 import System.Process (callCommand, readProcess)
 import Text.Pandoc.Include.Script (writeScriptResult,extractSource)
 import Text.Pandoc.Include.Common
-import Text.RawString.QQ
 import System.Environment
 
 includePlantUMLBlock :: Block -> IO Block
