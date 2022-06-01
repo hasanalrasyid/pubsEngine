@@ -129,10 +129,7 @@ includeScript cb@(Div (a, c@("multiImage":_), opts) t) = do
     Right p -> p
     Left e -> error $ show e
   where
-    setSubCaption (Image a c f) i =
-      let c' = (Str $ T.pack $ show i): c
-       in Image a c' f
-    setSubfigure (Image (l,_,o) c (f,_)) = Image (l,["subfigure"],o) c (f,l)
+    setSubfigure (Image (l,a,o) c (f,_)) = Image (l,"subfigure":a,o) c (f,l)
     setSubfigure c = c
     getImage :: Inline -> [Inline]
     getImage i@(Image _ _ _) = [i]
@@ -143,7 +140,7 @@ includeScript cb@(Div (a, c@("multiImage":_), opts) t) = do
 includeScript cb = return cb
 
 
-includeScriptImage img@(Image (label,a@("script":c:_),opts0) caption (fileName, _)) =
+includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)) =
   case lookup"src" opts0 of
     Nothing -> pure img
     Just srcFile -> do
@@ -154,6 +151,6 @@ includeScriptImage img@(Image (label,a@("script":c:_),opts0) caption (fileName, 
           s = unlines [header,T.unpack script]
       putStrLn s
       res <- readProcess cmd [] s
-      return $ Image (label,[],opts) caption (fileName, label)
+      return $ Image (label,a,opts) caption (fileName, label)
 includeScriptImage img = pure img
 

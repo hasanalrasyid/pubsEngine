@@ -336,7 +336,8 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
               _ -> pure latex0
     let width = fromMaybe "1.0" $ lookup "size" opts
         includeSize = "includegraphics[keepaspectratio=true,width=" <> width <> "\\linewidth]{"
-    let latex' = updateSize includeSize $ foldr (\fu fl -> fu c fl) latex [updateBegin, updateEnd, updateFullwidth]
+        containerSize = if elem "single" c then "" else ".5"
+    let latex' = updateSize includeSize $ foldr (\fu fl -> fu c fl) latex [updateBegin containerSize, updateEnd, updateFullwidth]
     pure $ if elem "subfigure" c
               then
                 let (upperLatex,(_:lowerLatex)) = break (== "xxxCaptionxxx") $ T.lines latex'
@@ -353,8 +354,9 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
     updateEnd c l
       | elem "subfigure" c = T.replace "end{figure}" "end{subfigure}" l
       | otherwise = l
-    updateBegin c l
-      | elem "subfigure" c = T.replace "begin{figure}" "begin{subfigure}{.5\\textwidth}" l
+    updateBegin w c l
+      | elem "subfigure" c =
+          T.replace "begin{figure}" ("begin{subfigure}{"<>w<>"\\textwidth}") l
       | otherwise = l
     updateFullwidth c l
       | elem "fullwidth" c = T.replace "figure}" "figure*}" l
