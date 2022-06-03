@@ -1,7 +1,10 @@
 resolver: lts-19.8
+allow-newer: true
+packages:
+  - .
 extra-deps:
+  - pandoc-crossref-0.3.12.2@sha256:5670f34c8b5098346c6580553694e7fdedf6bc5446dcc2388f44d13783d02dab,7621
   - diagrams-builder-0.8.0.5@sha256:0e7349f4aa4111a7835345f26c9368da8c06814d219bfb1fe3207fc5fe9a295a,7892
   - haskell-src-exts-simple-1.23.0.0@sha256:39c33878a46f43f3fe98399e9ff6385587aff3a174afbd2fc0d7684fd7215d6a,1524
-  - pandoc-crossref-0.3.12.2@sha256:5670f34c8b5098346c6580553694e7fdedf6bc5446dcc2388f44d13783d02dab,7621
   - texrunner-0.0.1.2@sha256:fd67a3f946afa3c23179b1fce0ee43b3348f9ee134109996a526429331226d8f,1909
   - roman-numerals-0.5.1.5@sha256:819d04d9d442b24629dd058f6f0b02bd78e9f9ae99538bc44ca448f1cb2b7b01,1208

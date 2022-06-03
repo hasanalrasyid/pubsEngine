@@ -23,32 +23,30 @@ import Text.Pandoc.Include.Utils
 import qualified Text.Pandoc.Class as PIO
 import qualified Data.Map.Strict as M
 import Data.Map (Map)
-
+import Control.Monad.IO.Class (liftIO)
 
 mdFile2LaTeX :: FilePath -> IO ()
 mdFile2LaTeX f = do
   let fn = takeFileName f
+  putStrLn $ "mdFile2LaTeX: " <> fn
   T.readFile (f ++ ".md") >>= md2LaTeX >>= T.writeFile ("_build/" ++ fn ++ ".tex")
 
 md2LaTeX :: T.Text -> IO T.Text
-md2LaTeX t = let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting }
-              in runIOorExplode $  readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
-                                                                            , writerTopLevelDivision = TopLevelChapter
-                                                                            })
+md2LaTeX t = runIOorExplode $
+  let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting }
+   in readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
+                                          , writerTopLevelDivision = TopLevelChapter
+                                          })
 
 linkTex :: Pandoc -> IO Pandoc
 linkTex p@(Pandoc mt blks) = do
-  let md@(bib:mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["bibliography","mdappendix","mdquote","mdacknowledgements"]
+  let md@(mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["mdappendix","mdquote","mdacknowledgements"]
   let mdall = concat $ map fromMetaInlines_Str $ catMaybes md
   mapM_ mdFile2LaTeX mdall
   let mt' = genMeta mt [ ("auto-appendix",[mdappendix])
                        , ("auto-acknowledgements",[mdacknowledgements])
                        , ("auto-quote",[mdquote])
                        ]
-  let command = map genLn $ concat $ map (map (genPerintah ".bib")) $ map fromMetaInlines_Str $ catMaybes [bib]
-  if (null bib) then return ()
-                 else callCommand $ unlines [ "mkdir -p _build", unlines command]
-
   return $ Pandoc mt' blks
     where
       genMeta r0 ((s,ts):sts) =
@@ -60,7 +58,6 @@ linkTex p@(Pandoc mt blks) = do
                                                                       , let t = T.pack $ "\\input{" ++ u ++ "}"
                                                                       ]
       genRawBlock Nothing = Null
-      genLn s = "ln -s -f " ++ s ++ " _build/"
       genPerintah x s = "../" ++ s ++ x
       fromMetaInlines_Str (MetaInlines a) = map fromStr a
       fromMetaInlines_Str (MetaBlocks ((Plain a):_)) = filter (not . null) $ map fromStr a

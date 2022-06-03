@@ -150,7 +150,28 @@ includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)
       let (cmd,_,header) = getCommand command files
           s = unlines [header,T.unpack script]
       putStrLn s
-      res <- readProcess cmd [] s
+      TIO.writeFile "_build/temp/image.gnuplot" $ T.pack s
+      TIO.writeFile "_build/temp/imageGnuplot.tex" $ imageGnuplot fileName
+      case cmd of
+         "gnuplot" -> doGnuplot s $ T.unpack fileName
+         _ -> () <$ readProcess cmd [] s
+
       return $ Image (label,a,opts) caption (fileName, label)
 includeScriptImage img = pure img
+
+doGnuplot s fileName = do
+  callCommand $ "gnuplot _build/temp/image.gnuplot"
+  callCommand $ "latex --output-directory=_build/temp _build/temp"</> fileName <>".tex"
+  callCommand $ "dvips -E _build/temp/"</>fileName<>".dvi -o _build/auto" </> fileName <> ".eps"
+
+imageGnuplot fileName = T.unlines
+  [ "\\documentclass[10pt]{article}"
+  , "\\usepackage{graphicx,color}"
+  , "\\pagestyle{empty}"
+  , "\\begin{document}"
+  , "\\begin{figure}[h]"
+  , "\\input{./_build/temp/"<>fileName<>".tex}"
+  , "\\end{figure}"
+  , "\\end{document}"
+  ]
 

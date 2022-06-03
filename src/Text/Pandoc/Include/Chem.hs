@@ -50,7 +50,7 @@ doInclude (CodeBlock (label, classes, opts) mp)
                       BL.writeFile ("_build/temp" </> mpHash <> ".tex") tex
                       callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
                       callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
-                      callCommand $ "pdfcrop _build/temp" </> mpHash <>".pdf _build/auto" </> mpHash <> ".pdf"
+                      callCommand $ "mv _build/temp" </> mpHash <>".pdf _build/auto" </> mpHash <> ".pdf"
       return $ Div nullAttr
                 $ [Para
                     [Image (label,classes,opts)

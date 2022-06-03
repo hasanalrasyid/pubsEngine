@@ -110,7 +110,7 @@ main = do
               , "unzip -o _build/temp/"<>fileName<>".zip -d _build/"
               , "rm -rf _build/bibliography"
               , "mv _build/"<>zoteroCollection<>" _build/bibliography"
-              , unwords[cpOS, "_build/bibliography/"<>zoteroCollection<>".bib", "_build" ]
+              , unwords[cpOS, "_build/bibliography/"<>zoteroCollection<>".bib", "_build/"<>fileName<>".bib" ]
               ]
           _ -> do
             putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> zoteroCollection
@@ -126,8 +126,8 @@ main = do
   let resMeta = Meta
         $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
-        $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl" resMeta0
-        -- $ M.alter (\_ -> Just (MetaInlines [Str $ bibliographyFile <> ".bib"])) "bibliography" resMeta0
+        $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
+        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName <> ".bib"])) "bibliography" resMeta0
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   p4 <- walkM (NU.processPegonInline nameTemplate) p3
@@ -202,9 +202,9 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
 processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
   where
     action (Pandoc _ bs) = do
-      meta' <- crossRefMeta
+      --meta' <- crossRefMeta # do not modify meta for crossRef due to incompatible \usepackage{subfig}
       bs' <- crossRefBlocks bs
-      return $ Pandoc meta' bs'
+      return $ Pandoc meta bs'
 
 genTemplate nameTemplate fileName = do
     let tFileName = "_build/current.tpl"
@@ -256,8 +256,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
   blks1234 <- flip walkM blks123 $
             upgradeImageIO imageDirs >=> doBlockIO
   blks <- walkM upgradeImageInline blks1234
-  p <- doPandoc (Pandoc mt2 blks)
-  return p
+  doPandoc (Pandoc mt2 blks)
 
 processAcknowledgements :: Block -> Block
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
