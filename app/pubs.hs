@@ -127,7 +127,8 @@ main = do
         $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
         $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
-        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName <> ".bib"])) "bibliography" resMeta0
+        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName <> ".bib"])) "bibliography"
+        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName ])) "bibliographyName" resMeta0
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   p4 <- walkM (NU.processPegonInline nameTemplate) p3
@@ -222,16 +223,22 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
     (outExt,res) :: (String,T.Text)<- case template of
       Right t -> case nameTemplate of
                    "revealjs" -> (,) ".html" <$> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
-                   _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
+                   _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel, writerCiteMethod = Natbib}) citedPandoc
       Left e -> error e
     liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
-  compileLatex nameTemplate fileName
+    compileLatex nameTemplate fileName res
   where
-    compileLatex "revealjs" fileName = pure ()
-    compileLatex _ fileName = do
+    addNatbibBBL fileName res =
+      let (a,(b:c)) = break (T.isPrefixOf "\\bibliography") $ T.lines res
+       in T.unlines $ concat $ [a,b:["\\input "<> T.pack fileName <> ".bbl"],c]
+
+    compileLatex "revealjs" _ _ = pure ()
+    compileLatex _ fileName res = liftIO $ do
+      TIO.writeFile ("_build/" <> fileName <> ".texbbl") $ addNatbibBBL fileName res
       callCommand $ unlines [ "cd _build"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
-                            , "bibtex   -interaction=nonstopmode " <> fileName
+                            , "bibtex " <> fileName
+                            , "cp -f " <> fileName <> ".texbbl " <> fileName <> ".tex"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "cd .." ]
