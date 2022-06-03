@@ -23,32 +23,30 @@ import Text.Pandoc.Include.Utils
 import qualified Text.Pandoc.Class as PIO
 import qualified Data.Map.Strict as M
 import Data.Map (Map)
-
+import Control.Monad.IO.Class (liftIO)
 
 mdFile2LaTeX :: FilePath -> IO ()
 mdFile2LaTeX f = do
   let fn = takeFileName f
+  putStrLn $ "mdFile2LaTeX: " <> fn
   T.readFile (f ++ ".md") >>= md2LaTeX >>= T.writeFile ("_build/" ++ fn ++ ".tex")
 
 md2LaTeX :: T.Text -> IO T.Text
-md2LaTeX t = let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting }
-              in runIOorExplode $  readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
-                                                                            , writerTopLevelDivision = TopLevelChapter
-                                                                            })
+md2LaTeX t = runIOorExplode $
+  let param = def { readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting }
+   in readMarkdown param t >>= writeLaTeX (def { writerReferenceLinks = True
+                                          , writerTopLevelDivision = TopLevelChapter
+                                          })
 
 linkTex :: Pandoc -> IO Pandoc
 linkTex p@(Pandoc mt blks) = do
-  let md@(bib:mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["bibliography","mdappendix","mdquote","mdacknowledgements"]
+  let md@(mdappendix:mdquote:mdacknowledgements:_) = map ((flip lookupMeta) mt) ["mdappendix","mdquote","mdacknowledgements"]
   let mdall = concat $ map fromMetaInlines_Str $ catMaybes md
   mapM_ mdFile2LaTeX mdall
   let mt' = genMeta mt [ ("auto-appendix",[mdappendix])
                        , ("auto-acknowledgements",[mdacknowledgements])
                        , ("auto-quote",[mdquote])
                        ]
-  let command = map genLn $ concat $ map (map (genPerintah ".bib")) $ map fromMetaInlines_Str $ catMaybes [bib]
-  if (null bib) then return ()
-                 else callCommand $ unlines [ "mkdir -p _build", unlines command]
-
   return $ Pandoc mt' blks
     where
       genMeta r0 ((s,ts):sts) =
@@ -60,7 +58,6 @@ linkTex p@(Pandoc mt blks) = do
                                                                       , let t = T.pack $ "\\input{" ++ u ++ "}"
                                                                       ]
       genRawBlock Nothing = Null
-      genLn s = "ln -s -f " ++ s ++ " _build/"
       genPerintah x s = "../" ++ s ++ x
       fromMetaInlines_Str (MetaInlines a) = map fromStr a
       fromMetaInlines_Str (MetaBlocks ((Plain a):_)) = filter (not . null) $ map fromStr a
@@ -95,22 +92,30 @@ processPostDoc p@(Pandoc m b) =
   let facilities = query getFacilities  b
       software   = query getSoftware    b
       appendix   = query getAppendix    b
+      dedicatory = query getDedicatory  b
       acknowledgements = query getAck   b
-      m1 = updateMeta m "facilities" $ MetaBlocks facilities
-      m2 = updateMeta m1 "software" $ MetaBlocks software
-      m3 = updateMeta m2 "appendix" $ MetaBlocks appendix
-      newMeta = updateMeta m3 "acknowledgements" $ MetaBlocks acknowledgements
-      (Pandoc _ newBlocks) = foldl (flip walk) p [rmFacilities , rmSoftware , rmAppendix , rmAck]
+      newMeta = updateMeta' "appendix" (MetaBlocks appendix)
+          $ updateMeta' "acknowledgements" (MetaBlocks acknowledgements)
+          $ updateMeta' "dedicatory" (MetaBlocks dedicatory)
+          $ updateMeta' "facilities" (MetaBlocks facilities)
+          $ updateMeta' "software" (MetaBlocks software) m
+
+      (Pandoc _ newBlocks) = foldl (flip walk) p [rmFacilities , rmSoftware , rmAppendix , rmAck, rmDedicatory]
    in (Pandoc newMeta newBlocks)
     where
+      updateMeta' s b m = updateMeta m s b
       rmFacilities (Div (_,["facilities"],_) _) = Null
       rmFacilities a = a
       rmSoftware   (Div (_,["software"],_) _) = Null
       rmSoftware   a = a
       rmAppendix   (Div (_,["appendix"],_) _) = Null
       rmAppendix   a = a
+      rmDedicatory (Div (_,["acknowledgements"],_) _) = Null
+      rmDedicatory a = a
       rmAck (Div (_,["acknowledgements"],_) _) = Null
       rmAck a = a
+      getDedicatory a@(Div (_,["dedicatory"],_) _) = [a]
+      getDedicatory _ = []
       getFacilities a@(Div (_,["facilities"],_) _) = [a]
       getFacilities _ = []
       getSoftware   a@(Div (_,["software"],_) _) = [a]

@@ -71,6 +71,7 @@ import           Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
 import Text.Pandoc.Include.Common
 import Data.Maybe
+import Text.Pandoc.Shared
 
 getContent :: FilePath -> IO [Block]
 getContent file = do
@@ -109,11 +110,13 @@ doInclude (CodeBlock (_, classes, _) list)
 doInclude x = return x
 
 includeMarkdown :: Block -> PandocIO Block
-includeMarkdown cb@(CodeBlock (label, ["include"], _) t) =
+includeMarkdown    (CodeBlock (label, ["include"], _) t) =
   includeMarkdownImpl $ lines $ T.unpack t
-includeMarkdown cb@(Para [Cite [c] _]) =
-  includeMarkdownImpl $ catMaybes [ fmap T.unpack $ T.stripPrefix "include:" $ citationId c ]
-includeMarkdown x = return x
+includeMarkdown cb@(Para [Cite [c] _])
+  | citationId c == "include" =
+      includeMarkdownImpl $ map (T.unpack . stringify) $ tail $ citationSuffix c
+  | otherwise = pure cb
+includeMarkdown x = pure x
 
 includeMarkdownImpl [] = error $ "includeMarkdown: we have no file to include"
 includeMarkdownImpl fileList = do

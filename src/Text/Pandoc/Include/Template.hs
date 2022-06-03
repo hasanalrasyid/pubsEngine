@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Text.Pandoc.Include.Template (setTemplate) where
+module Text.Pandoc.Include.Template
+  ( setTemplate
+  , mainTemplate
+  , commonTemplate
+  ) where
 
 import Data.Tuple
 import Text.RawString.QQ
@@ -12,27 +16,30 @@ import Data.FileEmbed
 import System.Process (callCommand)
 import Text.Pandoc.Options
 
-setTemplate :: String -> IO (String, String, TopLevelDivision)
-setTemplate nameTemplate = do
+setTemplate :: String -> String -> IO (String, TopLevelDivision)
+setTemplate nameTemplate fileName = do
   BS.writeFile "_build/extra.7z" $ extraZip nameTemplate
-  writeFile "_build/default.tpl" $ mainTemplate nameTemplate
-  callCommand $ unlines [ "pushd _build"
+  callCommand $ unlines [ "cd _build"
                         , "7za x -aoa extra.7z"
-                        , "popd"
+                        , "cd .."
                         ]
   let topLevel = case nameTemplate of
                   "article" -> TopLevelSection
                   "plain" -> TopLevelSection
                   _ -> TopLevelChapter
-  return ("_build/default.tpl", mainTemplate nameTemplate, topLevel)
+  return ("_build/default.tpl", topLevel)
+
+commonTemplate = T.pack $(embedStringFile $ "templates/common/template.tex")
 
 mainTemplate :: String -> String
+mainTemplate "book" = $(embedStringFile $ "templates/book/template.tex")
 mainTemplate "article" = $(embedStringFile $ "templates/article/template.tex")
 mainTemplate "thesis" = $(embedStringFile $ "templates/thesis/template.tex")
 mainTemplate "revealjs" = $(embedStringFile $ "templates/revealjs/template.tex")
 mainTemplate _ = $(embedStringFile $ "templates/plain/template.tex")
 
 extraZip :: String -> BS.ByteString
+extraZip "book" = $(embedFile "templates/book/extra.7z")
 extraZip "article" = $(embedFile "templates/article/extra.7z")
 extraZip "thesis" = $(embedFile "templates/thesis/extra.7z")
 extraZip "revealjs" = $(embedFile "templates/revealjs/extra.7z")

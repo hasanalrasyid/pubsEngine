@@ -17,6 +17,7 @@ import qualified Text.Pandoc.Class as PIO
 import qualified Text.Pandoc.Templates as PT
 
 import Data.Monoid ((<>))
+import Control.Monad.IO.Class (liftIO)
 
 import Data.Maybe
 import System.Environment (getArgs)
@@ -37,6 +38,7 @@ import Text.Pandoc.App
 import System.FilePath -- (replaceDirectory)
 import System.Directory -- (listDirectory)
 import Data.List -- (delete)
+import Text.Pandoc.Shared -- blocksToInlines
 
 saveLibrary :: [T.Text] -> FilePath -> String -> IO [Block]
 saveLibrary (_:lib:_) fileName script = do
@@ -107,4 +109,69 @@ includeScript cb@(CodeBlock (label, a@["script",c,outType], opts0) text) = do
   writeScriptResult res (label,a,opts)
 includeScript cb@(CodeBlock (a, ("script":_), opts) t) =
   includeScript $ CodeBlock (a,["script","py","md"], opts) t
+includeScript cb@(Div (a, c@("multiImage":_), opts) t) = do
+  let images0 = query getImage cb
+      caption = blocksToInlines $ walk notImage t
+      fullwidth = if elem "fullwidth" c then "*" else ""
+  images <- walkM includeScriptImage images0
+  let bigImage = Image (a,[],opts) caption ("xxxdummyxxx",a)
+  res <- runIO $ do
+    bigImage0 <- writeLaTeX def $ Pandoc nullMeta [Para [bigImage]]
+    let bigImage = if elem "fullwidth" c then T.replace "{figure}" "{figure*}" bigImage0
+                                         else bigImage0
+    let (upperImage,(_:lowerImage)) = break (T.isInfixOf "xxxdummyxxx") $ T.lines bigImage
+    let r1 = Div (a,[],opts) $ concat [ [RawBlock (Format "latex") $ T.unlines upperImage]
+                                      , [Plain $ walk setSubfigure images ]
+                                      , [RawBlock (Format "latex") $ T.unlines lowerImage]
+                                      ]
+    pure r1
+  return $ case res of
+    Right p -> p
+    Left e -> error $ show e
+  where
+    setSubfigure (Image (l,a,o) c (f,_)) = Image (l,"subfigure":a,o) c (f,l)
+    setSubfigure c = c
+    getImage :: Inline -> [Inline]
+    getImage i@(Image _ _ _) = [i]
+    getImage _ = []
+    notImage (Image _ _ _) = Space
+    notImage c = c
+
 includeScript cb = return cb
+
+
+includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)) =
+  case lookup"src" opts0 of
+    Nothing -> pure img
+    Just srcFile -> do
+      (script,opts) <- extractSource "" opts0
+      let command = T.unpack c
+      files <- listDirectory $ "_build/temp/lib/" <> command
+      let (cmd,_,header) = getCommand command files
+          s = unlines [header,T.unpack script]
+      putStrLn s
+      TIO.writeFile "_build/temp/image.gnuplot" $ T.pack s
+      TIO.writeFile "_build/temp/imageGnuplot.tex" $ imageGnuplot fileName
+      case cmd of
+         "gnuplot" -> doGnuplot s $ T.unpack fileName
+         _ -> () <$ readProcess cmd [] s
+
+      return $ Image (label,a,opts) caption (fileName, label)
+includeScriptImage img = pure img
+
+doGnuplot s fileName = do
+  callCommand $ "gnuplot _build/temp/image.gnuplot"
+  callCommand $ "latex --output-directory=_build/temp _build/temp"</> fileName <>".tex"
+  callCommand $ "dvips -E _build/temp/"</>fileName<>".dvi -o _build/auto" </> fileName <> ".eps"
+
+imageGnuplot fileName = T.unlines
+  [ "\\documentclass[10pt]{article}"
+  , "\\usepackage{graphicx,color}"
+  , "\\pagestyle{empty}"
+  , "\\begin{document}"
+  , "\\begin{figure}[h]"
+  , "\\input{./_build/temp/"<>fileName<>".tex}"
+  , "\\end{figure}"
+  , "\\end{document}"
+  ]
+

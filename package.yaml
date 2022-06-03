@@ -90,19 +90,16 @@ dependencies:
 - base-orphans
 - hint
 - file-embed
+- haskell-src-exts-simple
+- diagrams-builder
+- diagrams-lib
+- diagrams-core
+- texrunner
 
 library:
   source-dirs:
     - src
-    - extern/monoid-extras/src
-    - extern/dual-tree/src
-    - extern/active/src
-    - extern/diagrams-core/src
-    - extern/diagrams-lib/src
     - extern/diagrams-pgf/src
-    - extern/texrunner/src
-    - extern/diagrams-builder/src
-    - extern/haskell-src-exts-simple/src
   default-extensions: OverloadedStrings
                     , GeneralizedNewtypeDeriving
                     , ScopedTypeVariables

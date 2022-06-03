@@ -1,11 +1,11 @@
 [v] Work on default.csl
 [ ] manuscript status, submitted, reviewed, accepted
-[ ] advanced graphics {figure*}
+[v] advanced graphics {figure*}
 [v] Citation Reference
 [v] Cross reference
 [v] APPENDIX
 [v] include script with caption in text codeblock
-[ ] Quotation
+[v] Quotation / Dedicatory (thesis,book)
 [ ] Abbreviation List
 [ ] Physical Constants
 [ ] List of Symbols
@@ -13,6 +13,16 @@
 [v] buat template yang lebih sederhana, jadikan satu saja...
 [v] buat yaml file optional saja
 [ ] DEBUG: delegated table failed to be referenced
+[ ] DEBUG: multiparagraph footnote failed to register
+[v] FEATURE: book template
+[v] FEATURE: PlantUML
+[v] FEATURE: cite as quote:
+      Pengguna membuat anotasi di pdf dalam zotero,
+      lalu anotasi tadi secara otomatis diconvert ke dalam notes di zotero,
+      lalu notes tersebut secara otomatis didownload pubsEngine bersama bibliography bibtex,
+      lalu notes dalam bibtex tersebut diload pubsEngine sebagai citation dan quotes dalam manuscript melalui [@citeId .show]
+[r] FEATURE: include images from citation notes
+
 
 v : DONE, -: not yet, r: running
 

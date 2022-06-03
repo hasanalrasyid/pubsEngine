@@ -21,3 +21,11 @@ as user:
 install mermaid:
   npm install @mermaid-js/mermaid-cli
   ln -sf  ~/node_modules/.bin/mmdc ~/.local/bin/mermaid
+
+install PlantUML:
+wget https://netcologne.dl.sourceforge.net/project/plantuml/plantuml.jar
+mv plantuml.jar ${HOME}/opt
+export PLANTUML_JAR=${HOME}/opt/plantuml.jar
+java -jar ${PLANTUML_JAR}/plantuml.jar -eps:text sequenceDiagram.txt
+
+
