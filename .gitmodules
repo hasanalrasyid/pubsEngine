@@ -2,43 +2,7 @@
 	path = extern/MultiMarkdown-6
 	url = ssh://github/hasanalrasyid/MultiMarkdown-6
 	branch = hasan
-[submodule "extern/active"]
-	path = extern/active
-	url = ssh://github/hasanalrasyid/active
-	branch = hasan
-[submodule "extern/diagrams"]
-	path = extern/diagrams
-	url = ssh://github/hasanalrasyid/diagrams
-	branch = hasan
-[submodule "extern/diagrams-builder"]
-	path = extern/diagrams-builder
-	url = ssh://github/hasanalrasyid/diagrams-builder
-	branch = hasan
-[submodule "extern/diagrams-core"]
-	path = extern/diagrams-core
-	url = ssh://github/hasanalrasyid/diagrams-core
-	branch = hasan
-[submodule "extern/diagrams-lib"]
-	path = extern/diagrams-lib
-	url = ssh://github/hasanalrasyid/diagrams-lib
-	branch = hasan
 [submodule "extern/diagrams-pgf"]
 	path = extern/diagrams-pgf
 	url = ssh://github/hasanalrasyid/diagrams-pgf
-	branch = hasan
-[submodule "extern/dual-tree"]
-	path = extern/dual-tree
-	url = ssh://github/hasanalrasyid/dual-tree
-	branch = hasan
-[submodule "extern/haskell-src-exts-simple"]
-	path = extern/haskell-src-exts-simple
-	url = ssh://github/hasanalrasyid/haskell-src-exts-simple
-	branch = hasan
-[submodule "extern/monoid-extras"]
-	path = extern/monoid-extras
-	url = ssh://github/hasanalrasyid/monoid-extras
-	branch = hasan
-[submodule "extern/texrunner"]
-	path = extern/texrunner
-	url = ssh://git@github.com/hasanalrasyid/texrunner
 	branch = hasan
