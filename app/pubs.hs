@@ -110,7 +110,7 @@ main = do
               , "unzip -o _build/temp/"<>fileName<>".zip -d _build/"
               , "rm -rf _build/bibliography"
               , "mv _build/"<>zoteroCollection<>" _build/bibliography"
-              , unwords[cpOS, "_build/bibliography/"<>zoteroCollection<>".bib", "_build/"<>fileName<>".bib" ]
+              , "pandoc -t CSLJson  _build/bibliography/"<>zoteroCollection<>".bib |sed -e '/\"note\":/d' | pandoc -t bibtex -f CSLJson > _build/" <> fileName <> ".bib"
               ]
           _ -> do
             putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> zoteroCollection
@@ -127,8 +127,8 @@ main = do
         $ M.alter (\_ -> Just (MetaBool True)) "link-citations"
         $ M.alter (\_ -> Just (MetaBool True)) "link-bibliography"
         $ M.alter (\_ -> Just (MetaInlines [Str "_build/reference.csl" ])) "csl"
-        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName <> ".bib"])) "bibliography"
-        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack fileName ])) "bibliographyName" resMeta0
+        $ M.alter (\_ -> Just (MetaBool True)) "suppress-bibliography"
+        $ M.alter (\_ -> Just (MetaInlines [Str $ T.pack $ fileName <> ".bib"])) "bibliography" resMeta0
 
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   p4 <- walkM (NU.processPegonInline nameTemplate) p3
@@ -136,7 +136,13 @@ main = do
   let (varMeta) = M.fromList $ catMaybes $ map getVars p4
   let m6 = Meta $ flip M.union t3 varMeta
   let p6 = doBook nameTemplate $ Pandoc m6 $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p4
-  citedPandoc <- runIO' $ processShowCitations bibliographyFile fileName p6 >>= processCitations
+  let (imageDirs :: [String]) = case lookupMeta "imageDir" m6 of
+                    Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
+                    _ -> []
+  citedPandoc <- runIO' $ do
+    Pandoc mc1 t <- processShowCitations bibliographyFile fileName p6
+    t1 <- liftIO $ walkM upgradeImageInline t
+    processCitations $ Pandoc mc1 t1
   finishDoc template nameTemplate templateParams fileName citedPandoc
 
 processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
@@ -158,6 +164,7 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
           _ -> Nothing
       formatNote bibliographyFile (Image a@(_,_,v) i (_,u)) =
         let target = fromMaybe "." $ lookup "attachment-key" v
+        -- add caption here
          in Image nullAttr i ("bibliography/" <> target <> "/image.png",u)
       formatNote _ i = i
       formatNoteBlock (Header _ _ l) = Para [Strong l]
@@ -188,7 +195,6 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
       genNotes (Just (MetaList notes)) b = do
         notes <- getNotes bibliographyFile notes [] $ query checkNote b
         pure $ Div nullAttr $ [ b, notes ]
-            -- s -> DefinitionList $ catMaybes $ map (getNote notes) s ]
       genNotes _ b = pure b
       checkShow a [Str ".show"] = [a]
       checkShow _ _ = []
@@ -226,19 +232,13 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
                    _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel, writerCiteMethod = Natbib}) citedPandoc
       Left e -> error e
     liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
-    compileLatex nameTemplate fileName res
+    compileLatex nameTemplate fileName
   where
-    addNatbibBBL fileName res =
-      let (a,(b:c)) = break (T.isPrefixOf "\\bibliography") $ T.lines res
-       in T.unlines $ concat $ [a,b:["\\input "<> T.pack fileName <> ".bbl"],c]
-
-    compileLatex "revealjs" _ _ = pure ()
-    compileLatex _ fileName res = liftIO $ do
-      TIO.writeFile ("_build/" <> fileName <> ".texbbl") $ addNatbibBBL fileName res
+    compileLatex "revealjs" _ = pure ()
+    compileLatex _ fileName = liftIO $ do
       callCommand $ unlines [ "cd _build"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "bibtex " <> fileName
-                            , "cp -f " <> fileName <> ".texbbl " <> fileName <> ".tex"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "cd .." ]
@@ -246,11 +246,6 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
 
 
 doThemAll nameTemplate (Pandoc mt blks0) = do
-  let (imageDirs :: [String]) = case lookupMeta "imageDir" mt of
-                    Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
-                    _ -> []
-  putStrLn "imageDirs =============================="
-  putStrLn $ show imageDirs
   blks1 <- flip walkM blks0
             $ includeScript
             >=> doBlockIO
@@ -258,12 +253,12 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> GoJS.includeGoJS
             >=> PlantUML.includePlantUMLBlock
             >=> NU.processPegon nameTemplate
-  blks12 <- walkM includeScriptImage blks1
-  (Pandoc mt2 blks123) <- processCrossRef $ Pandoc mt blks12
-  blks1234 <- flip walkM blks123 $
-            upgradeImageIO imageDirs >=> doBlockIO
+  blks12 <- flip walkM blks1 $ includeScriptImage >=> Chem.doIncludeImage
+  blks1234 <- flip walkM blks12 $
+            upgradeImageIO >=> doBlockIO
   blks <- walkM upgradeImageInline blks1234
-  doPandoc (Pandoc mt2 blks)
+  resP <- processCrossRef $ Pandoc mt blks
+  doPandoc resP
 
 processAcknowledgements :: Block -> Block
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
@@ -328,8 +323,7 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
     latex0 <- writeLaTeX def $ Pandoc nullMeta [Plain [cb]]
     latex <- case T.lines latex0 of
               [] -> error $ "upgradeImageInline: writeLaTeX: latex0: " <> show cb
-              [s] -> pure $ if elem "subfigure" c
-                              then T.unlines [ "\\begin{figure}"
+              [s] -> pure $ T.unlines [ "\\begin{figure}"
                                 , "\\centering"
                                 , s
                                 , "\\caption{"
@@ -338,21 +332,17 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
                                 , T.concat ["\\label{",l1,"}"]
                                 , "\\end{figure}"
                                 ]
-                              else latex0
               _ -> pure latex0
     let width = fromMaybe "1.0" $ lookup "size" opts
         includeSize = "includegraphics[keepaspectratio=true,width=" <> width <> "\\linewidth]{"
         containerSize = if elem "single" c then "" else ".5"
     let latex' = updateSize includeSize $ foldr (\fu fl -> fu c fl) latex [updateBegin containerSize, updateEnd, updateFullwidth]
-    pure $ if elem "subfigure" c
-              then
-                let (upperLatex,(_:lowerLatex)) = break (== "xxxCaptionxxx") $ T.lines latex'
-                 in Span nullAttr
-                    $ concat [ [RawInline (Format "latex") $ T.unlines upperLatex]
-                             , caption
-                             , [RawInline (Format "latex") $ T.unlines lowerLatex]
-                             ]
-              else RawInline (Format "latex") latex'
+    let (upperLatex,(_:lowerLatex)) = break (== "xxxCaptionxxx") $ T.lines latex'
+    pure $ Span nullAttr
+            $ concat [ [RawInline (Format "latex") $ T.unlines upperLatex]
+                     , caption
+                     , [RawInline (Format "latex") $ T.unlines lowerLatex]
+                     ]
   case res of
     Left e -> error $ show e
     Right r -> pure r
@@ -369,25 +359,10 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
       | otherwise = l
     updateSize i l = T.replace "includegraphics{" i l
 upgradeImageInline c = return c
-upgradeImageIO :: [String] -> Block -> IO Block
-upgradeImageIO dirList cb@(Para [Image (l1,c,opts) caption (fileName, l2)]) = do
-  latex <- runIO $ writeLaTeX def $ Pandoc nullMeta [cb]
-  let fullwidth = if elem "fullwidth" c then "*"
-                                        else ""
-      figureHead = "figure"<> fullwidth
-  case latex of
-    Left _ -> return cb
-    Right a -> do
-      TIO.writeFile "_build/temp/upgradeImageIO.tmp" a
-      let width = fromMaybe "1.0" $ lookup "size" opts
-      r <- readProcess "zsh" []
-            $ unwords [ "sed -e 's/\\(includegraphics\\){\\|\\[\\([^]]*\\)\\]{/\\1[keepaspectratio=true,width="<> T.unpack width <>"\\\\linewidth]{/g'"
-                      , "-e 's/begin.figure/begin{"<>figureHead<>"/g' -e 's/end.figure/end{"<>figureHead<>"/g'"
-                      , "_build/temp/upgradeImageIO.tmp"
-                      ]
-      callCommand "rm -f _build/temp/upgradeImageIO.tmp"
-      return $ RawBlock (Format "latex") $ T.pack r
-upgradeImageIO _ c = return c
+upgradeImageIO :: Block -> IO Block
+upgradeImageIO cb@(Para [Image (l1,c,opts) caption (fileName, l2)]) =
+  walkM upgradeImageInline cb
+upgradeImageIO c = return c
 
 doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = MultiMarkdown.doInclude cb

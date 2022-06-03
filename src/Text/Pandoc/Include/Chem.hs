@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Text.Pandoc.Include.Chem (doInclude)
+module Text.Pandoc.Include.Chem (doInclude,doIncludeImage)
   where
 import System.Process
 import Text.Pandoc.Definition
@@ -14,7 +14,12 @@ import System.FilePath
 import Data.Hashable
 import Diagrams.Builder (hashToHexStr)
 import qualified Data.Text as T
+import qualified Data.Text.IO as T
+import Text.Pandoc
+import Text.Pandoc.Include.Common (mdOption)
 import Text.Pandoc.Process
+import Text.Pandoc.Shared
+import Text.Pandoc.Walk
 import Text.Pandoc.UTF8 as UTF8
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as B8
@@ -34,31 +39,38 @@ inDir path f = do
   let (dir, file) = splitFileName path
   withDir dir $ f file
 
-doInclude :: Block -> IO Block
-doInclude (CodeBlock (label, classes, opts) mp)
-  | "chemfig" `elem` classes = do
-      let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
-          mpHash = hashToHexStr mpHas'
-          caption = lookup "caption" opts
-      let tex = BL.fromStrict $ blankLatex <> (UTF8.fromString $ unlines [ T.unpack mp, "\\end{document}" ])
-      isCompiled <- doesFileExist $ "_build/auto" </> mpHash <.> "pdf"
-      B8.putStrLn tex
-      B8.putStrLn $ BL.fromStrict $ UTF8.fromString mpHash
-      if isCompiled then return ()
-                    else do
-                      callCommand "mkdir -p _build/temp"
-                      BL.writeFile ("_build/temp" </> mpHash <> ".tex") tex
-                      callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
-                      callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
-                      callCommand $ "mv _build/temp" </> mpHash <>".pdf _build/auto" </> mpHash <> ".pdf"
-      return $ Div nullAttr
-                $ [Para
-                    [Image (label,classes,opts)
-                      [Str $ fromMaybe "ChemFig module" caption] (T.pack mpHash, label)
-                    ]
-                  ]
+doIncludeImage (Image (label, ("chemfig":classes), opts) caption (s,l)) = do
+  mp <- T.readFile $ T.unpack $ fromMaybe "chemfigSourceFile" $ lookup "src" opts
+  T.putStrLn mp
+  let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
+      mpHash = hashToHexStr mpHas'
+  let tex = BL.fromStrict $ blankLatex <> (UTF8.fromString $ unlines [ T.unpack mp, "\\end{document}" ])
+  isCompiled <- doesFileExist $ "_build/auto" </> mpHash <.> "pdf"
+  B8.putStrLn tex
+  B8.putStrLn $ BL.fromStrict $ UTF8.fromString mpHash
+  if isCompiled then return ()
+                else do
+                  callCommand "mkdir -p _build/temp"
+                  BL.writeFile ("_build/temp" </> mpHash <> ".tex") tex
+                  callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
+                  callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
+                  callCommand $ "mv _build/temp" </> mpHash <>".pdf _build/auto" </> mpHash <> ".pdf"
+  return $ Image (label,classes,opts)
+                  caption (T.pack mpHash, label)
+doIncludeImage c = pure c
 
-doInclude x = return x
+doInclude :: Block -> IO Block
+doInclude cb@(CodeBlock (label, classes, opts) mp)
+  | "chemfig" `elem` classes = do
+      caption0 <- runIO $ readMarkdown mdOption $ fromMaybe "" $ lookup "caption" opts
+      let caption = case caption0 of
+                      Left _ -> []
+                      Right (Pandoc _ c) -> blocksToInlines c
+      img <- doIncludeImage (Image (label, classes, opts) caption ("",label))
+      return $ Div nullAttr
+                $ [Para [img]]
+  | otherwise = pure cb
+doInclude cb = walkM doIncludeImage cb
 
 blankLatex = $(embedFile "embed/blankChemFig.text")
 
