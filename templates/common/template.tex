@@ -4,6 +4,7 @@
 % \usepackage[T1]{fontenc} removed due to wrong font encoding
 
 \makeatletter
+\@ifpackageloaded{cleveref}{}{\usepackage{cleveref}}
 \@ifpackageloaded{graphicx}{}{\usepackage{graphicx}}
   \graphicspath{{./}{figures/}{auto}$if(graphicspath)$$for(graphicspath)${$graphicspath$}$endfor$$endif${Figure}{examples/documentation/images}{images}}%
 \AtBeginDocument{
