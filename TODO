@@ -21,9 +21,17 @@
       lalu anotasi tadi secara otomatis diconvert ke dalam notes di zotero,
       lalu notes tersebut secara otomatis didownload pubsEngine bersama bibliography bibtex,
       lalu notes dalam bibtex tersebut diload pubsEngine sebagai citation dan quotes dalam manuscript melalui [@citeId .show]
+[v] FEATURE: ChemFig integration through CodeBlock
+      [v] Image class: chemfig
+[v] FEATURE: Supplementary section as Header 1 (#)
+
 [r] FEATURE: include images from citation notes
-
-
+    [r] put notes as figure caption
+[r] FEATURE: citation scenario:
+    [v] Natbib
+    [r] Biblatex
+    [ ] CSP (maybe just for html only)
+[r] FEATURE: Template for Natbib: Springer Nature
 v : DONE, -: not yet, r: running
 
 - Save GAPS in eps as

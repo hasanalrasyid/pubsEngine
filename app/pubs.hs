@@ -39,6 +39,7 @@ import qualified Text.Pandoc.Include.Template as Template
 import           Text.Pandoc.Include.Template.Book
 
 import Text.Pandoc.Include.Common
+import Text.Pandoc.Include.Utils
 import qualified Text.Pandoc.Include.Nusantara as NU
 import qualified Data.Map as M
 import System.Process (callCommand, readProcess)
@@ -108,9 +109,10 @@ main = do
               [ "curl 'http://127.0.0.1:23119/better-bibtex/export/collection-archive?/1/"<>zoteroCollection<>".biblatex&exportNotes=true'  --output _build/temp/"<>zoteroCollection<>".zip.base64"
               , "base64 -d _build/temp/"<>zoteroCollection<>".zip.base64 > _build/temp/"<>fileName<>".zip"
               , "unzip -o _build/temp/"<>fileName<>".zip -d _build/"
-              , "rm -rf _build/bibliography"
-              , "mv _build/"<>zoteroCollection<>" _build/bibliography"
-              , "pandoc -t CSLJson  _build/bibliography/"<>zoteroCollection<>".bib |sed -e '/\"note\":/d' | pandoc -t bibtex -f CSLJson > _build/" <> fileName <> ".bib"
+              , "rm -rf _build/temp/bibliography"
+              , "mv _build/"<>zoteroCollection<>" _build/temp/bibliography"
+              , "pandoc -t CSLJson  _build/temp/bibliography/"<>zoteroCollection<>".bib |sed -e '/\"note\":/d' | pandoc -t bibtex -f CSLJson > _build/" <> fileName <> ".bib"
+              , unwords [cpOS, "_build/" <> fileName <> ".bib", "." ]
               ]
           _ -> do
             putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> zoteroCollection
@@ -142,8 +144,26 @@ main = do
   citedPandoc <- runIO' $ do
     Pandoc mc1 t <- processShowCitations bibliographyFile fileName p6
     t1 <- liftIO $ walkM upgradeImageInline t
-    processCitations $ Pandoc mc1 t1
+    fmap processSupplementary $ processCitations $ Pandoc mc1 t1
   finishDoc template nameTemplate templateParams fileName citedPandoc
+
+isSupplement (Header 1 (_,["supplement"],_) _) = True
+isSupplement (Div _ ((Header 1 (_,["supplement"],_) _):_)) = True
+isSupplement b = False
+processSupplementary (Pandoc m b) =
+  let b' = case findIndex isSupplement b of
+            Nothing -> b
+            Just i ->
+              let (h,t) = splitAt i b
+               in h ++ (RawBlock (Format "latex") "\\backmatter"):t
+      bmhead = walk genSupplementary b'
+   in Pandoc m bmhead
+
+
+genSupplementary (Header 1 (_,["supplement"],_) l) = do
+  let bm = RawInline (Format "latex") "\\bmhead{"
+   in Plain $ concat [[bm], l, [RawInline (Format "latex") "}"]]
+genSupplementary h = h
 
 processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
   bibFile <- fmap TE.decodeUtf8 $ PIO.readFileStrict $ fileName <> ".bib"
@@ -180,7 +200,7 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
                   (ex, noteHTML0) <- liftIO $ pipeProcess Nothing "jq"
                     [ "-r", "--arg", "citationId", T.unpack cId
                     , ".items|.[]|select(.citationKey == $citationId)|.notes|map(.note)|.[]"
-                    , "_build/bibliography/" <> T.unpack bibliographyFile <> ".json"
+                    , "_build/temp/bibliography/" <> T.unpack bibliographyFile <> ".json"
                     ] ""
                   case ex of
                     ExitSuccess -> pure ()
@@ -214,14 +234,16 @@ processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
       return $ Pandoc meta bs'
 
 genTemplate nameTemplate fileName = do
-    let tFileName = "_build/current.tpl"
+    let tFileName = "_build/temp/current.tpl"
     templateExist <- fileExists $ fileName <> ".tpl"
     mainTemplateString <- if templateExist
       then getTemplate $ fileName <> ".tpl"
       else pure $ T.pack $ Template.mainTemplate nameTemplate
     let templateString =
           T.replace "$commonTemplate$" Template.commonTemplate mainTemplateString
-    liftIO $ TIO.writeFile tFileName templateString
+    liftIO $ do
+      TIO.writeFile (tFileName <> ".0") templateString
+      callCommand $ "sed -e 's/%.*$//g' " <> tFileName <> ".0 | cat -s > " <> tFileName
     runWithPartials $ PT.compileTemplate tFileName templateString
 
 finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do

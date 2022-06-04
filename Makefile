@@ -7,6 +7,7 @@ installfast:
 
 install:
 	./preMake.sh article
+	./preMake.sh snat
 	./preMake.sh thesis
 	./preMake.sh revealjs
 	./preMake.sh plain

@@ -5,15 +5,16 @@
 
 \makeatletter
 \@ifpackageloaded{graphicx}{}{\usepackage{graphicx}}
-  \graphicspath{{./}{figures/}{auto}{Figure}{examples/documentation/images}{images}}%
+  \graphicspath{{./}{figures/}{auto}$if(graphicspath)$$for(graphicspath)${$graphicspath$}$endfor$$endif${Figure}{examples/documentation/images}{images}}%
 \AtBeginDocument{
 \usepackage[normalem]{ulem}
 }
 \makeatother
 
-\usepackage[novoc]{arabluatex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
-% arabxetex loads bidi.sty and fontspec.sty
-\newfontfamily\arabicfont[Script=Arabic,Scale=1.3,WordSpace=1.3]{Amiri}
+%%arabluatex incompatible with snat template
+%%\usepackage[novoc]{arabluatex} % default options are "novoc" and "fdf2alif" other options are "voc", "fullvoc", "utf", "trans" and "fdf2noalif"
+%%% arabxetex loads bidi.sty and fontspec.sty
+%%\newfontfamily\arabicfont[Script=Arabic,Scale=1.3,WordSpace=1.3]{Amiri}
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
