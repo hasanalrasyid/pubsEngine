@@ -24,7 +24,7 @@ setTemplate nameTemplate fileName = do
                         , "cd .."
                         ]
   let topLevel = case nameTemplate of
-                  "article" -> TopLevelSection
+                  "aas" -> TopLevelSection
                   "snat" -> TopLevelSection
                   "plain" -> TopLevelSection
                   _ -> TopLevelChapter
@@ -34,7 +34,7 @@ commonTemplate = T.pack $(embedStringFile $ "templates/common/template.tex")
 
 mainTemplate :: String -> String
 mainTemplate "book" = $(embedStringFile $ "templates/book/template.tex")
-mainTemplate "article" = $(embedStringFile $ "templates/article/template.tex")
+mainTemplate "aas" = $(embedStringFile $ "templates/aas/template.tex")
 mainTemplate "snat" = $(embedStringFile $ "templates/snat/template.tex")
 mainTemplate "thesis" = $(embedStringFile $ "templates/thesis/template.tex")
 mainTemplate "revealjs" = $(embedStringFile $ "templates/revealjs/template.tex")
@@ -42,7 +42,7 @@ mainTemplate _ = $(embedStringFile $ "templates/plain/template.tex")
 
 extraZip :: String -> BS.ByteString
 extraZip "book" = $(embedFile "templates/book/extra.7z")
-extraZip "article" = $(embedFile "templates/article/extra.7z")
+extraZip "aas" = $(embedFile "templates/aas/extra.7z")
 extraZip "snat" = $(embedFile "templates/snat/extra.7z")
 extraZip "thesis" = $(embedFile "templates/thesis/extra.7z")
 extraZip "revealjs" = $(embedFile "templates/revealjs/extra.7z")

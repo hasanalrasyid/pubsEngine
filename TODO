@@ -1,6 +1,6 @@
 [r] FEATURE: citation scenario:
-    [v] Natbib
-    [r] Biblatex
+    [v] Natbib : snat article
+    [v] Biblatex : aas article
     [ ] CSP (maybe just for html only)
 [ ] DEBUG: delegated table failed to be referenced
 [ ] DEBUG: multiparagraph footnote failed to register
