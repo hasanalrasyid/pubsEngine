@@ -185,9 +185,12 @@ processShowCitations bibliographyFile fileName p@(Pandoc m _) = do
       formatNote bibliographyFile (Image a@(_,_,v) i (_,u)) =
         let target = fromMaybe "." $ lookup "attachment-key" v
         -- add caption here
-         in Image nullAttr i ("bibliography/" <> target <> "/image.png",u)
+         in Image ("fig:"<>target,[],[]) i ("temp/bibliography/" <> target <> "/image.png",u)
+      formatNote _ LineBreak = Space
       formatNote _ i = i
       formatNoteBlock (Header _ _ l) = Para [Strong l]
+      formatNoteBlock (Para ((Image a@(target,_,_) _ l):captionCandidate)) =
+        Para [Image a ((Strong [Str "CiteNote: "]):captionCandidate) l]
       formatNoteBlock i = i
       getNotes _ _ [] [] = pure Null
       getNotes _ _ res [] = pure $ DefinitionList $ catMaybes res
@@ -267,6 +270,7 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
       putStrLn "======================"
 
 
+doThemAll :: String -> Pandoc -> IO Pandoc
 doThemAll nameTemplate (Pandoc mt blks0) = do
   blks1 <- flip walkM blks0
             $ includeScript

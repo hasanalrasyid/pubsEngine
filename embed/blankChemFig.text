@@ -1,0 +1,9 @@
+\documentclass{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[norsk]{babel}
+\usepackage{fullpage}
+\usepackage{chemfig}
+\usepackage{chemformula}
+\usepackage{float}
+\begin{document}
+
