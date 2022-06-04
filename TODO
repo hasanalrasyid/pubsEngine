@@ -1,7 +1,8 @@
-[r] FEATURE: citation scenario:
+[v] text status: \added, \replaced, \deleted: implemented as yaml, draft: true
+[p] FEATURE: citation scenario:
     [v] Natbib : snat article
     [v] Biblatex : aas article
-    [ ] CSP (maybe just for html only)
+    [p] CSP (maybe just for html only)
 [ ] DEBUG: delegated table failed to be referenced
 [ ] DEBUG: multiparagraph footnote failed to register
 [ ] manuscript status, submitted, reviewed, accepted
