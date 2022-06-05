@@ -19,6 +19,7 @@ pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_strikeout
                    , Ext_intraword_underscores
                    , Ext_footnotes
+                   , Ext_inline_notes
                    , Ext_ascii_identifiers
                    , Ext_definition_lists
                    , Ext_compact_definition_lists

@@ -144,8 +144,12 @@ main = do
   citedPandoc <- runIO' $ do
     Pandoc mc1 t <- processShowCitations bibliographyFile fileName p6
     t1 <- liftIO $ walkM upgradeImageInline t
-    fmap processSupplementary $ processCitations $ Pandoc mc1 t1
+    fmap (walk processBlockNote . processSupplementary) $ processCitations $ Pandoc mc1 t1
   finishDoc template nameTemplate templateParams fileName citedPandoc
+
+processBlockNote a@(Note [Div _ ((BlockQuote b):c)]) = Note $ b <> c
+processBlockNote a@(Note ((BlockQuote b):c)) = Note $ b <> c
+processBlockNote b = b
 
 isSupplement (Header 1 (_,["supplement"],_) _) = True
 isSupplement (Div _ ((Header 1 (_,["supplement"],_) _):_)) = True
