@@ -139,7 +139,7 @@ main = do
 
   let varNotationContent = M.singleton "content" $ MetaList $ query getNotation p4
       alter' k m f = M.alter f k m
-      tNotation = alter' "constants" t3 $
+      tNotation = alter' "notation" t3 $
         \case
           Nothing -> Just $ MetaMap varNotationContent
           Just (MetaMap n) -> Just $ MetaMap $ M.union n varNotationContent
@@ -345,7 +345,7 @@ fillVariableI _ p = p
 
 getNotation d@(DefinitionList ds@((((Span (_,["notation"],_) _):_),_):_)) =
   let symbolNotation symbolDef = ("symbol", MetaInlines symbolDef)
-      defNotation listDef = zipWith (\a b -> (a,MetaBlocks b)) ["definition","value","shortdef"] listDef
+      defNotation listDef = zipWith (\a b -> (a,MetaBlocks b)) ["definition","unit","value","longdef"] listDef
       notation (s,ls) = MetaMap $ M.fromList $ (symbolNotation s):(defNotation ls)
    in map notation ds
 getNotation _ = []

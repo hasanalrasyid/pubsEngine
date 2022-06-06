@@ -25,12 +25,12 @@
 \documentclass[
 12pt, % The default document font size, options: 10pt, 11pt, 12pt
 %oneside, % Two side (alternating margins) for binding by default, uncomment to switch to one side
-english, % ngerman for German
+%english, % ngerman for German
 singlespacing, % Single line spacing, alternatives: onehalfspacing or doublespacing
 %draft, % Uncomment to enable draft mode (no pictures, no links, overfull hboxes indicated)
 %nolistspacing, % If the document is onehalfspacing or doublespacing, uncomment this to set spacing in lists to single
-%liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
-%toctotoc, % Uncomment to add the main table of contents to the table of contents
+liststotoc, % Uncomment to add the list of figures/tables/etc to the table of contents
+toctotoc, % Uncomment to add the main table of contents to the table of contents
 %parskip, % Uncomment to add space between paragraphs
 nohyperref, % Uncomment to not load the hyperref package
 headsepline, % Uncomment to get a line under the header
@@ -65,21 +65,28 @@ breaklinks=true,
 
 \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
 
-$if(chapterTitle)$
+$if(notation)$
 \AtBeginDocument{%
-  \renewcommand*\chaptername{$chapterTitle$}
+$if(notation.title-constant)$\renewcommand*\constantsname{$notation.title-constant$} $endif$
+$if(notation.title-symbol)$\renewcommand*\symbolsname{$notation.title-symbol$} $endif$
 }
 $endif$
 
-$if(appendixTitle)$
+$if(title-chapter)$
 \AtBeginDocument{%
-  \renewcommand*\appendixname{$appendixTitle$}
+  \renewcommand*\chaptername{$title-chapter$}
 }
 $endif$
 
-$if(tocTitle)$
+$if(title-appendix)$
 \AtBeginDocument{%
-  \renewcommand*\contentsname{$tocTitle$}
+  \renewcommand*\appendixname{$title-appendix$}
+}
+$endif$
+
+$if(title-toc)$
+\AtBeginDocument{%
+  \renewcommand*\contentsname{$title-toc$}
 }
 $endif$
 
@@ -307,10 +314,12 @@ $endif$
 
 % The \SI{}{} command is provided by the siunitx package, see its documentation for instructions on how to use it
 
-$if(constants)$
-\begin{constants}{lr@{ {}={} }l} % The list of physical constants is a three column table
-$for(constants.content)$
-$constants.content.shortdef$ & $constants.content.symbol$ & $constants.content.value$ $constants.content.unit$\\
+$if(notation)$
+\begin{constants}{lr@{ {}={} }l} % The list of physical notation is a three column table
+$for(notation.content)$
+  $if(notation.content.value)$
+  $notation.content.definition$ & $notation.content.symbol$ & \SI{$notation.content.value$}{$notation.content.unit$}\\
+$endif$
 $endfor$
 %Speed of Light &  c{0}  & \SI{2.99792458e8}{\meter\per\second} (exact)\\
 %Constant Name & Symbol & Constant Value with unit\\
@@ -321,10 +330,13 @@ $endif$
 %	SYMBOLS
 %----------------------------------------------------------------------------------------
 
-$if(constants)$
+$if(notation)$
 \begin{symbols}{lll} % Include a list of Symbols (a three column table)
-$for(constants.content)$
-$constants.content.symbol$ & $constants.content.shortdef$ & $constants.content.unit$ \\
+$for(notation.content)$
+  $if(notation.content.value)$
+  $else$
+  $notation.content.symbol$ & $notation.content.definition$ & \si{$notation.content.unit$} \\
+$endif$
 $endfor$
 
 % a & distance & \si{\meter} \\

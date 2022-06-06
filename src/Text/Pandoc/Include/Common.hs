@@ -24,6 +24,7 @@ pandocExtSetting = [ Ext_tex_math_dollars
                    , Ext_definition_lists
                    , Ext_compact_definition_lists
                    , Ext_native_spans
+                   , Ext_mmd_title_block
                    ]
 
 mdOption = (def{readerExtensions = foldr enableExtension pandocExtensions pandocExtSetting})
