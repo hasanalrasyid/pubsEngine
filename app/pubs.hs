@@ -3,6 +3,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE LambdaCase #-}
 
 import Control.Monad.IO.Class (liftIO)
 import qualified Text.Pandoc.Include.Table as InTable
@@ -135,8 +136,16 @@ main = do
   (Pandoc (Meta t3) p3 ) <- doThemAll nameTemplate $ Pandoc resMeta resP
   p4 <- walkM (NU.processPegonInline nameTemplate) p3
   templateParams  <- Template.setTemplate nameTemplate fileName
+
+  let varNotationContent = M.singleton "content" $ MetaList $ query getNotation p4
+      alter' k m f = M.alter f k m
+      tNotation = alter' "constants" t3 $
+        \case
+          Nothing -> Just $ MetaMap varNotationContent
+          Just (MetaMap n) -> Just $ MetaMap $ M.union n varNotationContent
   let (varMeta) = M.fromList $ catMaybes $ map getVars p4
-  let m6 = Meta $ flip M.union t3 varMeta
+  let m6 = Meta $ flip M.union tNotation varMeta
+
   let p6 = doBook nameTemplate $ Pandoc m6 $ walk processAcknowledgements $ walk cleanVariable $ walk (fillVariableI varMeta) $ walk (fillVariableB varMeta) p4
   let (imageDirs :: [String]) = case lookupMeta "imageDir" m6 of
                     Just (MetaList a) -> concat $ flip map a $ \(MetaInlines i) -> flip map i $ \(Str s) -> T.unpack s
@@ -146,6 +155,7 @@ main = do
     t1 <- liftIO $ walkM upgradeImageInline t
     fmap (walk processBlockNote . processSupplementary) $ processCitations $ Pandoc mc1 t1
   finishDoc template nameTemplate templateParams fileName citedPandoc
+
 
 processBlockNote a@(Note [Div _ ((BlockQuote b):c)]) = Note $ b <> c
 processBlockNote a@(Note ((BlockQuote b):c)) = Note $ b <> c
@@ -255,10 +265,14 @@ genTemplate nameTemplate fileName = do
 
 finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
   runIO' $ do
+    let citeMethod = case nameTemplate of
+                       "snat" -> Natbib
+                       "revealjs" -> Citeproc
+                       _ -> Biblatex
     (outExt,res) :: (String,T.Text)<- case template of
       Right t -> case nameTemplate of
                    "revealjs" -> (,) ".html" <$> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
-                   _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel, writerCiteMethod = Natbib}) citedPandoc
+                   _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel, writerCiteMethod = citeMethod}) citedPandoc
       Left e -> error e
     liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
     compileLatex nameTemplate fileName
@@ -266,10 +280,11 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
     compileLatex "revealjs" _ = pure ()
     compileLatex _ fileName = liftIO $ do
       callCommand $ unlines [ "cd _build"
-                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
-                            , "bibtex " <> fileName
-                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
-                            , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
+                            , "./compileall.sh " <> fileName
+--                          , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
+--                          , "bibtex " <> fileName
+--                          , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
+--                          , "lualatex -interaction=nonstopmode " <> fileName <> ".tex"
                             , "cd .." ]
       putStrLn "======================"
 
@@ -308,6 +323,7 @@ processAcknowledgements a = a
 
 cleanVariable :: Block -> Block
 cleanVariable (Div (_,["var",varName],_) _) = Null
+cleanVariable (DefinitionList ((((Span (_,["notation"],_) _):_),_):_)) = Null
 cleanVariable p = p
 
 fillVariableB varMeta p@(Para [(Cite [c] _)])
@@ -326,6 +342,13 @@ fillVariableI varMeta p@(Cite [c] _)
             _ -> Str ""
   | otherwise = p
 fillVariableI _ p = p
+
+getNotation d@(DefinitionList ds@((((Span (_,["notation"],_) _):_),_):_)) =
+  let symbolNotation symbolDef = ("symbol", MetaInlines symbolDef)
+      defNotation listDef = zipWith (\a b -> (a,MetaBlocks b)) ["definition","value","shortdef"] listDef
+      notation (s,ls) = MetaMap $ M.fromList $ (symbolNotation s):(defNotation ls)
+   in map notation ds
+getNotation _ = []
 
 getVars (Div (_,["var",varName],_) bs) = Just (varName , MetaBlocks bs)
 getVars (Div (_,v:a,_) bs)

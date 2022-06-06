@@ -6,7 +6,7 @@ installfast:
 	stack build pubsEngine:pubsEngine
 
 install:
-	./preMake.sh article
+	./preMake.sh aas
 	./preMake.sh snat
 	./preMake.sh thesis
 	./preMake.sh revealjs

@@ -5,20 +5,11 @@ main=$1
 # Compile document
 lualatex -interaction=nonstopmode ${main}
 
-# Compile nomenclature
-makeindex ${main}.nlo -s nomencl.ist -o ${main}.nls
-
-# Compile index
-makeindex ${main}
-
 # Compile bibliography
-biber ${main}
+bibtex ${main}
 
 # Compile document
 lualatex -interaction=nonstopmode ${main}
-
-# Compile glossary
-makeglossaries ${main}
 
 # Compile document
 lualatex -interaction=nonstopmode ${main}
