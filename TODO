@@ -1,13 +1,18 @@
-[v] text status: \added, \replaced, \deleted: implemented as yaml, draft: true
+[ ] cryptpad vs hedgedoc: akhirnya pakai hedgedoc saja: https://demo.hedgedoc.org/cNThulztShyrAlFlkuHhSw?both
+[1] DEBUG: script image include: ![](auto_name){.gnuplot #fig:name src=script/filename.gnuplot}
+[2] DEBUG: all BlockCode for scripts needs to work as standard BlockCode ```xxx.
+[v] DEBUG: all BlockCode for scripts needs to work as standard BlockCode ```mermaid.
+    this means, Mermaid BlockCode should be automated output.
 [p] FEATURE: citation scenario:
-    [v] Natbib : snat article
-    [v] Biblatex : aas article
+    [v] Natbib : snat article, aas
+    [v] Biblatex : ?
     [p] CSP (maybe just for html only)
 [ ] DEBUG: delegated table failed to be referenced
 [ ] manuscript status, submitted, reviewed, accepted
 [ ] Abbreviation List
-[ ] Physical Constants
-[ ] List of Symbols
+[r] Physical Constants
+[r] List of Symbols
+[v] text status: \added, \replaced, \deleted: implemented as yaml, draft: true
 [v] DEBUG: multiparagraph footnote failed to register
 [v] Work on default.csl
 [v] advanced graphics {figure*}

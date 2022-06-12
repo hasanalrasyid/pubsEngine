@@ -10,7 +10,6 @@ import qualified Text.Pandoc.Include.MultiMarkdown as MultiMarkdown
 import qualified Text.Pandoc.Include.Diagrams as Diagrams
 import qualified Text.Pandoc.Include.Delegate as Delegate
 import qualified Text.Pandoc.Include.FeynMP as FeynMP
-import qualified Text.Pandoc.Include.Mermaid as Mermaid
 import           Text.Pandoc.JSON
 import Text.Pandoc.Walk
 import qualified Text.Pandoc.Class as PIO
@@ -151,10 +150,18 @@ includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)
           s = unlines [header,T.unpack script]
       putStrLn s
       TIO.writeFile "_build/temp/image.gnuplot" $ T.pack s
-      TIO.writeFile "_build/temp/imageGnuplot.tex" $ imageGnuplot fileName
       case cmd of
          "gnuplot" -> doGnuplot s $ T.unpack fileName
-         _ -> () <$ readProcess cmd [] s
+         "python" -> do
+           _ <- readProcess cmd [] s
+           let f = T.unpack fileName
+           isTex <- doesFileExist $ "_build/temp"</> f<.>"tex"
+           case isTex of
+             True -> do
+               callCommand $ "latex --output-directory=_build/temp _build/temp"</> f<.>"tex"
+               callCommand $ "dvips -E _build/temp/"</>f<>".dvi -o _build/auto" </> f<.> "eps"
+             _ -> pure ()
+         _ -> error $ "includeScriptImage: unknown cmd: " <> cmd <> " : " <> show img
 
       return $ Image (label,a,opts) caption (fileName, label)
 includeScriptImage img = pure img
@@ -163,15 +170,4 @@ doGnuplot s fileName = do
   callCommand $ "gnuplot _build/temp/image.gnuplot"
   callCommand $ "latex --output-directory=_build/temp _build/temp"</> fileName <>".tex"
   callCommand $ "dvips -E _build/temp/"</>fileName<>".dvi -o _build/auto" </> fileName <> ".eps"
-
-imageGnuplot fileName = T.unlines
-  [ "\\documentclass[10pt]{article}"
-  , "\\usepackage{graphicx,color}"
-  , "\\pagestyle{empty}"
-  , "\\begin{document}"
-  , "\\begin{figure}[h]"
-  , "\\input{./_build/temp/"<>fileName<>".tex}"
-  , "\\end{figure}"
-  , "\\end{document}"
-  ]
 

@@ -95,6 +95,7 @@ dependencies:
 - diagrams-lib
 - diagrams-core
 - texrunner
+- regex-compat
 
 library:
   source-dirs:

@@ -16,25 +16,12 @@ import Text.Pandoc.Process
 import Text.Pandoc.UTF8 as UTF8
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as B8
-
-withDir :: FilePath -> IO a -> IO a
-withDir path f = do
-  dir <- getCurrentDirectory
-  setCurrentDirectory path
-  result <- f
-  setCurrentDirectory dir
-  return result
-
-inDir :: FilePath -> (FilePath -> IO a) -> IO a
-inDir path f = do
-  let (dir, file) = splitFileName path
-  withDir dir $ f file
+import Text.Pandoc.Include.Utils
 
 doInclude :: Block -> IO Block
 doInclude (CodeBlock (label, classes, opts) mp)
   | "feynmp" `elem` classes = do
-      let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
-          mpHash = hashToHexStr mpHas'
+      let mpHash = getHash mp
           caption = lookup "caption" opts
       let tex = BL.fromStrict $ UTF8.fromString $ unlines [ "\\documentclass{standalone}"
                         , "\\usepackage{amsmath}"
@@ -48,19 +35,17 @@ doInclude (CodeBlock (label, classes, opts) mp)
                         , "\\end{fmffile}"
                         , "\\end{document}"
                         ]
-      isCompiled <- doesFileExist $ "_build/auto" </> mpHash <.> "pdf"
+      let outFile = "_build/auto" </> mpHash <.> "pdf"
+      isCompiled <- doesFileExist outFile
       B8.putStrLn tex
       if isCompiled then return ()
-                    else inDir ("_build/temp" </> mpHash) $
-                            \f -> do
-                                    _ <- pipeProcess Nothing "pdflatex" [] tex
-                                    _ <- pipeProcess Nothing "mpost" [f] ""
-                                    _ <- pipeProcess Nothing "pdflatex" [] tex
-                                    _ <- pipeProcess Nothing "mv"
-                                          [ "texput.pdf"
-                                          , "../auto" </> mpHash <.> "pdf"
-                                          ] ""
-                                    return ()
+        else inDir ("_build/temp") $ do
+          B8.writeFile (mpHash <.> "tex") tex
+          callCommand $ unlines [ "pdflatex " <> mpHash
+                                , "mpost " <> mpHash
+                                , "pdflatex " <> mpHash
+                                , "mv " <> mpHash <> ".pdf ../auto" </> mpHash <.> "pdf"
+                                ]
       return $ Div nullAttr
                 $ [Para
                     [Image (label,[],opts)

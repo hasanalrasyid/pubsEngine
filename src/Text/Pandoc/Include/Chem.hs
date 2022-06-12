@@ -20,6 +20,7 @@ import Text.Pandoc.Include.Common (mdOption)
 import Text.Pandoc.Process
 import Text.Pandoc.Shared
 import Text.Pandoc.Walk
+import Text.Pandoc.Include.Utils
 import Text.Pandoc.UTF8 as UTF8
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as B8
@@ -39,11 +40,10 @@ inDir path f = do
   let (dir, file) = splitFileName path
   withDir dir $ f file
 
-doIncludeImage (Image (label, ("chemfig":classes), opts) caption (s,l)) = do
+doIncludeImage (Image (label, ("chemfig":classes), opts) caption _) = do
   mp <- T.readFile $ T.unpack $ fromMaybe "chemfigSourceFile" $ lookup "src" opts
   T.putStrLn mp
-  let (mpHas' :: Int) = hashWithSalt 0 $ "_build/auto" <> mp
-      mpHash = hashToHexStr mpHas'
+  let mpHash = getHash mp
   let tex = BL.fromStrict $ blankLatex <> (UTF8.fromString $ unlines [ T.unpack mp, "\\end{document}" ])
   isCompiled <- doesFileExist $ "_build/auto" </> mpHash <.> "pdf"
   B8.putStrLn tex
@@ -52,16 +52,15 @@ doIncludeImage (Image (label, ("chemfig":classes), opts) caption (s,l)) = do
                 else do
                   callCommand "mkdir -p _build/temp"
                   BL.writeFile ("_build/temp" </> mpHash <> ".tex") tex
-                  callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
-                  callCommand $ unwords ["lualatex -interaction=nonstopmode", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
+                  callCommand $ unwords ["lualatex", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
+                  callCommand $ unwords ["lualatex", "--output-directory=_build/temp", "_build/temp"</>mpHash<>".tex"]
                   callCommand $ "mv _build/temp" </> mpHash <>".pdf _build/auto" </> mpHash <> ".pdf"
   return $ Image (label,classes,opts)
                   caption (T.pack mpHash, label)
 doIncludeImage c = pure c
 
 doInclude :: Block -> IO Block
-doInclude cb@(CodeBlock (label, classes, opts) mp)
-  | "chemfig" `elem` classes = do
+doInclude cb@(CodeBlock (label, classes@("chemfig":_), opts) mp) = do
       caption0 <- runIO $ readMarkdown mdOption $ fromMaybe "" $ lookup "caption" opts
       let caption = case caption0 of
                       Left _ -> []
@@ -69,7 +68,6 @@ doInclude cb@(CodeBlock (label, classes, opts) mp)
       img <- doIncludeImage (Image (label, classes, opts) caption ("",label))
       return $ Div nullAttr
                 $ [Para [img]]
-  | otherwise = pure cb
 doInclude cb = walkM doIncludeImage cb
 
 blankLatex = $(embedFile "embed/blankChemFig.text")

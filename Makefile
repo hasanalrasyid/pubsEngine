@@ -17,6 +17,10 @@ install:
 ##tar -cjf pubsEngine.tbz /home/aku/Documents/kerja/devKit/pubsEngine/.stack-work/install/x86_64-linux-tinfo6/140824c1d005ba1b38413892db457f57b054423f097e02376f2d07b509752b33/8.10.7/bin/pubsEngine
 ##scp pubsEngine.tbz gitmki:~/
 
+send:
+	md5sum .stack-work/install/${BUILDPATH}/bin/pubsEngine
+	socat -u FILE:.stack-work/install/${BUILDPATH}/bin/pubsEngine TCP-LISTEN:3000,reuseaddr
+
 installdeep:
 	mkdir -p $(HOME)/.local/bin
 	rm -f $(HOME)/.local/bin/pubsEngine

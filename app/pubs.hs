@@ -66,6 +66,7 @@ import System.Exit(ExitCode(..))
 import Text.Pandoc.CrossRef
 
 import Text.Pandoc.Builder (str,header,text,displayMath)
+import Text.Regex
 
 cpOS = "rsync -avr"
 
@@ -112,8 +113,8 @@ main = do
               , "unzip -o _build/temp/"<>fileName<>".zip -d _build/"
               , "rm -rf _build/temp/bibliography"
               , "mv _build/"<>zoteroCollection<>" _build/temp/bibliography"
-              , "pandoc -t CSLJson  _build/temp/bibliography/"<>zoteroCollection<>".bib |sed -e '/\"note\":/d' | pandoc -t bibtex -f CSLJson > _build/" <> fileName <> ".bib"
-              , unwords [cpOS, "_build/" <> fileName <> ".bib", "." ]
+              , "pandoc -t CSLjson  _build/temp/bibliography/"<>zoteroCollection<>".bib |sed -e '/\"note\":/d' | pandoc -t bibtex -f CSLjson > _build/" <> fileName <> ".bib"
+              , unwords ["cp -f _build/" <> fileName <> ".bib", "." ]
               ]
           _ -> do
             putStrLn $ unlines [ "ERROR: zotero-collection: markdown option for zotero connection is set as " <> zoteroCollection
@@ -267,16 +268,19 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
   runIO' $ do
     let citeMethod = case nameTemplate of
                        "snat" -> Natbib
+                       "aas" -> Natbib
                        "revealjs" -> Citeproc
                        _ -> Biblatex
-    (outExt,res) :: (String,T.Text)<- case template of
+    (outExt,res0) :: (String,T.Text)<- case template of
       Right t -> case nameTemplate of
                    "revealjs" -> (,) ".html" <$> writeRevealJs (def{writerTemplate = Just t, writerTopLevelDivision = topLevel}) citedPandoc
                    _ -> (,) ".tex" <$> writeLaTeX (def{writerTemplate = Just t, writerTopLevelDivision = topLevel, writerCiteMethod = citeMethod}) citedPandoc
       Left e -> error e
+    let res = removeHyperTarget res0
     liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
     compileLatex nameTemplate fileName
   where
+    removeHyperTarget t = T.pack $ subRegex (mkRegex "^.hypertarget\\{fig:[^\\}]*\\}\\{%") (T.unpack t) ""
     compileLatex "revealjs" _ = pure ()
     compileLatex _ fileName = liftIO $ do
       callCommand $ unlines [ "cd _build"

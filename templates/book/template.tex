@@ -261,15 +261,15 @@ $endif$
 %----------------------------------------------------------------------------------------
 
 % The nomenclature needs to be compiled on the command line with 'makeindex main.nlo -s nomencl.ist -o main.nls' from the template directory
-$if(constants)$
+$if(notation)$
 
-$if(constants.title)$\renewcommand{\nomname}{$constants.title$} % Rename the default 'Nomenclature'
+$if(notation.title)$\renewcommand{\nomname}{$title-symbol$} % Rename the default 'Nomenclature'
 $endif$
-$if(constants.preamble)$\renewcommand{\nompreamble}{$constants.preamble$} % Prepend this text to the nomenclature
+$if(notation.preamble)$\renewcommand{\nompreamble}{$notation.preamble$} % Prepend this text to the nomenclature
 $endif$
 
-$for(constants.content)$
-\nomenclature{$constants.content.symbol$}{$constants.content.shortdef$: $constants.content.definition$ ($constants.content.value$)}
+$for(notation.content)$
+\nomenclature{$notation.content.symbol$}{$notation.content.definition$: $notation.content.longdef$ (\SI{$notation.content.value$}{$notation.content.unit$})}
 $endfor$
 %\nomenclature{c}{Speed of light in a vacuum inertial frame}
 %\nomenclature{h}{Planck constant}
