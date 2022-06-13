@@ -280,7 +280,7 @@ finishDoc template nameTemplate (_, topLevel) fileName citedPandoc = do
     liftIO $ TIO.writeFile ("_build/" <> fileName <> outExt) res
     compileLatex nameTemplate fileName
   where
-    removeHyperTarget t = T.pack $ subRegex (mkRegex "^.hypertarget\\{fig:[^\\}]*\\}\\{%") (T.unpack t) ""
+    removeHyperTarget t = T.pack $ subRegex (mkRegex "^.hypertarget\\{fig:[^\\}]*\\}\\{%") (T.unpack t) "{%"
     compileLatex "revealjs" _ = pure ()
     compileLatex _ fileName = liftIO $ do
       callCommand $ unlines [ "cd _build"
@@ -392,7 +392,7 @@ upgradeImageInline cb@(Image (l1,c,opts) caption (fileName, l2)) = do
               _ -> pure latex0
     let width = fromMaybe "1.0" $ lookup "size" opts
         includeSize = "includegraphics[keepaspectratio=true,width=" <> width <> "\\linewidth]{"
-        containerSize = if elem "single" c then "" else ".5"
+        containerSize = if elem "single" c then "" else ".49"
     let latex' = updateSize includeSize $ foldr (\fu fl -> fu c fl) latex [updateBegin containerSize, updateEnd, updateFullwidth]
     let (upperLatex,(_:lowerLatex)) = break (== "xxxCaptionxxx") $ T.lines latex'
     pure $ Span nullAttr
