@@ -1,4 +1,5 @@
 [ ] cryptpad vs hedgedoc: akhirnya pakai hedgedoc saja: https://demo.hedgedoc.org/cNThulztShyrAlFlkuHhSw?both
+[1] Refactor, remove doBlockIO inside app/pubs.hs
 [1] DEBUG: script image include: ![](auto_name){.gnuplot #fig:name src=script/filename.gnuplot}
 [2] DEBUG: all BlockCode for scripts needs to work as standard BlockCode ```xxx.
 [v] DEBUG: all BlockCode for scripts needs to work as standard BlockCode ```mermaid.

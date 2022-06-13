@@ -301,6 +301,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> doBlockIO
             >=> GoJS.includeGoJS
             >=> PlantUML.includePlantUMLBlock
+            >=> Mermaid.doInclude
             >=> NU.processPegon nameTemplate
   blks12 <- flip walkM blks1 $ includeScriptImage >=> Chem.doIncludeImage
   blks1234 <- flip walkM blks12 $
@@ -425,7 +426,6 @@ doBlockIO cb@(CodeBlock (_, classes, namevals) t)
   | "multiTable" `elem` classes = MultiMarkdown.doInclude cb
   | "chemfig" `elem` classes = Chem.doInclude cb
   | "feynmp" `elem` classes = FeynMP.doInclude cb
-  | "mermaid" `elem` classes = Mermaid.doInclude cb
   | "delegate" `elem` classes = Delegate.doInclude cb
   | "inputTable" `elem` classes = InTable.doInclude cb
   | "note" `elem` classes = genEnv t  "}" "\\note{"
