@@ -155,6 +155,7 @@ main = do
     Pandoc mc1 t <- processShowCitations bibliographyFile fileName p6
     t1 <- liftIO $ walkM upgradeImageInline t
     fmap (walk processBlockNote . processSupplementary) $ processCitations $ Pandoc mc1 t1
+  --putStrLn $ show citedPandoc
   finishDoc template nameTemplate templateParams fileName citedPandoc
 
 
@@ -251,6 +252,7 @@ processCrossRef p@(Pandoc meta _)= runCrossRefIO meta (Just "latex") action p
       bs' <- crossRefBlocks bs
       return $ Pandoc meta bs'
 
+genTemplate :: String -> String -> PandocIO (Either String (Template T.Text))
 genTemplate nameTemplate fileName = do
     let tFileName = "_build/temp/current.tpl"
     templateExist <- fileExists $ fileName <> ".tpl"
@@ -314,16 +316,30 @@ processAcknowledgements :: Block -> Block
 processAcknowledgements (Div (_,["facilities","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\facilities{"]) : b
               <> [ RawBlock (Format "latex") "}" ]
+
 processAcknowledgements (Div (_,["software","show"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") $ T.unlines ["\\vspace{5mm}","\\software{"]) : b
               <> [ RawBlock (Format "latex") "}" ]
-processAcknowledgements (Div (_,["acknowledgements","show"],_) b) =
+
+processAcknowledgements (Div (_,["acknowledgments","hide"],_) _) = Null
+
+processAcknowledgements (Div (_,["acknowledgments"],_) b) =
+  Div nullAttr $ (RawBlock (Format "latex") "\\begin{acknowledgments}") : b
+              <> [ RawBlock (Format "latex") "\\end{acknowledgments}" ]
+
+processAcknowledgements (Div (_,["acknowledgements","hide"],_) _) = Null
+
+processAcknowledgements (Div (_,["acknowledgements"],_) b) =
   Div nullAttr $ (RawBlock (Format "latex") "\\begin{acknowledgements}") : b
               <> [ RawBlock (Format "latex") "\\end{acknowledgements}" ]
-processAcknowledgements (Div (_,["appendix"],_) b) = Null
-processAcknowledgements (Div (_,["dedicatory"],_) b) = Null
-processAcknowledgements (Div (_,["acknowledgements"],_) b) = Null
-processAcknowledgements (Div (_,"abstract":_,_) b) = Null
+
+processAcknowledgements (Div (_,["appendix"],_) _) = Null
+
+processAcknowledgements (Div (_,["dedicatory"],_) _) = Null
+
+processAcknowledgements (Div (_,["acknowledgements"],_) _) = Null
+
+processAcknowledgements (Div (_,"abstract":_,_) _) = Null
 processAcknowledgements a = a
 
 cleanVariable :: Block -> Block
