@@ -38,13 +38,11 @@ includePlantUMLInline cb@(Image (label, classes@("uml":_), opts0) caption _) = d
   pure $ Image attr caption target
 includePlantUMLInline cb = pure cb
 
-genPlantUML s = T.unlines ["@startuml", s, "@enduml"]
-
 includePlantUML label classes opts0 text = do
   (script,opts) <- extractSource text opts0
   let fileName = T.unpack $ fromMaybe "uml" $ lookup "src" opts
       s = case lookup "src" opts0 of
-            Nothing -> genPlantUML text
+            Nothing -> text
             Just t -> t
       captionText = case lookup "src" opts of
                   Nothing -> fromMaybe "" $ lookup "caption" opts0
