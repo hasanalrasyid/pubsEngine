@@ -52,7 +52,7 @@ saveLibrary (_:lib:_) fileName script = do
 
 getCommand c@"py"      files = ( "python","print(description)"
                                , unlines [ "import sys, os"
-                                         , unlines $ map (\f -> unwords ["from _build.temp.lib.py." <> f,"import *"] ) $ map takeBaseName files
+                                         , unlines $ map (\f -> unwords ["from lib.py." <> f,"import *"] ) $ map takeBaseName files
                                          ]
                                )
 getCommand c@"sh"      files = ("zsh","echo description"
@@ -140,7 +140,7 @@ includeScript cb = return cb
 
 
 includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)) =
-  case lookup"src" opts0 of
+  case lookup "src" opts0 of
     Nothing -> pure img
     Just srcFile -> do
       (script,opts) <- extractSource "" opts0
@@ -153,9 +153,11 @@ includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)
       case cmd of
          "gnuplot" -> doGnuplot s $ T.unpack fileName
          "python" -> do
-           _ <- readProcess cmd [] s
            let f = T.unpack fileName
-           isTex <- doesFileExist $ "_build/temp"</> f<.>"tex"
+           TIO.writeFile ("_build/temp/"</>f<.>"py") $ T.pack s
+           let params = map T.unpack $ fromMaybe [] $ T.words <$> lookup "args" opts
+           _ <- readProcess cmd (("_build/temp/"<>f<>".py"):params) ""
+           isTex <- doesFileExist $ "_build/temp"</>f<.>"tex"
            case isTex of
              True -> do
                callCommand $ "latex --output-directory=_build/temp _build/temp"</> f<.>"tex"
