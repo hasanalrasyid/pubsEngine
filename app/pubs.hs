@@ -305,7 +305,7 @@ doThemAll nameTemplate (Pandoc mt blks0) = do
             >=> PlantUML.includePlantUMLBlock
             >=> Mermaid.doInclude
             >=> NU.processPegon nameTemplate
-  blks12 <- flip walkM blks1 $ includeScriptImage >=> Chem.doIncludeImage
+  blks12 <- walkM Chem.doInclude blks1
   blks1234 <- flip walkM blks12 $
             upgradeImageIO >=> doBlockIO
   blks <- walkM upgradeImageInline blks1234

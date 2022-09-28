@@ -136,7 +136,7 @@ includeScript cb@(Div (a, c@("multiImage":_), opts) t) = do
     notImage (Image _ _ _) = Space
     notImage c = c
 
-includeScript cb = return cb
+includeScript cb = walkM includeScriptImage cb
 
 
 includeScriptImage img@(Image (label,("script":c:a),opts0) caption (fileName, _)) =
